@@ -1,0 +1,6 @@
+{
+  "name": "HTML12 LAB - Phòng Thực Hành Ảo Tin Học 12",
+  "description": "Phòng thực hành ảo HTML & CSS môn Tin học 12 bám sát SGK Kết nối tri thức. Biên dịch trực tiếp, bộ chấm DOM tự động, tài nguyên ảo và Trợ lý sư phạm AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
