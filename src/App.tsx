@@ -9,6 +9,7 @@ import { ResultPane } from './components/ResultPane';
 import { SettingsModal } from './components/SettingsModal';
 import { SolutionModal } from './components/SolutionModal';
 import { SampleModal } from './components/SampleModal';
+import { QuizModal } from './components/QuizModal';
 import { CodeSample } from './types';
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [isSamplesOpen, setIsSamplesOpen] = useState(false);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Current code values
@@ -187,6 +189,7 @@ export default function App() {
         onResetCode={handleResetCode}
         onCheckCode={handleCheckCode}
         onOpenSamples={() => setIsSamplesOpen(true)}
+        onOpenQuiz={() => setIsQuizOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         isEvaluating={isEvaluating}
       />
@@ -277,6 +280,12 @@ export default function App() {
         onClose={() => setIsSamplesOpen(false)}
         lesson={currentLesson}
         onLoadSample={handleLoadSample}
+      />
+
+      <QuizModal
+        isOpen={isQuizOpen}
+        onClose={() => setIsQuizOpen(false)}
+        lesson={currentLesson}
       />
 
       {/* Reset Confirmation Dialog (Replaces window.confirm) */}

@@ -81,3 +81,20 @@ export interface TutorMessage {
   content: string;
   timestamp: number;
 }
+
+export type QuizLevel = 'Biết' | 'Hiểu' | 'Vận dụng';
+
+export interface QuizSnippet {
+  css?: string;
+  html?: string;
+}
+
+export interface QuizQuestion {
+  id: number;
+  level: QuizLevel;
+  question: string;
+  snippet?: QuizSnippet; // Comparison box with Code CSS and Code HTML as requested in image
+  options: [string, string, string, string]; // A, B, C, D
+  correctIndex: 0 | 1 | 2 | 3;
+  explanation: string;
+}

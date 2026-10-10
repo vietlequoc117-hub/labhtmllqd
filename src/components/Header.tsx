@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   Sparkles,
   Settings as SettingsIcon,
-  BookOpen
+  BookOpen,
+  HelpCircle
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -18,6 +19,7 @@ interface HeaderProps {
   onResetCode: () => void;
   onCheckCode: () => void;
   onOpenSamples: () => void;
+  onOpenQuiz?: () => void;
   onOpenSettings: () => void;
   isEvaluating?: boolean;
 }
@@ -30,6 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   onResetCode,
   onCheckCode,
   onOpenSamples,
+  onOpenQuiz,
   onOpenSettings,
   isEvaluating = false,
 }) => {
@@ -101,6 +104,19 @@ export const Header: React.FC<HeaderProps> = ({
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           <span className="font-bold">10 Mã Mẫu</span>
         </button>
+
+        {/* 10 Trắc Nghiệm Button */}
+        {onOpenQuiz && (
+          <button
+            onClick={onOpenQuiz}
+            className="flex items-center gap-1.5 text-purple-300 hover:text-purple-200 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-xs px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer shadow-sm"
+            title="10 câu trắc nghiệm (4 Biết, 3 Hiểu, 3 Vận dụng) kèm mã CSS & HTML"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+            <span className="font-bold hidden sm:inline">10 Trắc Nghiệm</span>
+            <span className="font-bold sm:hidden">Quiz</span>
+          </button>
+        )}
 
         {/* Reset Code Button */}
         <button

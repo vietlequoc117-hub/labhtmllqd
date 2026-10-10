@@ -2,8 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Lesson, DomTestResult, CodeSample, LessonMission } from '../types';
 import { getLessonSamples } from '../data/samples';
 import { getLessonMissions } from '../data/missions';
+import { getLessonQuiz } from '../data/quizzes';
 import { resolveVirtualPaths } from '../data/mockAssets';
 import { TargetPreviewModal } from './TargetPreviewModal';
+import { QuizTab } from './QuizTab';
 import {
   ListChecks,
   BookOpen,
@@ -20,7 +22,8 @@ import {
   Eye,
   EyeOff,
   Maximize2,
-  CheckCheck
+  CheckCheck,
+  HelpCircle
 } from 'lucide-react';
 
 interface LessonGuideProps {
@@ -42,7 +45,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   currentCss = '',
   onLoadTargetCode,
 }) => {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'theory' | 'samples'>('tasks');
+  const [activeTab, setActiveTab] = useState<'tasks' | 'theory' | 'samples' | 'quiz'>('tasks');
   const [selectedMissionFilter, setSelectedMissionFilter] = useState<number | 'all'>('all');
   const [expandedPreviewMissionId, setExpandedPreviewMissionId] = useState<number | null>(null);
   const [modalMission, setModalMission] = useState<LessonMission | null>(null);
@@ -50,6 +53,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
 
   const samples = getLessonSamples(lesson.id);
   const missions = getLessonMissions(lesson.id);
+  const quizQuestions = getLessonQuiz(lesson.id);
 
   // Parse current HTML for real-time mission evaluation
   const parsedDoc = useMemo(() => {
@@ -107,7 +111,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
 
         <button
           onClick={() => setActiveTab('samples')}
-          className={`flex-1 py-2 px-2 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`flex-1 py-2 px-1 font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
             activeTab === 'samples'
               ? 'text-amber-400 border-b-2 border-amber-500 bg-slate-900/50'
               : 'text-slate-400 hover:text-slate-200'
@@ -115,6 +119,18 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           <span className="font-bold">10 Mẫu</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('quiz')}
+          className={`flex-1 py-2 px-1 font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
+            activeTab === 'quiz'
+              ? 'text-purple-400 border-b-2 border-purple-500 bg-slate-900/50'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+          <span className="font-bold">10 Quiz</span>
         </button>
       </div>
 
@@ -527,6 +543,11 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
               ))}
             </div>
           </div>
+        )}
+
+        {/* TAB 4: 10 CÂU TRẮC NGHIỆM ĐÁNH GIÁ (4 BIẾT - 3 HIỂU - 3 VẬN DỤNG) */}
+        {activeTab === 'quiz' && (
+          <QuizTab questions={quizQuestions} lessonNumber={lesson.lessonNumber} />
         )}
       </div>
 
