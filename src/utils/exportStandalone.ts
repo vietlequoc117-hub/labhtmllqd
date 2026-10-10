@@ -43,7 +43,7 @@ export function generateStandaloneHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HTML12 LAB - PHÒNG THỰC HÀNH ẢO TIN HỌC 12 (BẢN ĐỘC LẬP)</title>
+  <title>LQD_HTML_LAB - PHÒNG THỰC HÀNH ẢO HTML (BẢN ĐỘC LẬP)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome CDN -->
@@ -70,8 +70,7 @@ export function generateStandaloneHtml(): string {
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <span class="font-bold tracking-tight text-white text-base">HTML12 LAB</span>
-          <span class="text-xs bg-blue-600/30 text-blue-400 font-semibold px-2 py-0.5 rounded border border-blue-500/30">SGK Kết nối tri thức</span>
+          <span class="font-bold tracking-tight text-white text-base">LQD_HTML_LAB</span>
           <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-1.5 py-0.5 rounded">Standalone Offline</span>
         </div>
       </div>

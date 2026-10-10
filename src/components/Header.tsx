@@ -42,12 +42,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         <div className="hidden sm:block">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold tracking-tight text-white text-base">HTML12 LAB</span>
-            <span className="text-[11px] bg-blue-500/15 text-blue-400 font-semibold px-2 py-0.5 rounded-full border border-blue-500/30">
-              SGK Kết nối tri thức
-            </span>
+            <span className="font-extrabold tracking-tight text-white text-base">LQD_HTML_LAB</span>
           </div>
-          <p className="text-[10px] text-slate-400 font-medium">Phòng thực hành ảo Tin học 12</p>
+          <p className="text-[10px] text-slate-400 font-medium">Phòng thực hành ảo HTML</p>
         </div>
       </div>
 

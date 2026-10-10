@@ -33,7 +33,6 @@ export default function App() {
 
   // Editor states
   const [activeEditorTab, setActiveEditorTab] = useState<'html' | 'css'>('html');
-  const [activeResultTab, setActiveResultTab] = useState<'preview' | 'grader' | 'tutor'>('preview');
 
   // Test evaluations
   const [testResults, setTestResults] = useState<DomTestResult[]>([]);
@@ -93,7 +92,6 @@ export default function App() {
 
   const handleCheckCode = () => {
     runEvaluation();
-    setActiveResultTab('grader');
   };
 
   const handleResetCode = () => {
@@ -144,7 +142,6 @@ export default function App() {
         [currentLesson.id]: sample.css || '',
       }));
     }
-    setActiveResultTab('preview');
     setTimeout(() => {
       const results = evaluateStudentCode(currentLesson, sample.html, sample.css || currentCss);
       setTestResults(results);
@@ -155,7 +152,6 @@ export default function App() {
     const currentIndex = LESSONS.findIndex((l) => l.id === currentLesson.id);
     if (currentIndex >= 0 && currentIndex < LESSONS.length - 1) {
       setCurrentLesson(LESSONS[currentIndex + 1]);
-      setActiveResultTab('preview');
     }
   };
 
@@ -186,7 +182,6 @@ export default function App() {
         currentLesson={currentLesson}
         onSelectLesson={(lesson) => {
           setCurrentLesson(lesson);
-          setActiveResultTab('preview');
         }}
         onRunCode={handleRunCode}
         onResetCode={handleResetCode}
@@ -218,7 +213,6 @@ export default function App() {
                   [currentLesson.id]: css,
                 }));
               }
-              setActiveResultTab('preview');
               setTimeout(() => {
                 const results = evaluateStudentCode(currentLesson, html, css || currentCss);
                 setTestResults(results);
@@ -251,22 +245,12 @@ export default function App() {
           />
         </div>
 
-        {/* COLUMN 3: Result Pane & AI Tutor (34%) */}
+        {/* COLUMN 3: Result Pane - Live Preview (34%) */}
         <div className="w-[34%] min-w-[320px] max-w-[500px] h-full overflow-hidden">
           <ResultPane
             lesson={currentLesson}
             htmlCode={currentHtml}
             cssCode={currentCss}
-            testResults={testResults}
-            activeTab={activeResultTab}
-            onChangeTab={setActiveResultTab}
-            onNextLesson={
-              LESSONS.findIndex((l) => l.id === currentLesson.id) < LESSONS.length - 1
-                ? handleNextLesson
-                : undefined
-            }
-            onOpenSettings={() => setIsSettingsOpen(true)}
-            customApiKey={customApiKey}
           />
         </div>
       </main>
