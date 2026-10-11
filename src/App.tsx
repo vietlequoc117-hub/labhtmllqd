@@ -9,7 +9,6 @@ import { ResultPane } from './components/ResultPane';
 import { SettingsModal } from './components/SettingsModal';
 import { SolutionModal } from './components/SolutionModal';
 import { SampleModal } from './components/SampleModal';
-import { QuizModal } from './components/QuizModal';
 import { CodeSample } from './types';
 
 export default function App() {
@@ -44,16 +43,22 @@ export default function App() {
     const saved = localStorage.getItem('html12_fontSize');
     return saved ? Number(saved) : 14;
   });
-  const [customApiKey, setCustomApiKey] = useState<string>(() => {
-    return localStorage.getItem('html12_customApiKey') || '';
-  });
 
   // Modals
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [isSamplesOpen, setIsSamplesOpen] = useState(false);
-  const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  // Track if a quiz question snippet is loaded into the lab
+  const [loadedQuizSnippet, setLoadedQuizSnippet] = useState<{
+    questionId: number;
+    lessonId: number;
+    lessonNumber: string;
+  } | null>(null);
+
+  // Backup student work when loading quiz snippet so student can restore
+  const [backupCodes, setBackupCodes] = useState<Record<number, { html: string; css: string }>>({});
 
   // Current code values
   const currentHtml = htmlCodes[currentLesson.id] ?? currentLesson.initialHtml;
@@ -76,15 +81,10 @@ export default function App() {
     setTestResults(results);
   }, [currentLesson.id]);
 
-  // Save font size & custom key
+  // Save font size
   const handleSaveFontSize = (size: number) => {
     setFontSize(size);
     localStorage.setItem('html12_fontSize', String(size));
-  };
-
-  const handleSaveApiKey = (key: string) => {
-    setCustomApiKey(key);
-    localStorage.setItem('html12_customApiKey', key);
   };
 
   // Handlers
@@ -150,6 +150,94 @@ export default function App() {
     }, 60);
   };
 
+  // Load snippet from Quiz Question into Lab Editor & Run live
+  const handleLoadSnippetCode = (rawHtml: string, rawCss: string, questionId: number) => {
+    // Backup current work before loading snippet if not backed up yet
+    setBackupCodes((prev) => {
+      if (!prev[currentLesson.id]) {
+        return {
+          ...prev,
+          [currentLesson.id]: {
+            html: htmlCodes[currentLesson.id] ?? currentLesson.initialHtml,
+            css: cssCodes[currentLesson.id] ?? currentLesson.initialCss,
+          },
+        };
+      }
+      return prev;
+    });
+
+    const cleanCss = rawCss.replace(/<\/?style>/gi, '').trim();
+
+    let fullHtml = rawHtml;
+    if (!rawHtml.includes('<!DOCTYPE') && !rawHtml.includes('<html')) {
+      fullHtml = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chạy thử Câu ${questionId} - ${currentLesson.lessonNumber}</title>
+</head>
+<body>
+  <!-- Mã ví dụ trắc nghiệm Câu ${questionId} -->
+  ${rawHtml}
+</body>
+</html>`;
+    }
+
+    setHtmlCodes((prev) => ({
+      ...prev,
+      [currentLesson.id]: fullHtml,
+    }));
+    setCssCodes((prev) => ({
+      ...prev,
+      [currentLesson.id]: cleanCss,
+    }));
+
+    setLoadedQuizSnippet({
+      questionId,
+      lessonId: currentLesson.id,
+      lessonNumber: currentLesson.lessonNumber,
+    });
+
+    if (cleanCss && (!rawHtml || rawHtml.trim().length === 0)) {
+      setActiveEditorTab('css');
+    } else {
+      setActiveEditorTab('html');
+    }
+
+    setTimeout(() => {
+      const results = evaluateStudentCode(currentLesson, fullHtml, cleanCss);
+      setTestResults(results);
+    }, 60);
+  };
+
+  const handleRestoreLessonCode = () => {
+    const backup = backupCodes[currentLesson.id];
+    if (backup) {
+      setHtmlCodes((prev) => ({
+        ...prev,
+        [currentLesson.id]: backup.html,
+      }));
+      setCssCodes((prev) => ({
+        ...prev,
+        [currentLesson.id]: backup.css,
+      }));
+      setTimeout(() => {
+        const results = evaluateStudentCode(currentLesson, backup.html, backup.css);
+        setTestResults(results);
+      }, 60);
+    } else {
+      setHtmlCodes((prev) => ({
+        ...prev,
+        [currentLesson.id]: currentLesson.initialHtml,
+      }));
+      setCssCodes((prev) => ({
+        ...prev,
+        [currentLesson.id]: currentLesson.initialCss,
+      }));
+    }
+    setLoadedQuizSnippet(null);
+  };
+
   const handleNextLesson = () => {
     const currentIndex = LESSONS.findIndex((l) => l.id === currentLesson.id);
     if (currentIndex >= 0 && currentIndex < LESSONS.length - 1) {
@@ -189,7 +277,6 @@ export default function App() {
         onResetCode={handleResetCode}
         onCheckCode={handleCheckCode}
         onOpenSamples={() => setIsSamplesOpen(true)}
-        onOpenQuiz={() => setIsQuizOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         isEvaluating={isEvaluating}
       />
@@ -205,6 +292,9 @@ export default function App() {
             onLoadSample={handleLoadSample}
             currentHtml={currentHtml}
             currentCss={currentCss}
+            onLoadSnippetCode={handleLoadSnippetCode}
+            onRestoreLessonCode={handleRestoreLessonCode}
+            loadedSnippetQuestionId={loadedQuizSnippet?.lessonId === currentLesson.id ? loadedQuizSnippet.questionId : null}
             onLoadTargetCode={(html, css) => {
               setHtmlCodes((prev) => ({
                 ...prev,
@@ -225,27 +315,47 @@ export default function App() {
         </div>
 
         {/* COLUMN 2: Code Editor (38%) */}
-        <div className="w-[38%] min-w-[340px] flex-1 h-full overflow-hidden">
-          <CodeEditor
-            htmlCode={currentHtml}
-            cssCode={currentCss}
-            activeTab={activeEditorTab}
-            onChangeTab={setActiveEditorTab}
-            onChangeHtml={(val) => {
-              setHtmlCodes((prev) => ({
-                ...prev,
-                [currentLesson.id]: val,
-              }));
-            }}
-            onChangeCss={(val) => {
-              setCssCodes((prev) => ({
-                ...prev,
-                [currentLesson.id]: val,
-              }));
-            }}
-            fontSize={fontSize}
-            onRunCode={handleRunCode}
-          />
+        <div className="w-[38%] min-w-[340px] flex-1 h-full overflow-hidden flex flex-col">
+          {loadedQuizSnippet && loadedQuizSnippet.lessonId === currentLesson.id && (
+            <div className="bg-amber-950/80 border-b border-amber-500/40 px-3 py-1.5 flex items-center justify-between text-xs text-amber-200 shrink-0 shadow-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>
+                  Đang chạy thử mã <strong>Câu {loadedQuizSnippet.questionId}</strong> ({loadedQuizSnippet.lessonNumber}) trong Phòng thực hành ảo.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRestoreLessonCode}
+                className="text-[11px] font-bold bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-0.5 rounded transition cursor-pointer shadow-xs active:scale-95"
+                title="Khôi phục lại mã ban đầu của bài học"
+              >
+                ↩ Khôi phục bài làm
+              </button>
+            </div>
+          )}
+          <div className="flex-1 overflow-hidden">
+            <CodeEditor
+              htmlCode={currentHtml}
+              cssCode={currentCss}
+              activeTab={activeEditorTab}
+              onChangeTab={setActiveEditorTab}
+              onChangeHtml={(val) => {
+                setHtmlCodes((prev) => ({
+                  ...prev,
+                  [currentLesson.id]: val,
+                }));
+              }}
+              onChangeCss={(val) => {
+                setCssCodes((prev) => ({
+                  ...prev,
+                  [currentLesson.id]: val,
+                }));
+              }}
+              fontSize={fontSize}
+              onRunCode={handleRunCode}
+            />
+          </div>
         </div>
 
         {/* COLUMN 3: Result Pane - Live Preview (34%) */}
@@ -264,8 +374,6 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         fontSize={fontSize}
         onChangeFontSize={handleSaveFontSize}
-        customApiKey={customApiKey}
-        onSaveApiKey={handleSaveApiKey}
       />
 
       <SolutionModal
@@ -280,12 +388,6 @@ export default function App() {
         onClose={() => setIsSamplesOpen(false)}
         lesson={currentLesson}
         onLoadSample={handleLoadSample}
-      />
-
-      <QuizModal
-        isOpen={isQuizOpen}
-        onClose={() => setIsQuizOpen(false)}
-        lesson={currentLesson}
       />
 
       {/* Reset Confirmation Dialog (Replaces window.confirm) */}

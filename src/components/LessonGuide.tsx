@@ -34,6 +34,9 @@ interface LessonGuideProps {
   currentHtml?: string;
   currentCss?: string;
   onLoadTargetCode?: (html: string, css?: string) => void;
+  onLoadSnippetCode?: (html: string, css: string, questionId: number) => void;
+  onRestoreLessonCode?: () => void;
+  loadedSnippetQuestionId?: number | null;
 }
 
 export const LessonGuide: React.FC<LessonGuideProps> = ({
@@ -44,6 +47,9 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   currentHtml = '',
   currentCss = '',
   onLoadTargetCode,
+  onLoadSnippetCode,
+  onRestoreLessonCode,
+  loadedSnippetQuestionId,
 }) => {
   const [activeTab, setActiveTab] = useState<'tasks' | 'theory' | 'samples' | 'quiz'>('tasks');
   const [selectedMissionFilter, setSelectedMissionFilter] = useState<number | 'all'>('all');
@@ -547,7 +553,13 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
 
         {/* TAB 4: 10 CÂU TRẮC NGHIỆM ĐÁNH GIÁ (4 BIẾT - 3 HIỂU - 3 VẬN DỤNG) */}
         {activeTab === 'quiz' && (
-          <QuizTab questions={quizQuestions} lessonNumber={lesson.lessonNumber} />
+          <QuizTab
+            questions={quizQuestions}
+            lessonNumber={lesson.lessonNumber}
+            onLoadSnippetCode={onLoadSnippetCode}
+            onRestoreLessonCode={onRestoreLessonCode}
+            loadedQuestionId={loadedSnippetQuestionId}
+          />
         )}
       </div>
 

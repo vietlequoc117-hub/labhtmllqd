@@ -73,6 +73,7 @@ export function generateStandaloneHtml(): string {
           <span class="font-bold tracking-tight text-white text-base">LQD_HTML_LAB</span>
           <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-1.5 py-0.5 rounded">Standalone Offline</span>
         </div>
+        <p class="text-[10px] text-slate-400 font-medium">Phòng thực hành ảo HTML</p>
       </div>
     </div>
 

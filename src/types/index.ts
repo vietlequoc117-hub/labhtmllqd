@@ -75,13 +75,6 @@ export interface Lesson {
   evaluate: (doc: Document, htmlString: string, cssString?: string) => DomTestResult[];
 }
 
-export interface TutorMessage {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: number;
-}
-
 export type QuizLevel = 'Biết' | 'Hiểu' | 'Vận dụng';
 
 export interface QuizSnippet {

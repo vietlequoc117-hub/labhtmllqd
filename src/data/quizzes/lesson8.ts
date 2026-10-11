@@ -8,6 +8,10 @@ export const LESSON_8_QUIZ: QuizQuestion[] = [
     id: 1,
     level: 'Biết',
     question: 'Để viết số mũ trong công thức toán học như x² hoặc a³, ta sử dụng cặp thẻ HTML nào?',
+    snippet: {
+      css: `p { font-size: 16px; font-weight: bold; color: #1e293b; }\nsup { color: #2563eb; }`,
+      html: `<p>Diện tích hình vuông cạnh a: S = a<sup>2</sup></p>\n<p>Định lý Pytago: a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup></p>`
+    },
     options: [
       'Thẻ <sup>...</sup> (superscript)',
       'Thẻ <sub>...</sub> (subscript)',
@@ -37,6 +41,10 @@ export const LESSON_8_QUIZ: QuizQuestion[] = [
     id: 3,
     level: 'Biết',
     question: 'Cặp thẻ nào sau đây dùng để định dạng văn bản in đậm mang ý nghĩa nhấn mạnh tầm quan trọng?',
+    snippet: {
+      css: `strong { color: #dc2626; font-size: 16px; }\nb { color: #2563eb; font-weight: bold; }`,
+      html: `<p><strong>Chú ý quan trọng:</strong> Học sinh nộp bài trước 17h00.</p>\n<p><b>Thẻ b:</b> Dùng để in đậm chữ đơn thuần.</p>`
+    },
     options: [
       '<strong>...</strong> hoặc <b>...</b>',
       '<em>...</em> hoặc <i>...</i>',
@@ -137,7 +145,8 @@ export const LESSON_8_QUIZ: QuizQuestion[] = [
     level: 'Vận dụng',
     question: 'Học sinh viết công thức hóa học cho phản ứng: Axit sunfuric (H2SO4) tác dụng với Nhôm (Al). Đoạn mã HTML nào sau đây thể hiện chính xác chỉ số dưới của H₂SO₄?',
     snippet: {
-      html: `<!-- Cần hiển thị chuẩn H₂SO₄ -->`
+      css: `p { font-size: 16px; color: #0f172a; font-family: monospace; }\nsub { color: #2563eb; font-weight: bold; }`,
+      html: `<p>Axit Sunfuric: H<sub>2</sub>SO<sub>4</sub></p>\n<p>Phương trình: 2Al + 3H<sub>2</sub>SO<sub>4</sub> &rarr; Al<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub> + 3H<sub>2</sub>&uarr;</p>`
     },
     options: [
       'H<sub>2</sub>SO<sub>4</sub>',

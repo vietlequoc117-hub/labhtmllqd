@@ -8,6 +8,10 @@ export const LESSON_7_QUIZ: QuizQuestion[] = [
     id: 1,
     level: 'Biết',
     question: 'HTML là từ viết tắt của cụm từ tiếng Anh nào sau đây?',
+    snippet: {
+      css: `h1 { color: #2563eb; font-size: 20px; }\np { color: #475569; font-size: 14px; }`,
+      html: `<!-- HTML: HyperText Markup Language -->\n<h1>Xin chào các bạn học sinh Lớp 12!</h1>\n<p>HTML là ngôn ngữ đánh dấu siêu văn bản định hình cấu trúc web.</p>`
+    },
     options: [
       'HyperText Markup Language',
       'Hyperlinks and Text Markup Language',
@@ -38,6 +42,10 @@ export const LESSON_7_QUIZ: QuizQuestion[] = [
     id: 3,
     level: 'Biết',
     question: 'Trong cây cấu trúc HTML, thẻ nào chứa toàn bộ các phần tử hiển thị trực tiếp cho người dùng nhìn thấy trên màn hình trình duyệt?',
+    snippet: {
+      css: `body { background-color: #f8fafc; padding: 12px; }\nh1 { color: #059669; }`,
+      html: `<!DOCTYPE html>\n<html>\n  <head>\n    <!-- Thẻ head chứa thông tin ẩn với người xem -->\n    <title>Tiêu đề trong Head</title>\n  </head>\n  <body>\n    <!-- Thẻ body chứa toàn bộ nội dung hiển thị ra màn hình -->\n    <h1>Nội dung hiển thị trong &lt;body&gt;</h1>\n    <p>Người dùng nhìn thấy toàn bộ nội dung này trên trang web.</p>\n  </body>\n</html>`
+    },
     options: [
       'Thẻ <head>',
       'Thẻ <body>',

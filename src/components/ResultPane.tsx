@@ -29,20 +29,35 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
   const updateIframe = () => {
     if (!iframeRef.current) return;
     const processedHtml = resolveVirtualPaths(htmlCode);
-    const fullDocument = `
-<!DOCTYPE html>
+    const cleanCss = cssCode.replace(/<\/?style>/gi, '').trim();
+
+    let fullDocument = '';
+    if (processedHtml.includes('<html') || processedHtml.includes('<!DOCTYPE')) {
+      const styleBlock = `<style>\n${cleanCss}\n</style>`;
+      if (processedHtml.includes('</head>')) {
+        fullDocument = processedHtml.replace('</head>', `${styleBlock}\n</head>`);
+      } else if (processedHtml.includes('<body')) {
+        fullDocument = processedHtml.replace('<body', `${styleBlock}\n<body`);
+      } else {
+        fullDocument = `${styleBlock}\n${processedHtml}`;
+      }
+    } else {
+      fullDocument = `<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    ${cssCode}
+    body { margin: 0; padding: 16px; font-family: system-ui, -apple-system, sans-serif; }
+    ${cleanCss}
   </style>
 </head>
 <body>
   ${processedHtml}
 </body>
 </html>`;
+    }
+
     iframeRef.current.srcdoc = fullDocument;
   };
 
@@ -136,12 +151,9 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
               </div>
               <div className="bg-slate-950/70 border border-slate-800 px-2 py-0.5 rounded text-[11px] text-slate-300 font-mono flex items-center gap-1.5">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                <span className="truncate">virtual://lab-tinhoc12/{lesson.lessonNumber.toLowerCase().replace(' ', '')}/index.html</span>
+                <span className="truncate">virtual://lqd-html-lab/{lesson.lessonNumber.toLowerCase().replace(' ', '')}/index.html</span>
               </div>
             </div>
-            <span className="text-[10px] text-slate-500 uppercase font-semibold">
-              Sandbox Mode
-            </span>
           </div>
 
           {/* Iframe container with responsive device sizing */}
