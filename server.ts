@@ -19,7 +19,37 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Gemini AI Tutor endpoint
+// Helper for resilient model execution with fallback
+async function generateWithFallback(
+  ai: GoogleGenAI,
+  params: { contents: any; systemInstruction: string; temperature?: number }
+) {
+  const models = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: params.contents,
+        config: {
+          systemInstruction: params.systemInstruction,
+          temperature: params.temperature ?? 0.7,
+        },
+      });
+      if (response && response.text) {
+        return response.text;
+      }
+    } catch (err: any) {
+      console.warn(`Model ${model} failed, trying fallback:`, err?.message?.slice(0, 100));
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('Không thể tạo phản hồi từ AI.');
+}
+
+// Gemini AI Tutor endpoint (review & grading)
 app.post('/api/gemini/tutor', async (req, res) => {
   try {
     const {
@@ -29,14 +59,13 @@ app.post('/api/gemini/tutor', async (req, res) => {
       codeCss,
       failedTests = [],
       userQuestion = '',
-      customApiKey,
     } = req.body;
 
-    const apiKey = customApiKey || process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return res.status(400).json({
-        error: 'Chưa cấu hình API Key. Vui lòng kiểm tra biến môi trường GEMINI_API_KEY hoặc nhập API Key trong phần Cài đặt.',
+      return res.status(500).json({
+        error: 'Chưa cấu hình GEMINI_API_KEY trên hệ thống.',
       });
     }
 
@@ -76,11 +105,9 @@ ${questionPrompt}
 Hãy nhận xét sư phạm và đưa ra hướng dẫn cho học sinh.
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+    const advice = await generateWithFallback(ai, {
       contents: prompt,
-      config: {
-        systemInstruction: `Bạn là thầy/cô giáo Tin học 12 thân thiện, sư phạm và nhiệt tình của Việt Nam, theo chuẩn Sách giáo khoa Tin học 12 (Chủ đề 4: Giải quyết vấn đề với sự trợ giúp của máy tính - NXB Giáo dục Việt Nam, Bộ Kết nối tri thức với cuộc sống).
+      systemInstruction: `Bạn là thầy/cô giáo Tin học 12 thân thiện, sư phạm và nhiệt tình của Việt Nam, theo chuẩn Sách giáo khoa Tin học 12 (Chủ đề 4: Giải quyết vấn đề với sự trợ giúp của máy tính - NXB Giáo dục Việt Nam, Bộ Kết nối tri thức với cuộc sống).
 Nhiệm vụ của bạn:
 1. Xem xét mã nguồn HTML/CSS của học sinh và mục tiêu bài học.
 2. Phát hiện lỗi sai cụ thể (sai tên thẻ, quên đóng thẻ, viết hoa/thường sai, thiếu thuộc tính quan trọng như rowspan, colspan, href, src, type, v.v.).
@@ -88,16 +115,130 @@ Nhiệm vụ của bạn:
 4. Đưa ra gợi ý thông minh dạng câu hỏi định hướng sư phạm để học sinh tự sửa.
 5. QUY TẮC CỐT LÕI: KHÔNG được làm hộ hay viết sẵn toàn bộ mã đáp án đầy đủ. Chỉ gợi ý đoạn code mẫu siêu nhỏ (1 thẻ ví dụ) nếu thật sự cần thiết.
 6. Luôn có 1 câu động viên khích lệ học sinh cuối bài.`,
-        temperature: 0.7,
-      },
     });
 
-    const advice = response.text || 'Thầy/cô chưa có phản hồi, em hãy thử kiểm tra lại các thẻ đã đóng đúng chưa nhé!';
     return res.json({ advice });
   } catch (error: any) {
     console.error('Gemini Tutor Error:', error);
     return res.status(500).json({
       error: error?.message || 'Có lỗi xảy ra khi gọi trợ lý AI. Vui lòng thử lại.',
+    });
+  }
+});
+
+// Dedicated Senior HTML AI Assistant for High School (THPT) Students
+app.post('/api/gemini/html-expert', async (req, res) => {
+  try {
+    const {
+      question,
+      history = [],
+      lessonTitle = '',
+      lessonObjective = '',
+      codeHtml = '',
+      codeCss = '',
+      includeCode = false,
+    } = req.body;
+
+    if (!question || !question.trim()) {
+      return res.status(400).json({ error: 'Vui lòng nhập câu hỏi của bạn.' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({
+        error: 'Chưa cấu hình GEMINI_API_KEY trên máy chủ.',
+      });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
+      },
+    });
+
+    const systemInstruction = `Bạn là "Chuyên Gia Cấp Cao về HTML & Cố Vấn Sư Phạm Tin Học 12" (Senior Web Architect & Expert Educator) có kinh nghiệm sâu sắc về chuẩn World Wide Web (W3C), HTML5, CSS3, đồng thời là một người thầy truyền cảm hứng, chuyên giải đáp thắc mắc cho học sinh cấp Trung học Phổ thông (THPT) Việt Nam (đặc biệt theo chương trình GDPT 2018 môn Tin học 12, SGK Kết nối tri thức với cuộc sống).
+
+TÔN CHỈ VÀ PHONG CÁCH SƯ PHẠM:
+1. DIỄN ĐẠT CỰC KỲ DỄ HIỂU CHO HỌC SINH CẤP THPT:
+   - Sử dụng ngôn từ trong sáng, thân thiện, dễ hình dung, không dùng thuật ngữ kỹ thuật khô khan mà không giải nghĩa.
+   - Luôn sử dụng ẨN DỤ ĐỜI THƯỜNG gần gũi với lứa tuổi 16-18 tuổi:
+     * HTML = "Bộ khung xương" vững chắc của ngôi nhà (hoặc khung xe đạp/xe máy).
+     * CSS = "Màu sơn, quần áo trang phục, trang trí nội thất" làm cho trang web đẹp mắt.
+     * Thẻ <div> = "Chiếc thùng các-tông / hộp xốp" xếp thành khối riêng biệt (khối block, tự động xuống dòng).
+     * Thẻ <span> = "Chiếc bút dạ quang" tô sáng hoặc định dạng từng từ trong đoạn văn mà không làm ngắt dòng (inline).
+     * Thẻ <table> = "Bảng thời khóa biểu học tập" của lớp với hàng ngang (tr) và ô dữ liệu (td), tiêu đề cột (th).
+     * Thuộc tính colspan = Gộp các cột nằm ngang (như ô "Chào cờ" kéo dài qua nhiều tiết).
+     * Thuộc tính rowspan = Gộp các hàng nằm dọc.
+     * Thẻ <form> = "Tờ phiếu đăng ký nguyện vọng đại học / phiếu đăng ký câu lạc bộ trường".
+     * Thẻ <a> với thuộc tính href = "Cánh cửa thần kỳ Doraemon" dẫn sang trang khác.
+     * Thẻ <img> với thuộc tính alt = Bức tranh treo tường kèm bảng ghi chú (để nếu mạng yếu ảnh không tải được thì người xem vẫn đọc được mô tả).
+
+2. CẤU TRÚC PHẢN HỒI KHOA HỌC & CHUYÊN GIA:
+   - 🎯 Tóm tắt câu trả lời cốt lõi trong 1-2 câu đầu (giúp học sinh nắm ngay bản chất).
+   - 💡 Phân tích cặn kẽ, trực quan kèm hình tượng so sánh.
+   - 💻 Ví dụ code minh họa HTML/CSS ngắn gọn, chuẩn HTML5, có chú thích tiếng Việt dễ nhớ.
+   - ⚠️ Những lỗi sai hoặc "cạm bẫy" học sinh THPT hay mắc phải (quên đóng thẻ, viết hoa thường sai, nhầm class và id, quên thẻ đóng bảng...).
+   - 🚀 Mẹo nhớ nhanh để làm bài thi trắc nghiệm học kỳ hoặc làm bài thực hành trên máy.
+   - Luôn kết thúc bằng 1 lời động viên tinh thần tràn đầy năng lượng tích cực!
+
+3. KHI HỌC SINH GỬI KÈM MÃ NGUỒN CỦA MÌNH:
+   - Khen ngợi tinh thần tự học và viết code của em.
+   - Chỉ ra chính xác dòng hoặc thẻ đang gặp vấn đề.
+   - Giải thích cặn kẽ vì sao trình duyệt render ra như vậy.
+   - Hướng dẫn học sinh từng bước tự sửa chữa để làm chủ kiến thức.`;
+
+    // Build contents array with past history if provided
+    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+
+    if (Array.isArray(history) && history.length > 0) {
+      // Keep last 6 history items for context without token bloat
+      const recentHistory = history.slice(-6);
+      for (const item of recentHistory) {
+        if (item.question) {
+          contents.push({ role: 'user', parts: [{ text: item.question }] });
+        }
+        if (item.answer) {
+          contents.push({ role: 'model', parts: [{ text: item.answer }] });
+        }
+      }
+    }
+
+    // Build current prompt
+    let currentPrompt = question.trim();
+
+    if (lessonTitle) {
+      currentPrompt += `\n\n[BỐI CẢNH BÀI HỌC HIỆN TẠI]: ${lessonTitle}${lessonObjective ? `\n[Mục tiêu bài]: ${lessonObjective}` : ''}`;
+    }
+
+    if (includeCode && (codeHtml || codeCss)) {
+      currentPrompt += `\n\n[MÃ NGUỒN HỌC SINH ĐANG VIẾT TRONG PHÒNG THỰC HÀNH]:`;
+      if (codeHtml) {
+        currentPrompt += `\n--- HTML ---\n\`\`\`html\n${codeHtml}\n\`\`\``;
+      }
+      if (codeCss) {
+        currentPrompt += `\n--- CSS ---\n\`\`\`css\n${codeCss}\n\`\`\``;
+      }
+    }
+
+    contents.push({
+      role: 'user',
+      parts: [{ text: currentPrompt }],
+    });
+
+    const answer = await generateWithFallback(ai, {
+      contents,
+      systemInstruction,
+      temperature: 0.7,
+    });
+
+    return res.json({ answer });
+  } catch (error: any) {
+    console.error('Gemini HTML Expert Error:', error);
+    return res.status(500).json({
+      error: error?.message || 'Có lỗi xảy ra khi kết nối tới Chuyên gia AI. Vui lòng thử lại sau ít giây.',
     });
   }
 });

@@ -2,23 +2,22 @@ import React from 'react';
 import { Lesson } from '../types';
 import {
   Code2,
-  Play,
   RotateCcw,
-  CheckCircle2,
-  Sparkles,
   Settings as SettingsIcon,
-  BookOpen
+  BookOpen,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 
 interface HeaderProps {
   lessons: Lesson[];
   currentLesson: Lesson;
   onSelectLesson: (lesson: Lesson) => void;
-  onRunCode: () => void;
+  onRunCode?: () => void;
   onResetCode: () => void;
-  onCheckCode: () => void;
-  onOpenSamples: () => void;
+  onCheckCode?: () => void;
   onOpenSettings: () => void;
+  onOpenAiAssistant?: () => void;
   isEvaluating?: boolean;
 }
 
@@ -29,8 +28,8 @@ export const Header: React.FC<HeaderProps> = ({
   onRunCode,
   onResetCode,
   onCheckCode,
-  onOpenSamples,
   onOpenSettings,
+  onOpenAiAssistant,
   isEvaluating = false,
 }) => {
   return (
@@ -71,36 +70,18 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-1.5 md:gap-2">
-        {/* Run Code Button */}
-        <button
-          onClick={onRunCode}
-          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition-all shadow-sm active:scale-95 cursor-pointer ring-1 ring-blue-400/30"
-          title="Chạy mã (Ctrl + Enter)"
-        >
-          <Play className="w-3.5 h-3.5 fill-current text-blue-100" />
-          <span className="hidden md:inline">Chạy mã</span>
-        </button>
-
-        {/* Check Progress / DOM Inspector */}
-        <button
-          onClick={onCheckCode}
-          disabled={isEvaluating}
-          className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition-all shadow-sm active:scale-95 cursor-pointer ring-1 ring-emerald-400/30 disabled:opacity-50"
-          title="Chấm bài tự động kiểm tra DOM"
-        >
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-100" />
-          <span className="hidden md:inline">Chấm tự động</span>
-        </button>
-
-        {/* 10 Samples Button */}
-        <button
-          onClick={onOpenSamples}
-          className="flex items-center gap-1.5 text-amber-300 hover:text-amber-200 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-xs px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer shadow-sm"
-          title="Kho 10 mã mẫu thực hành sẵn có cho bài này (chạy ngay)"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span className="font-bold">10 Mã Mẫu</span>
-        </button>
+        {/* Dedicated Senior AI Assistant Button */}
+        {onOpenAiAssistant && (
+          <button
+            onClick={onOpenAiAssistant}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-md shadow-purple-900/40 ring-1 ring-white/20 transition cursor-pointer active:scale-95 group"
+            title="Mở Trợ lý AI Chuyên gia HTML"
+          >
+            <Bot className="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform" />
+            <span className="hidden xs:inline">Trợ lý AI</span>
+            <span className="xs:hidden">AI</span>
+          </button>
+        )}
 
         {/* Reset Code Button */}
         <button

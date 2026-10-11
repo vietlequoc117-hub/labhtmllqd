@@ -23,7 +23,8 @@ import {
   EyeOff,
   Maximize2,
   CheckCheck,
-  HelpCircle
+  HelpCircle,
+  Bot
 } from 'lucide-react';
 
 interface LessonGuideProps {
@@ -37,6 +38,7 @@ interface LessonGuideProps {
   onLoadSnippetCode?: (html: string, css: string, questionId: number) => void;
   onRestoreLessonCode?: () => void;
   loadedSnippetQuestionId?: number | null;
+  onOpenAiAssistant?: () => void;
 }
 
 export const LessonGuide: React.FC<LessonGuideProps> = ({
@@ -50,6 +52,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   onLoadSnippetCode,
   onRestoreLessonCode,
   loadedSnippetQuestionId,
+  onOpenAiAssistant,
 }) => {
   const [activeTab, setActiveTab] = useState<'tasks' | 'theory' | 'samples' | 'quiz'>('tasks');
   const [selectedMissionFilter, setSelectedMissionFilter] = useState<number | 'all'>('all');
@@ -562,6 +565,27 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
           />
         )}
       </div>
+
+      {/* Quick AI Advisor trigger button at bottom of panel */}
+      {onOpenAiAssistant && (
+        <div className="p-2.5 bg-slate-950/80 border-t border-slate-800/90 shrink-0">
+          <button
+            onClick={onOpenAiAssistant}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-950/70 via-purple-950/50 to-slate-900 hover:from-indigo-900/80 hover:to-purple-900/60 border border-indigo-500/30 text-indigo-200 text-xs font-semibold transition cursor-pointer shadow-sm group active:scale-98"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-indigo-600/40 border border-indigo-400/30 flex items-center justify-center text-amber-300">
+                <Bot className="w-3.5 h-3.5" />
+              </div>
+              <div className="text-left">
+                <p className="text-[11px] font-bold text-white leading-tight">Cần gợi ý? Hỏi Trợ lý AI</p>
+                <p className="text-[9px] text-slate-400">Chuyên gia giải thích siêu dễ hiểu cho THPT</p>
+              </div>
+            </div>
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+          </button>
+        </div>
+      )}
 
       {/* Target Preview Fullscreen Modal */}
       <TargetPreviewModal

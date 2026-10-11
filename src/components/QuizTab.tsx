@@ -35,8 +35,6 @@ export const QuizTab: React.FC<QuizTabProps> = ({
   // Toggle to show all answers and explanations immediately
   const [showAllAnswers, setShowAllAnswers] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | QuizLevel>('all');
-  // State for toggling inline live preview sandbox per question
-  const [inlinePreviewOpen, setInlinePreviewOpen] = useState<Record<number, boolean>>({});
   // Feedback state when clicking "Nạp vào Chạy thử"
   const [justLoadedId, setJustLoadedId] = useState<number | null>(null);
 
@@ -65,13 +63,6 @@ export const QuizTab: React.FC<QuizTabProps> = ({
     setShowAllAnswers(false);
   };
 
-  const toggleInlinePreview = (questionId: number) => {
-    setInlinePreviewOpen((prev) => ({
-      ...prev,
-      [questionId]: !prev[questionId],
-    }));
-  };
-
   const handleLoadSnippet = (q: QuizQuestion) => {
     if (!q.snippet || !onLoadSnippetCode) return;
     onLoadSnippetCode(q.snippet.html || '', q.snippet.css || '', q.id);
@@ -79,34 +70,6 @@ export const QuizTab: React.FC<QuizTabProps> = ({
     setTimeout(() => {
       setJustLoadedId(null);
     }, 2500);
-  };
-
-  // Helper to build sandbox preview html for inline iframe
-  const getInlinePreviewDoc = (html?: string, css?: string) => {
-    const cleanCss = (css || '').replace(/<\/?style>/gi, '').trim();
-    const cleanHtml = html || '<p>Không có mã HTML</p>';
-    return `<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      padding: 12px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 13px;
-      color: #0f172a;
-      background-color: #ffffff;
-      line-height: 1.5;
-    }
-    ${cleanCss}
-  </style>
-</head>
-<body>
-  ${cleanHtml}
-</body>
-</html>`;
   };
 
   // Calculate score in real time
@@ -142,9 +105,6 @@ export const QuizTab: React.FC<QuizTabProps> = ({
             <div>
               <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
                 <span>10 Câu Trắc Nghiệm: {lessonNumber}</span>
-                <span className="flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  <Zap className="w-2.5 h-2.5 fill-current" /> Hiện đáp án luôn
-                </span>
               </h3>
               <p className="text-[11px] text-slate-400">
                 4 câu mức <b className="text-blue-300">Biết</b>, 3 câu mức <b className="text-amber-300">Hiểu</b>, 3 câu mức <b className="text-emerald-300">Vận dụng</b>
@@ -243,26 +203,6 @@ export const QuizTab: React.FC<QuizTabProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Top Banner if a quiz snippet is loaded into the main editor */}
-      {loadedQuestionId && (
-        <div className="flex items-center justify-between gap-2 p-2.5 bg-amber-950/40 border border-amber-500/40 rounded-xl text-xs text-amber-200 shadow-sm">
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-            <span>
-              Đang chạy thử mã nguồn <strong>Câu {loadedQuestionId}</strong> trong Phòng thực hành ảo (cột giữa & cột phải).
-            </span>
-          </div>
-          {onRestoreLessonCode && (
-            <button
-              onClick={onRestoreLessonCode}
-              className="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 px-2.5 py-1 rounded-md transition font-medium cursor-pointer shrink-0"
-            >
-              Khôi phục bài làm
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Questions List */}
       <div className="space-y-4">
@@ -380,30 +320,6 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                           )}
                         </button>
                       )}
-
-                      {/* Button: Toggle Inline Preview */}
-                      <button
-                        type="button"
-                        onClick={() => toggleInlinePreview(q.id)}
-                        className={`flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md border transition cursor-pointer ${
-                          inlinePreviewOpen[q.id]
-                            ? 'bg-sky-600/30 text-sky-300 border-sky-500/50'
-                            : 'bg-slate-700/70 hover:bg-slate-700 text-slate-300 border-slate-600'
-                        }`}
-                        title="Xem trực tiếp kết quả hiển thị trên trình duyệt ngay tại đây"
-                      >
-                        {inlinePreviewOpen[q.id] ? (
-                          <>
-                            <EyeOff className="w-3 h-3 text-sky-400" />
-                            <span>Đóng xem thử</span>
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="w-3 h-3 text-sky-400" />
-                            <span>Xem kết quả</span>
-                          </>
-                        )}
-                      </button>
                     </div>
                   </div>
 
@@ -428,27 +344,6 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                       {q.snippet.html || '<!-- Không có mã HTML -->'}
                     </div>
                   </div>
-
-                  {/* INLINE LIVE PREVIEW SANDBOX IFRAME */}
-                  {inlinePreviewOpen[q.id] && (
-                    <div className="border-t border-slate-700 bg-slate-900 p-2.5 space-y-1.5 animate-in fade-in duration-150">
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
-                        <div className="flex items-center gap-1.5 font-semibold text-emerald-400">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                          <span>Kết quả hiển thị trên trình duyệt (Live Browser Preview):</span>
-                        </div>
-                        <span className="text-[10px] text-slate-500">Môi trường thử nghiệm HTML5</span>
-                      </div>
-                      <div className="rounded-md border border-slate-600 bg-white shadow-inner overflow-hidden">
-                        <iframe
-                          srcDoc={getInlinePreviewDoc(q.snippet.html, q.snippet.css)}
-                          title={`Preview câu ${q.id}`}
-                          className="w-full h-36 border-0 bg-white"
-                          sandbox="allow-same-origin allow-scripts"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 

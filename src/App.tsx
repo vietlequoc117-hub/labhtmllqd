@@ -9,7 +9,9 @@ import { ResultPane } from './components/ResultPane';
 import { SettingsModal } from './components/SettingsModal';
 import { SolutionModal } from './components/SolutionModal';
 import { SampleModal } from './components/SampleModal';
+import { AiAssistantModal } from './components/AiAssistantModal';
 import { CodeSample } from './types';
+import { Bot, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [currentLesson, setCurrentLesson] = useState<Lesson>(LESSONS[0]);
@@ -48,6 +50,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [isSamplesOpen, setIsSamplesOpen] = useState(false);
+  const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Track if a quiz question snippet is loaded into the lab
@@ -276,8 +279,8 @@ export default function App() {
         onRunCode={handleRunCode}
         onResetCode={handleResetCode}
         onCheckCode={handleCheckCode}
-        onOpenSamples={() => setIsSamplesOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
         isEvaluating={isEvaluating}
       />
 
@@ -295,6 +298,7 @@ export default function App() {
             onLoadSnippetCode={handleLoadSnippetCode}
             onRestoreLessonCode={handleRestoreLessonCode}
             loadedSnippetQuestionId={loadedQuizSnippet?.lessonId === currentLesson.id ? loadedQuizSnippet.questionId : null}
+            onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
             onLoadTargetCode={(html, css) => {
               setHtmlCodes((prev) => ({
                 ...prev,
@@ -316,24 +320,6 @@ export default function App() {
 
         {/* COLUMN 2: Code Editor (38%) */}
         <div className="w-[38%] min-w-[340px] flex-1 h-full overflow-hidden flex flex-col">
-          {loadedQuizSnippet && loadedQuizSnippet.lessonId === currentLesson.id && (
-            <div className="bg-amber-950/80 border-b border-amber-500/40 px-3 py-1.5 flex items-center justify-between text-xs text-amber-200 shrink-0 shadow-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                <span>
-                  Đang chạy thử mã <strong>Câu {loadedQuizSnippet.questionId}</strong> ({loadedQuizSnippet.lessonNumber}) trong Phòng thực hành ảo.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleRestoreLessonCode}
-                className="text-[11px] font-bold bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-0.5 rounded transition cursor-pointer shadow-xs active:scale-95"
-                title="Khôi phục lại mã ban đầu của bài học"
-              >
-                ↩ Khôi phục bài làm
-              </button>
-            </div>
-          )}
           <div className="flex-1 overflow-hidden">
             <CodeEditor
               htmlCode={currentHtml}
@@ -389,6 +375,30 @@ export default function App() {
         lesson={currentLesson}
         onLoadSample={handleLoadSample}
       />
+
+      {/* DEDICATED SENIOR HTML AI ASSISTANT MODAL */}
+      <AiAssistantModal
+        isOpen={isAiAssistantOpen}
+        onClose={() => setIsAiAssistantOpen(false)}
+        currentLesson={currentLesson}
+        currentHtml={currentHtml}
+        currentCss={currentCss}
+        onInsertCodeSnippet={handleInsertSnippet}
+      />
+
+      {/* FLOATING ACTION BUTTON (AI ASSISTANT TRIGGER) */}
+      <button
+        onClick={() => setIsAiAssistantOpen(true)}
+        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full shadow-2xl shadow-indigo-950/80 border border-white/20 transition-all cursor-pointer hover:scale-105 active:scale-95 group select-none"
+        title="Mở Trợ lý AI Chuyên gia HTML (Dành cho học sinh THPT)"
+      >
+        <div className="relative">
+          <Bot className="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full"></span>
+        </div>
+        <span className="text-xs font-bold tracking-wide pr-0.5">Trợ lý AI HTML</span>
+      </button>
 
       {/* Reset Confirmation Dialog (Replaces window.confirm) */}
       {isResetConfirmOpen && (
