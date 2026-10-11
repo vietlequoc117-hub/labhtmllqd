@@ -9,8 +9,6 @@ interface SettingsModalProps {
   onClose: () => void;
   fontSize: number;
   onChangeFontSize: (size: number) => void;
-  customApiKey?: string;
-  onSaveApiKey?: (key: string) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({

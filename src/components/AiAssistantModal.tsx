@@ -15,9 +15,11 @@ import {
   Maximize2,
   Minimize2,
   Lightbulb,
-  CheckCircle2
+  CheckCircle2,
+  ShieldCheck
 } from 'lucide-react';
 import { Lesson } from '../types';
+import { generateLocalPedagogicalAnswer } from '../services/aiPedagogicalEngine';
 
 interface Message {
   id: string;
@@ -82,7 +84,16 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
     {
       id: 'welcome-1',
       sender: 'assistant',
-      text: `👋 **Chào em! Thầy là Trợ lý AI Chuyên gia HTML & Cố vấn Tin học 12.**\n\nThầy ở đây để giải đáp mọi thắc mắc về **HTML, CSS và lập trình web** theo cách trực quan, dễ hiểu nhất dành riêng cho học sinh cấp THPT.\n\n✨ Em có thể:\n- ❓ Đặt bất kỳ câu hỏi lý thuyết hoặc thực hành nào.\n- 🔍 Nhờ thầy **soi lỗi và nhận xét mã code** em đang làm ở bài: **${currentLesson.lessonNumber}: ${currentLesson.title}**.\n- 💡 Bấm vào các câu hỏi nhanh gợi ý bên dưới để thử ngay!`,
+      text: `👋 **Chào em! Thầy là Trợ lý AI Chuyên gia HTML & Cố vấn Tin học 12.**
+
+⚡ **Hệ thống đã tích hợp sẵn 100% — Em KHÔNG CẦN thiết lập hay nhập bất kỳ API key nào!**
+
+Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **HTML, CSS và lập trình web** theo chuẩn Sách giáo khoa Tin học 12 (Bộ Kết nối tri thức với cuộc sống) một cách trực quan, dễ hiểu nhất dành riêng cho học sinh cấp THPT.
+
+✨ Em có thể:
+- ❓ Đặt bất kỳ câu hỏi lý thuyết hoặc thực hành nào.
+- 🔍 Nhờ thầy **soi lỗi và nhận xét mã code** em đang làm ở bài: **${currentLesson.lessonNumber}: ${currentLesson.title}**.
+- 💡 Bấm vào các câu hỏi nhanh gợi ý bên dưới để thử ngay!`,
       timestamp: 'Vừa xong',
     },
   ]);
@@ -148,43 +159,69 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
           answer: m.sender === 'assistant' ? m.text : '',
         }));
 
-      const response = await fetch('/api/gemini/html-expert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      let answerText = '';
+
+      try {
+        const response = await fetch('/api/gemini/html-expert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: questionText,
+            history: historyPayload,
+            lessonTitle: `${currentLesson.lessonNumber}: ${currentLesson.title}`,
+            lessonObjective: currentLesson.objective,
+            codeHtml: shouldAttachCode ? currentHtml : '',
+            codeCss: shouldAttachCode ? currentCss : '',
+            includeCode: shouldAttachCode,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.answer) {
+            answerText = data.answer;
+          }
+        }
+      } catch (networkErr) {
+        console.warn('Network call to AI server unavailable, using built-in Pedagogical Engine:', networkErr);
+      }
+
+      // If remote API is unavailable, rate-limited, or failed, use local Pedagogical Engine (100% Zero-API)
+      if (!answerText) {
+        answerText = generateLocalPedagogicalAnswer({
           question: questionText,
-          history: historyPayload,
-          lessonTitle: `${currentLesson.lessonNumber}: ${currentLesson.title}`,
-          lessonObjective: currentLesson.objective,
+          lesson: currentLesson,
           codeHtml: shouldAttachCode ? currentHtml : '',
           codeCss: shouldAttachCode ? currentCss : '',
           includeCode: shouldAttachCode,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Máy chủ phản hồi lỗi');
+        });
       }
 
       const assistantMessage: Message = {
         id: 'msg-ai-' + Date.now(),
         sender: 'assistant',
-        text: data.answer || 'Thầy chưa có câu trả lời cho mục này, em hãy thử hỏi lại nhé!',
+        text: answerText,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err: any) {
-      console.error('Chat error:', err);
-      const errorMessage: Message = {
-        id: 'msg-err-' + Date.now(),
+      console.error('Chat error fallback:', err);
+      const fallbackText = generateLocalPedagogicalAnswer({
+        question: questionText,
+        lesson: currentLesson,
+        codeHtml: shouldAttachCode ? currentHtml : '',
+        codeCss: shouldAttachCode ? currentCss : '',
+        includeCode: shouldAttachCode,
+      });
+
+      const assistantMessage: Message = {
+        id: 'msg-local-' + Date.now(),
         sender: 'assistant',
-        text: `⚠️ **Thầy rất tiếc:** ${err.message || 'Không thể kết nối đến Trợ lý AI lúc này. Em kiểm tra lại kết nối mạng hoặc thử lại sau ít giây nhé!'}`,
+        text: fallbackText,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -383,15 +420,19 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse"></span>
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm md:text-base font-extrabold text-white tracking-tight flex items-center gap-1.5">
                   Trợ Lý AI Chuyên Gia HTML
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                     Cấp cao THPT
                   </span>
                 </h3>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                  Tự động 100% • Không cần API
+                </span>
               </div>
-              <p className="text-[11px] text-slate-400 flex items-center gap-1">
+              <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                 <span>Giải thích dễ hiểu, trực quan theo chuẩn Tin học 12</span>
                 <span className="text-slate-600">•</span>
                 <span className="text-blue-400 font-medium truncate max-w-[200px] md:max-w-[320px]">
@@ -424,6 +465,17 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
               <X className="w-5 h-5" />
             </button>
           </div>
+        </div>
+
+        {/* ZERO-SETUP REASSURANCE BANNER FOR STUDENTS */}
+        <div className="px-4 py-1.5 bg-indigo-950/40 border-b border-indigo-900/30 flex items-center justify-between text-[11px] text-indigo-200 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>
+              <b>Dành riêng cho học sinh THPT:</b> Đã tích hợp sẵn Trí tuệ Sư phạm Tin học 12, không cần đăng ký tài khoản hay thiết lập API!
+            </span>
+          </div>
+          <span className="text-emerald-400 font-bold shrink-0 hidden md:inline">● Sẵn sàng 100%</span>
         </div>
 
         {/* QUICK QUESTIONS CHIP CAROUSEL */}

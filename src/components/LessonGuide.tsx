@@ -579,7 +579,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
               </div>
               <div className="text-left">
                 <p className="text-[11px] font-bold text-white leading-tight">Cần gợi ý? Hỏi Trợ lý AI</p>
-                <p className="text-[9px] text-slate-400">Chuyên gia giải thích siêu dễ hiểu cho THPT</p>
+                <p className="text-[9px] text-emerald-400 font-medium">Tự động 100% • Không cần API</p>
               </div>
             </div>
             <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />

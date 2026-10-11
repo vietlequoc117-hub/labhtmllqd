@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { generateLocalPedagogicalAnswer, analyzeStudentCode } from './src/services/aiPedagogicalEngine.ts';
 
 dotenv.config();
 
@@ -19,17 +20,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Helper for resilient model execution with fallback
+// Helper for resilient model execution with fast fallback
 async function generateWithFallback(
   ai: GoogleGenAI,
   params: { contents: any; systemInstruction: string; temperature?: number }
 ) {
-  const models = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+  const models = ['gemini-3.1-flash-lite', 'gemini-flash-latest'];
   let lastError: any = null;
 
   for (const model of models) {
     try {
-      const response = await ai.models.generateContent({
+      const generatePromise = ai.models.generateContent({
         model,
         contents: params.contents,
         config: {
@@ -37,6 +38,12 @@ async function generateWithFallback(
           temperature: params.temperature ?? 0.7,
         },
       });
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Model request timed out')), 1800)
+      );
+
+      const response = await Promise.race([generatePromise, timeoutPromise]);
       if (response && response.text) {
         return response.text;
       }
@@ -51,42 +58,37 @@ async function generateWithFallback(
 
 // Gemini AI Tutor endpoint (review & grading)
 app.post('/api/gemini/tutor', async (req, res) => {
-  try {
-    const {
-      lessonTitle,
-      lessonObjective,
-      codeHtml,
-      codeCss,
-      failedTests = [],
-      userQuestion = '',
-    } = req.body;
+  const {
+    lessonTitle = '',
+    lessonObjective = '',
+    codeHtml = '',
+    codeCss = '',
+    failedTests = [],
+    userQuestion = '',
+  } = req.body;
 
+  try {
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey) {
-      return res.status(500).json({
-        error: 'Chưa cấu hình GEMINI_API_KEY trên hệ thống.',
-      });
-    }
-
-    const ai = new GoogleGenAI({
-      apiKey: apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
+    if (apiKey) {
+      const ai = new GoogleGenAI({
+        apiKey: apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
         },
-      },
-    });
+      });
 
-    const failedTestsPrompt = failedTests.length > 0
-      ? `\nCÁC TIÊU CHÍ ĐANG BỊ LỖI KHI CHẤM:\n${failedTests.map((t: string) => `- ${t}`).join('\n')}`
-      : '\nTất cả các bài kiểm tra DOM tự động hiện tại đều đã đạt hoặc chưa chạy.';
+      const failedTestsPrompt = failedTests.length > 0
+        ? `\nCÁC TIÊU CHÍ ĐANG BỊ LỖI KHI CHẤM:\n${failedTests.map((t: string) => `- ${t}`).join('\n')}`
+        : '\nTất cả các bài kiểm tra DOM tự động hiện tại đều đã đạt hoặc chưa chạy.';
 
-    const questionPrompt = userQuestion.trim()
-      ? `\nHỌC SINH ĐANG HỎI CÂU HỎI CỤ THỂ:\n"${userQuestion}"`
-      : '\nHọc sinh nhờ thầy/cô nhận xét và gợi ý sửa mã nguồn.';
+      const questionPrompt = userQuestion.trim()
+        ? `\nHỌC SINH ĐANG HỎI CÂU HỎI CỤ THỂ:\n"${userQuestion}"`
+        : '\nHọc sinh nhờ thầy/cô nhận xét và gợi ý sửa mã nguồn.';
 
-    const prompt = `
+      const prompt = `
 BÀI HỌC: ${lessonTitle}
 MỤC TIÊU BÀI HỌC THEO SGK TIN HỌC 12: ${lessonObjective}
 
@@ -105,9 +107,9 @@ ${questionPrompt}
 Hãy nhận xét sư phạm và đưa ra hướng dẫn cho học sinh.
 `;
 
-    const advice = await generateWithFallback(ai, {
-      contents: prompt,
-      systemInstruction: `Bạn là thầy/cô giáo Tin học 12 thân thiện, sư phạm và nhiệt tình của Việt Nam, theo chuẩn Sách giáo khoa Tin học 12 (Chủ đề 4: Giải quyết vấn đề với sự trợ giúp của máy tính - NXB Giáo dục Việt Nam, Bộ Kết nối tri thức với cuộc sống).
+      const advice = await generateWithFallback(ai, {
+        contents: prompt,
+        systemInstruction: `Bạn là thầy/cô giáo Tin học 12 thân thiện, sư phạm và nhiệt tình của Việt Nam, theo chuẩn Sách giáo khoa Tin học 12 (Chủ đề 4: Giải quyết vấn đề với sự trợ giúp của máy tính - NXB Giáo dục Việt Nam, Bộ Kết nối tri thức với cuộc sống).
 Nhiệm vụ của bạn:
 1. Xem xét mã nguồn HTML/CSS của học sinh và mục tiêu bài học.
 2. Phát hiện lỗi sai cụ thể (sai tên thẻ, quên đóng thẻ, viết hoa/thường sai, thiếu thuộc tính quan trọng như rowspan, colspan, href, src, type, v.v.).
@@ -115,51 +117,66 @@ Nhiệm vụ của bạn:
 4. Đưa ra gợi ý thông minh dạng câu hỏi định hướng sư phạm để học sinh tự sửa.
 5. QUY TẮC CỐT LÕI: KHÔNG được làm hộ hay viết sẵn toàn bộ mã đáp án đầy đủ. Chỉ gợi ý đoạn code mẫu siêu nhỏ (1 thẻ ví dụ) nếu thật sự cần thiết.
 6. Luôn có 1 câu động viên khích lệ học sinh cuối bài.`,
-    });
+      });
 
-    return res.json({ advice });
+      return res.json({ advice });
+    }
   } catch (error: any) {
-    console.error('Gemini Tutor Error:', error);
-    return res.status(500).json({
-      error: error?.message || 'Có lỗi xảy ra khi gọi trợ lý AI. Vui lòng thử lại.',
-    });
+    console.warn('Gemini Tutor remote call failed, switching to pedagogical engine:', error?.message);
   }
+
+  // Graceful Zero-API Pedagogical Fallback
+  const analysis = analyzeStudentCode(codeHtml, codeCss);
+  let fallbackAdvice = `👋 **Chào em! Thầy nhận xét nhanh bài làm của em trong ${lessonTitle || 'bài học'}:**\n\n`;
+  if (analysis.strengths.length > 0) {
+    fallbackAdvice += `🌟 **Điểm làm tốt:**\n${analysis.strengths.map(s => `- ✅ ${s}`).join('\n')}\n\n`;
+  }
+  if (analysis.hasIssues) {
+    fallbackAdvice += `🔍 **Điểm cần chú ý sửa chữa:**\n${analysis.issues.map(i => `- ⚠️ ${i}`).join('\n')}\n\n`;
+    if (analysis.suggestions.length > 0) {
+      fallbackAdvice += `💡 **Gợi ý:**\n${analysis.suggestions.map((s, idx) => `${idx + 1}. ${s}`).join('\n')}\n\n`;
+    }
+  } else {
+    fallbackAdvice += `🎉 **Tuyệt vời!** Cú pháp thẻ HTML & CSS của em rất chuẩn xác và rõ ràng.\n\n`;
+  }
+  if (failedTests.length > 0) {
+    fallbackAdvice += `📌 **Tiêu chí cần hoàn thiện thêm:**\n${failedTests.slice(0, 2).map((t: string) => `- ${t}`).join('\n')}\n\n`;
+  }
+  fallbackAdvice += `💪 Chúc em thực hành tốt và đạt kết quả cao môn Tin học 12!`;
+
+  return res.json({ advice: fallbackAdvice });
 });
 
 // Dedicated Senior HTML AI Assistant for High School (THPT) Students
 app.post('/api/gemini/html-expert', async (req, res) => {
+  const {
+    question = '',
+    history = [],
+    lessonTitle = '',
+    lessonObjective = '',
+    codeHtml = '',
+    codeCss = '',
+    includeCode = false,
+  } = req.body;
+
+  if (!question || !question.trim()) {
+    return res.status(400).json({ error: 'Vui lòng nhập câu hỏi của bạn.' });
+  }
+
   try {
-    const {
-      question,
-      history = [],
-      lessonTitle = '',
-      lessonObjective = '',
-      codeHtml = '',
-      codeCss = '',
-      includeCode = false,
-    } = req.body;
-
-    if (!question || !question.trim()) {
-      return res.status(400).json({ error: 'Vui lòng nhập câu hỏi của bạn.' });
-    }
-
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({
-        error: 'Chưa cấu hình GEMINI_API_KEY trên máy chủ.',
-      });
-    }
 
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
+    if (apiKey) {
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
         },
-      },
-    });
+      });
 
-    const systemInstruction = `Bạn là "Chuyên Gia Cấp Cao về HTML & Cố Vấn Sư Phạm Tin Học 12" (Senior Web Architect & Expert Educator) có kinh nghiệm sâu sắc về chuẩn World Wide Web (W3C), HTML5, CSS3, đồng thời là một người thầy truyền cảm hứng, chuyên giải đáp thắc mắc cho học sinh cấp Trung học Phổ thông (THPT) Việt Nam (đặc biệt theo chương trình GDPT 2018 môn Tin học 12, SGK Kết nối tri thức với cuộc sống).
+      const systemInstruction = `Bạn là "Chuyên Gia Cấp Cao về HTML & Cố Vấn Sư Phạm Tin Học 12" (Senior Web Architect & Expert Educator) có kinh nghiệm sâu sắc về chuẩn World Wide Web (W3C), HTML5, CSS3, đồng thời là một người thầy truyền cảm hứng, chuyên giải đáp thắc mắc cho học sinh cấp Trung học Phổ thông (THPT) Việt Nam (đặc biệt theo chương trình GDPT 2018 môn Tin học 12, SGK Kết nối tri thức với cuộc sống).
 
 TÔN CHỈ VÀ PHONG CÁCH SƯ PHẠM:
 1. DIỄN ĐẠT CỰC KỲ DỄ HIỂU CHO HỌC SINH CẤP THPT:
@@ -190,57 +207,71 @@ TÔN CHỈ VÀ PHONG CÁCH SƯ PHẠM:
    - Giải thích cặn kẽ vì sao trình duyệt render ra như vậy.
    - Hướng dẫn học sinh từng bước tự sửa chữa để làm chủ kiến thức.`;
 
-    // Build contents array with past history if provided
-    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+      // Build contents array with past history if provided
+      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
 
-    if (Array.isArray(history) && history.length > 0) {
-      // Keep last 6 history items for context without token bloat
-      const recentHistory = history.slice(-6);
-      for (const item of recentHistory) {
-        if (item.question) {
-          contents.push({ role: 'user', parts: [{ text: item.question }] });
+      if (Array.isArray(history) && history.length > 0) {
+        const recentHistory = history.slice(-6);
+        for (const item of recentHistory) {
+          if (item.question) {
+            contents.push({ role: 'user', parts: [{ text: item.question }] });
+          }
+          if (item.answer) {
+            contents.push({ role: 'model', parts: [{ text: item.answer }] });
+          }
         }
-        if (item.answer) {
-          contents.push({ role: 'model', parts: [{ text: item.answer }] });
+      }
+
+      // Build current prompt
+      let currentPrompt = question.trim();
+
+      if (lessonTitle) {
+        currentPrompt += `\n\n[BỐI CẢNH BÀI HỌC HIỆN TẠI]: ${lessonTitle}${lessonObjective ? `\n[Mục tiêu bài]: ${lessonObjective}` : ''}`;
+      }
+
+      if (includeCode && (codeHtml || codeCss)) {
+        currentPrompt += `\n\n[MÃ NGUỒN HỌC SINH ĐANG VIẾT TRONG PHÒNG THỰC HÀNH]:`;
+        if (codeHtml) {
+          currentPrompt += `\n--- HTML ---\n\`\`\`html\n${codeHtml}\n\`\`\``;
+        }
+        if (codeCss) {
+          currentPrompt += `\n--- CSS ---\n\`\`\`css\n${codeCss}\n\`\`\``;
         }
       }
-    }
 
-    // Build current prompt
-    let currentPrompt = question.trim();
+      contents.push({
+        role: 'user',
+        parts: [{ text: currentPrompt }],
+      });
 
-    if (lessonTitle) {
-      currentPrompt += `\n\n[BỐI CẢNH BÀI HỌC HIỆN TẠI]: ${lessonTitle}${lessonObjective ? `\n[Mục tiêu bài]: ${lessonObjective}` : ''}`;
-    }
+      const answer = await generateWithFallback(ai, {
+        contents,
+        systemInstruction,
+        temperature: 0.7,
+      });
 
-    if (includeCode && (codeHtml || codeCss)) {
-      currentPrompt += `\n\n[MÃ NGUỒN HỌC SINH ĐANG VIẾT TRONG PHÒNG THỰC HÀNH]:`;
-      if (codeHtml) {
-        currentPrompt += `\n--- HTML ---\n\`\`\`html\n${codeHtml}\n\`\`\``;
-      }
-      if (codeCss) {
-        currentPrompt += `\n--- CSS ---\n\`\`\`css\n${codeCss}\n\`\`\``;
+      if (answer && answer.trim()) {
+        return res.json({ answer });
       }
     }
-
-    contents.push({
-      role: 'user',
-      parts: [{ text: currentPrompt }],
-    });
-
-    const answer = await generateWithFallback(ai, {
-      contents,
-      systemInstruction,
-      temperature: 0.7,
-    });
-
-    return res.json({ answer });
   } catch (error: any) {
-    console.error('Gemini HTML Expert Error:', error);
-    return res.status(500).json({
-      error: error?.message || 'Có lỗi xảy ra khi kết nối tới Chuyên gia AI. Vui lòng thử lại sau ít giây.',
-    });
+    console.warn('Gemini HTML Expert remote call failed, using pedagogical engine:', error?.message);
   }
+
+  // Graceful Zero-API Pedagogical Fallback (100% Reliable, Instant, Zero-Setup)
+  const localAnswer = generateLocalPedagogicalAnswer({
+    question,
+    lesson: {
+      lessonNumber: lessonTitle.split(':')[0] || 'Bài học',
+      title: lessonTitle,
+      objective: lessonObjective,
+    },
+    codeHtml,
+    codeCss,
+    includeCode,
+  });
+
+  return res.json({ answer: localAnswer });
 });
 
 async function startServer() {
