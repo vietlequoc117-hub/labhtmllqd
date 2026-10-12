@@ -9,6 +9,7 @@ export interface CodeDiagnostic {
   line: number;
   column?: number;
   severity: DiagnosticSeverity;
+  source?: 'html' | 'css';
   message: string;
   suggestion?: string;
   fixable?: boolean;
@@ -159,15 +160,35 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
       continue;
     }
 
-    // Check for tag typos
-    if (!VALID_HTML_TAGS.has(tagName) && COMMON_TAG_TYPOS[tagName]) {
+    // Check for tag typos & unknown tags
+    if (!VALID_HTML_TAGS.has(tagName)) {
+      const suggestion = COMMON_TAG_TYPOS[tagName]
+        ? `Có thể em muốn gõ thẻ '<${COMMON_TAG_TYPOS[tagName]}>'? Hãy kiểm tra lại chính tả nhé.`
+        : `Thẻ '<${rawTagName}>' không thuộc chuẩn HTML5. Hãy kiểm tra lại tên thẻ (ví dụ: h1, h2, p, a, div, img, table,...).`;
+
       diagnostics.push({
         id: `tag-typo-${lineNum}-${tagName}`,
         line: lineNum,
         severity: 'error',
-        message: `Thẻ '<${rawTagName}>' không tồn tại trong chuẩn HTML.`,
-        suggestion: `Có thể em muốn gõ thẻ '<${COMMON_TAG_TYPOS[tagName]}>'? Hãy kiểm tra lại chính tả nhé.`
+        source: 'html',
+        message: `Thẻ '<${rawTagName}>' không tồn tại trong chuẩn HTML5.`,
+        suggestion,
       });
+    }
+
+    // Check if student wrote Vietnamese text inside the tag itself, e.g. <p Xin chào các bạn>
+    if (attrsStr.trim()) {
+      const hasVietnameseText = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(attrsStr);
+      if (hasVietnameseText) {
+        diagnostics.push({
+          id: `text-inside-tag-${lineNum}`,
+          line: lineNum,
+          severity: 'error',
+          source: 'html',
+          message: `Dòng ${lineNum}: Có vẻ em đã viết nội dung văn bản bên trong dấu ngoặc nhọn của thẻ '<${rawTagName} ...>'.`,
+          suggestion: `Hãy đóng thẻ bằng dấu '>' trước, rồi mới viết văn bản ra bên ngoài. Ví dụ: <${rawTagName}>Nội dung</${rawTagName}>.`,
+        });
+      }
     }
 
     // Check attribute quotes: e.g. class="test or href='link
@@ -177,9 +198,10 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
       diagnostics.push({
         id: `unclosed-quote-${lineNum}`,
         line: lineNum,
-        severity: 'warning',
+        severity: 'error',
+        source: 'html',
         message: `Dòng ${lineNum}: Trong thẻ '<${rawTagName}>' có giá trị thuộc tính chưa đóng dấu ngoặc kép hoặc ngoặc đơn.`,
-        suggestion: `Hãy đảm bảo mọi thuộc tính đều có cặp ngoặc đóng mở đầy đủ như: class="..." hoặc href="..."`
+        suggestion: `Hãy đảm bảo mọi thuộc tính đều có cặp ngoặc đóng mở đầy đủ như: class="..." hoặc href="..."`,
       });
     }
 
@@ -239,6 +261,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
           id: `unexpected-closing-${lineNum}-${tagName}`,
           line: lineNum,
           severity: 'error',
+          source: 'html',
           message: `Thẻ đóng '</${rawTagName}>' xuất hiện nhưng không có thẻ mở '<${rawTagName}>' tương ứng phía trước.`,
           suggestion: `Hãy kiểm tra lại xem em có gõ thừa thẻ đóng này không.`
         });
@@ -254,6 +277,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
               id: `nesting-mismatch-${lineNum}-${tagName}`,
               line: lineNum,
               severity: 'error',
+              source: 'html',
               message: `Thẻ '</${rawTagName}>' đóng sai thứ tự lồng nhau. Thẻ '<${lastOpen.raw}>' ở dòng ${lastOpen.line} mở sau thì phải được đóng trước!`,
               suggestion: `Quy tắc HTML: Thẻ nào mở sau cùng thì phải đóng trước cùng.`
             });
@@ -265,6 +289,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
               id: `unmatched-closing-${lineNum}-${tagName}`,
               line: lineNum,
               severity: 'error',
+              source: 'html',
               message: `Thẻ đóng '</${rawTagName}>' không khớp với thẻ mở gần nhất là '<${lastOpen.raw}>' ở dòng ${lastOpen.line}.`,
               suggestion: `Em hãy đóng thẻ '</${lastOpen.raw}>' trước hoặc kiểm tra lại cặp thẻ.`
             });
@@ -276,14 +301,11 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
 
   // 3. Any unclosed tags remaining in the stack
   for (const unclosed of tagStack) {
-    // Only report top-level if it's an important user tag
-    const isStandardDocTag = ['html', 'body', 'head'].includes(unclosed.name);
-    const severity: DiagnosticSeverity = isStandardDocTag ? 'warning' : 'error';
-
     diagnostics.push({
       id: `unclosed-tag-${unclosed.line}-${unclosed.name}`,
       line: unclosed.line,
-      severity,
+      severity: 'error',
+      source: 'html',
       message: `Thẻ '<${unclosed.raw}>' ở dòng ${unclosed.line} chưa được đóng lại bằng '</${unclosed.raw}>'.`,
       suggestion: `Hãy thêm '</${unclosed.raw}>' vào cuối khối để trình duyệt hiển thị chính xác.`,
       fixable: true,
@@ -306,6 +328,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
             id: `unclosed-bracket-${lineNum}`,
             line: lineNum,
             severity: 'error',
+            source: 'html',
             message: `Dòng ${lineNum}: Thẻ HTML '${remaining.trim()}' bị thiếu dấu đóng ngoặc nhọn '>'.`,
             suggestion: `Hãy thêm dấu '>' vào cuối thẻ.`
           });
@@ -325,6 +348,36 @@ export function lintCssCode(css: string): CodeDiagnostic[] {
   if (!css.trim()) return diagnostics;
 
   const lines = css.split('\n');
+
+  // Check unclosed CSS comments /*
+  let insideComment = false;
+  let commentStartLine = -1;
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx];
+    const lineNum = idx + 1;
+    if (!insideComment) {
+      const openIdx = line.indexOf('/*');
+      if (openIdx !== -1 && line.indexOf('*/', openIdx + 2) === -1) {
+        insideComment = true;
+        commentStartLine = lineNum;
+      }
+    } else {
+      if (line.includes('*/')) {
+        insideComment = false;
+      }
+    }
+  }
+
+  if (insideComment && commentStartLine !== -1) {
+    diagnostics.push({
+      id: `css-unclosed-comment-${commentStartLine}`,
+      line: commentStartLine,
+      severity: 'error',
+      source: 'css',
+      message: `Khối chú thích CSS mở ở dòng ${commentStartLine} bằng '/*' chưa được đóng lại bằng '*/'.`,
+      suggestion: `Hãy thêm '*/' vào cuối chú thích để không làm vô hiệu hóa các quy tắc CSS bên dưới.`
+    });
+  }
 
   // Check brace balance
   let openBraces = 0;
@@ -346,6 +399,7 @@ export function lintCssCode(css: string): CodeDiagnostic[] {
             id: `css-extra-brace-${lineNum}`,
             line: lineNum,
             severity: 'error',
+            source: 'css',
             message: `Dòng ${lineNum}: Dấu ngoặc nhọn đóng '}' dư thừa (chưa có dấu mở '{').`,
             suggestion: `Xóa dấu '}' thừa hoặc kiểm tra lại bộ chọn CSS.`
           });
@@ -361,6 +415,7 @@ export function lintCssCode(css: string): CodeDiagnostic[] {
           id: `css-missing-semicolon-${lineNum}`,
           line: lineNum,
           severity: 'warning',
+          source: 'css',
           message: `Dòng ${lineNum}: Thuộc tính CSS '${trimmed}' có thể bị thiếu dấu chấm phẩy ';' ở cuối dòng.`,
           suggestion: `Thêm ';' vào cuối mỗi dòng thuộc tính CSS.`
         });
@@ -373,6 +428,7 @@ export function lintCssCode(css: string): CodeDiagnostic[] {
       id: `css-unclosed-brace-${lastOpenLine}`,
       line: lastOpenLine,
       severity: 'error',
+      source: 'css',
       message: `Khối CSS mở ở dòng ${lastOpenLine} bằng '{' chưa được đóng bằng '}'.`,
       suggestion: `Hãy thêm '}' ở cuối khối quy tắc CSS.`
     });

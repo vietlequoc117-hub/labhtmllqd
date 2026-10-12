@@ -13,7 +13,20 @@ export function evaluateStudentCode(
       doc = iframeDoc;
     } else {
       const parser = new DOMParser();
-      doc = parser.parseFromString(html, 'text/html');
+      let fullHtml = html;
+      const cleanCss = _css.replace(/<\/?style>/gi, '').trim();
+      if (cleanCss) {
+        const styleTag = `<style data-source="style.css">${cleanCss}</style>`;
+        const linkRegex = /<link[^>]+(?:href=["'](?:\.\/)?style\.css["'][^>]*|rel=["']stylesheet["'][^>]*href=["'](?:\.\/)?style\.css["'][^>]*)[^>]*>/gi;
+        if (linkRegex.test(fullHtml)) {
+          fullHtml = fullHtml.replace(linkRegex, styleTag);
+        } else if (fullHtml.includes('</head>')) {
+          fullHtml = fullHtml.replace('</head>', `${styleTag}</head>`);
+        } else {
+          fullHtml = `${styleTag}${fullHtml}`;
+        }
+      }
+      doc = parser.parseFromString(fullHtml, 'text/html');
     }
 
     return lesson.evaluate(doc, html, _css);

@@ -17,7 +17,9 @@ import {
   ArrowRight,
   ShieldAlert,
   Info,
-  PenTool
+  PenTool,
+  Play,
+  Zap
 } from 'lucide-react';
 import {
   highlightHtmlCode,
@@ -253,10 +255,24 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             <Paintbrush className="w-3.5 h-3.5 text-blue-500" />
             <span>style.css</span>
           </button>
+
+          <span className="hidden md:flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-medium ml-1">
+            <Zap className="w-3 h-3 text-emerald-600" />
+            <span>Đồng bộ</span>
+          </span>
         </div>
 
         {/* Real-time Diagnostics Indicator Badge & Actions */}
         <div className="flex items-center gap-1.5 text-slate-500">
+          {/* Run Code Button */}
+          <button
+            onClick={onRunCode}
+            className="flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded border border-emerald-700 shadow-xs transition active:scale-95 cursor-pointer"
+            title="Chạy đồng bộ HTML & CSS (Phím tắt: Ctrl + Enter)"
+          >
+            <Play className="w-3 h-3 fill-current" />
+            <span>Chạy mã</span>
+          </button>
           {/* Linter Status Pill */}
           <button
             onClick={() => setShowDiagnostics((prev) => !prev)}
@@ -350,56 +366,112 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         <div className="flex items-center gap-3 shrink-0">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
             <Palette className="w-3 h-3" />
-            Màu cú pháp:
+            {activeTab === 'html' ? 'Màu cú pháp HTML:' : 'Màu cú pháp CSS:'}
           </span>
-          <span className="flex items-center gap-1">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: THEME_COLORS[editorTheme].tag }}
-            ></span>
-            <span
-              style={{ color: THEME_COLORS[editorTheme].tag }}
-              className="font-bold"
-            >
-              &lt;Thẻ HTML&gt;
-            </span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: THEME_COLORS[editorTheme].attribute }}
-            ></span>
-            <span
-              style={{ color: THEME_COLORS[editorTheme].attribute }}
-              className="font-bold"
-            >
-              thuộc_tính=
-            </span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: THEME_COLORS[editorTheme].value }}
-            ></span>
-            <span
-              style={{ color: THEME_COLORS[editorTheme].value }}
-              className="font-bold"
-            >
-              &apos;giá_trị&apos;
-            </span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: THEME_COLORS[editorTheme].text }}
-            ></span>
-            <span
-              style={{ color: THEME_COLORS[editorTheme].text }}
-              className="font-medium"
-            >
-              Nội dung chữ
-            </span>
-          </span>
+
+          {activeTab === 'html' ? (
+            <>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].tag }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].tag }}
+                  className="font-bold"
+                >
+                  &lt;Thẻ HTML&gt;
+                </span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].attribute }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].attribute }}
+                  className="font-bold"
+                >
+                  thuộc_tính=
+                </span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].value }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].value }}
+                  className="font-bold"
+                >
+                  &apos;giá_trị&apos;
+                </span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].text }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].text }}
+                  className="font-medium"
+                >
+                  Nội dung chữ
+                </span>
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].cssSelector }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].cssSelector }}
+                  className="font-bold"
+                >
+                  bộ_chọn (body, h1, .class)
+                </span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].bracket }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].bracket }}
+                  className="font-bold"
+                >
+                  &#123; &#125;
+                </span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].cssProperty }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].cssProperty }}
+                  className="font-bold"
+                >
+                  thuộc_tính:
+                </span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: THEME_COLORS[editorTheme].cssValue }}
+                ></span>
+                <span
+                  style={{ color: THEME_COLORS[editorTheme].cssValue }}
+                  className="font-bold"
+                >
+                  &apos;giá_trị&apos;;
+                </span>
+              </span>
+            </>
+          )}
         </div>
       </div>
 

@@ -15,8 +15,12 @@ import { CodeSample } from './types';
 export default function App() {
   const [currentLesson, setCurrentLesson] = useState<Lesson>(LESSONS[0]);
 
-  // Code state per lesson
+  // Code state per lesson with local storage persistence
   const [htmlCodes, setHtmlCodes] = useState<Record<number, string>>(() => {
+    try {
+      const saved = localStorage.getItem('html12_user_html_codes');
+      if (saved) return JSON.parse(saved);
+    } catch {}
     const initial: Record<number, string> = {};
     LESSONS.forEach((l) => {
       initial[l.id] = l.initialHtml;
@@ -25,12 +29,29 @@ export default function App() {
   });
 
   const [cssCodes, setCssCodes] = useState<Record<number, string>>(() => {
+    try {
+      const saved = localStorage.getItem('html12_user_css_codes');
+      if (saved) return JSON.parse(saved);
+    } catch {}
     const initial: Record<number, string> = {};
     LESSONS.forEach((l) => {
       initial[l.id] = l.initialCss;
     });
     return initial;
   });
+
+  // Save student code to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('html12_user_html_codes', JSON.stringify(htmlCodes));
+    } catch {}
+  }, [htmlCodes]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('html12_user_css_codes', JSON.stringify(cssCodes));
+    } catch {}
+  }, [cssCodes]);
 
   // Editor states
   const [activeEditorTab, setActiveEditorTab] = useState<'html' | 'css'>('html');
@@ -77,11 +98,14 @@ export default function App() {
     }
   }, [currentLesson, currentHtml, currentCss]);
 
-  // Initial evaluation on lesson change
+  // Real-time debounced evaluation when HTML or CSS changes
   useEffect(() => {
-    const results = evaluateStudentCode(currentLesson, currentHtml, currentCss);
-    setTestResults(results);
-  }, [currentLesson.id]);
+    const timer = setTimeout(() => {
+      const results = evaluateStudentCode(currentLesson, currentHtml, currentCss);
+      setTestResults(results);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [currentLesson.id, currentHtml, currentCss]);
 
   // Save font size
   const handleSaveFontSize = (size: number) => {
@@ -349,6 +373,9 @@ export default function App() {
             lesson={currentLesson}
             htmlCode={currentHtml}
             cssCode={currentCss}
+            onNavigateToError={(_line, source) => {
+              setActiveEditorTab(source);
+            }}
           />
         </div>
       </main>

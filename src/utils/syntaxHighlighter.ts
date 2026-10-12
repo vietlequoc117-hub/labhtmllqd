@@ -299,21 +299,24 @@ export function highlightCssCode(code: string, theme: EditorTheme = 'monokai'): 
       const braceIdx = code.indexOf('}', i);
 
       if (colonIdx !== -1 && (semiIdx === -1 || colonIdx < semiIdx) && (braceIdx === -1 || colonIdx < braceIdx)) {
-        const propName = code.slice(i, colonIdx).trim();
-        result += `<span style="color: ${colors.cssProperty}; font-weight: 600;">${escapeHtml(propName)}</span>`;
-        i += code.slice(i, colonIdx).length;
-
-        // Add colon
+        const rawProp = code.slice(i, colonIdx);
+        const leading = rawProp.match(/^\s*/)?.[0] || '';
+        const trailing = rawProp.match(/\s*$/)?.[0] || '';
+        const propName = rawProp.trim();
+        result += leading + `<span style="color: ${colors.cssProperty}; font-weight: 600;">${escapeHtml(propName)}</span>` + trailing;
         result += `<span style="color: ${colors.operator}; font-weight: bold;">:</span>`;
-        i++; // skip :
+        i = colonIdx + 1;
 
         // Consume until ; or }
         let valEnd = len;
         if (semiIdx !== -1) valEnd = Math.min(valEnd, semiIdx);
         if (braceIdx !== -1) valEnd = Math.min(valEnd, braceIdx);
 
-        const val = code.slice(i, valEnd);
-        result += `<span style="color: ${colors.cssValue}; font-weight: 500;">${escapeHtml(val)}</span>`;
+        const rawVal = code.slice(i, valEnd);
+        const valLeading = rawVal.match(/^\s*/)?.[0] || '';
+        const valTrailing = rawVal.match(/\s*$/)?.[0] || '';
+        const valCore = rawVal.trim();
+        result += valLeading + `<span style="color: ${colors.cssValue}; font-weight: 500;">${escapeHtml(valCore)}</span>` + valTrailing;
         i = valEnd;
         continue;
       }
@@ -323,8 +326,11 @@ export function highlightCssCode(code: string, theme: EditorTheme = 'monokai'): 
     if (!inBlock) {
       let nextBrace = code.indexOf('{', i);
       if (nextBrace === -1) nextBrace = len;
-      const selector = code.slice(i, nextBrace);
-      result += `<span style="color: ${colors.cssSelector}; font-weight: 700;">${escapeHtml(selector)}</span>`;
+      const rawSelector = code.slice(i, nextBrace);
+      const leading = rawSelector.match(/^\s*/)?.[0] || '';
+      const trailing = rawSelector.match(/\s*$/)?.[0] || '';
+      const selector = rawSelector.trim();
+      result += leading + `<span style="color: ${colors.cssSelector}; font-weight: 700;">${escapeHtml(selector)}</span>` + trailing;
       i = nextBrace;
       continue;
     }
