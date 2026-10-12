@@ -83,31 +83,31 @@ export const QuizTab: React.FC<QuizTabProps> = ({
   const getLevelBadgeClass = (level: QuizLevel) => {
     switch (level) {
       case 'Biết':
-        return 'bg-blue-500/15 text-blue-400 border-blue-500/30';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Hiểu':
-        return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Vận dụng':
-        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       default:
-        return 'bg-slate-700/50 text-slate-300 border-slate-600';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
 
   return (
     <div className="space-y-3.5 pb-6">
       {/* Quiz Header & Live Score Card */}
-      <div className="bg-gradient-to-r from-blue-950/60 via-indigo-950/40 to-slate-900 border border-blue-500/30 rounded-xl p-3.5 space-y-3 shadow-md">
+      <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-3.5 space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-600/30 text-blue-300 flex items-center justify-center font-bold text-xs border border-blue-500/30">
-              <HelpCircle className="w-4 h-4 text-blue-400" />
+            <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs border border-blue-200">
+              <HelpCircle className="w-4 h-4 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 <span>10 Câu Trắc Nghiệm: {lessonNumber}</span>
               </h3>
-              <p className="text-[11px] text-slate-400">
-                4 câu mức <b className="text-blue-300">Biết</b>, 3 câu mức <b className="text-amber-300">Hiểu</b>, 3 câu mức <b className="text-emerald-300">Vận dụng</b>
+              <p className="text-[11px] text-slate-600">
+                4 câu mức <b className="text-blue-700">Biết</b>, 3 câu mức <b className="text-amber-700">Hiểu</b>, 3 câu mức <b className="text-emerald-700">Vận dụng</b>
               </p>
             </div>
           </div>
@@ -115,7 +115,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
           {/* Real-time score counter */}
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <div className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/50 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+              <div className="text-xs font-mono font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-300 px-2.5 py-1 rounded-lg">
                 {correctCount}/{questions.length} đúng ({score10}/10đ)
               </div>
             </div>
@@ -123,14 +123,14 @@ export const QuizTab: React.FC<QuizTabProps> = ({
         </div>
 
         {/* Level Filter Tabs & View Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-blue-200/80">
           <div className="flex items-center gap-1.5 text-xs">
             <button
               onClick={() => setActiveFilter('all')}
               className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
                 activeFilter === 'all'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
               Tất cả (10)
@@ -139,8 +139,8 @@ export const QuizTab: React.FC<QuizTabProps> = ({
               onClick={() => setActiveFilter('Biết')}
               className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
                 activeFilter === 'Biết'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-slate-800 text-blue-300 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-blue-700 hover:bg-slate-50'
               }`}
             >
               Biết (4)
@@ -149,8 +149,8 @@ export const QuizTab: React.FC<QuizTabProps> = ({
               onClick={() => setActiveFilter('Hiểu')}
               className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
                 activeFilter === 'Hiểu'
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-slate-800 text-amber-300 hover:text-white'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-amber-700 hover:bg-slate-50'
               }`}
             >
               Hiểu (3)
@@ -159,8 +159,8 @@ export const QuizTab: React.FC<QuizTabProps> = ({
               onClick={() => setActiveFilter('Vận dụng')}
               className={`px-2 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer ${
                 activeFilter === 'Vận dụng'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-800 text-emerald-300 hover:text-white'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-emerald-700 hover:bg-slate-50'
               }`}
             >
               Vận dụng (3)
@@ -172,8 +172,8 @@ export const QuizTab: React.FC<QuizTabProps> = ({
               onClick={() => setShowAllAnswers(!showAllAnswers)}
               className={`flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition cursor-pointer ${
                 showAllAnswers
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                  : 'bg-slate-800/90 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-amber-100 text-amber-800 border-amber-300'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
               }`}
               title="Xem nhanh tất cả đáp án đúng và lời giải"
             >
@@ -193,7 +193,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
             {totalAnswered > 0 && (
               <button
                 onClick={handleResetQuiz}
-                className="flex items-center gap-1 text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-lg border border-slate-700 transition cursor-pointer"
+                className="flex items-center gap-1 text-[11px] bg-white hover:bg-slate-50 text-slate-700 px-2 py-1 rounded-lg border border-slate-200 transition cursor-pointer"
                 title="Làm lại tất cả câu trắc nghiệm"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -215,20 +215,20 @@ export const QuizTab: React.FC<QuizTabProps> = ({
           return (
             <div
               key={q.id}
-              className={`rounded-xl border transition p-3.5 space-y-3 ${
+              className={`rounded-xl border transition p-3.5 space-y-3 shadow-xs ${
                 isRevealed
                   ? isAnswered
                     ? isCorrect
-                      ? 'bg-emerald-950/20 border-emerald-500/40'
-                      : 'bg-rose-950/20 border-rose-500/40'
-                    : 'bg-blue-950/20 border-blue-500/30'
-                  : 'bg-slate-900/90 border-slate-800 hover:border-slate-700'
+                      ? 'bg-white border-emerald-300'
+                      : 'bg-white border-rose-300'
+                    : 'bg-white border-blue-300'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
               }`}
             >
               {/* Question Header */}
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold text-white bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 font-mono">
+                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-mono">
                     Câu {q.id}
                   </span>
                   <span
@@ -239,8 +239,8 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                     Mức {q.level}
                   </span>
                   {(loadedQuestionId === q.id || justLoadedId === q.id) && (
-                    <span className="flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold animate-pulse">
-                      <Zap className="w-2.5 h-2.5 fill-current text-emerald-400" /> Đang chạy thử
+                    <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-300 px-1.5 py-0.5 rounded font-bold animate-pulse">
+                      <Zap className="w-2.5 h-2.5 fill-current text-emerald-600" /> Đang chạy thử
                     </span>
                   )}
                 </div>
@@ -248,16 +248,16 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                 <div className="flex items-center gap-2">
                   {isAnswered ? (
                     isCorrect ? (
-                      <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-md">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Đúng
+                      <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-md">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Đúng
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-[11px] font-bold text-rose-400 bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 rounded-md">
-                        <XCircle className="w-3.5 h-3.5" /> Sai
+                      <span className="flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 px-2 py-0.5 rounded-md">
+                        <XCircle className="w-3.5 h-3.5 text-rose-600" /> Sai
                       </span>
                     )
                   ) : showAllAnswers ? (
-                    <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-md">
                       Đáp án: {String.fromCharCode(65 + q.correctIndex)}
                     </span>
                   ) : null}
@@ -265,7 +265,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                   {isAnswered && (
                     <button
                       onClick={() => handleResetQuestion(q.id)}
-                      className="text-[10px] text-slate-400 hover:text-slate-200 bg-slate-800/80 hover:bg-slate-700 px-1.5 py-0.5 rounded border border-slate-700 transition cursor-pointer"
+                      className="text-[10px] text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200 transition cursor-pointer"
                       title="Chọn lại câu này"
                     >
                       Chọn lại
@@ -275,15 +275,15 @@ export const QuizTab: React.FC<QuizTabProps> = ({
               </div>
 
               {/* Question Text */}
-              <p className="text-xs text-slate-200 font-medium leading-relaxed">
+              <p className="text-xs text-slate-900 font-medium leading-relaxed">
                 {q.question}
               </p>
 
               {/* Code Snippet Table (Code CSS & Code HTML) with Test Run & Preview */}
               {q.snippet && (
-                <div className="rounded-xl overflow-hidden border border-slate-700/80 bg-slate-950/90 text-xs my-2.5 shadow-md">
+                <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950 text-xs my-2.5 shadow-sm">
                   {/* Action Bar on top of Code Box */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 bg-slate-800/95 border-b border-slate-700">
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 bg-slate-900 border-b border-slate-800">
                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-300">
                       <Code className="w-3.5 h-3.5 text-amber-400" />
                       <span>Mã nguồn minh họa (Code CSS & Code HTML)</span>
@@ -303,7 +303,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                           className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-md transition shadow-xs cursor-pointer active:scale-95 ${
                             loadedQuestionId === q.id || justLoadedId === q.id
                               ? 'bg-emerald-600 text-white ring-1 ring-emerald-400'
-                              : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold hover:shadow-amber-500/20'
+                              : 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold'
                           }`}
                           title="Nạp mã này vào Phòng thực hành ảo HTML để chỉnh sửa và chạy thử"
                         >
@@ -324,7 +324,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                   </div>
 
                   {/* 2-column Table Header: Code CSS & Code HTML */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 border-b border-slate-700/80 bg-slate-900/90 divide-y md:divide-y-0 md:divide-x divide-slate-700/80 text-center font-bold italic py-1 text-slate-300 text-[11px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 border-b border-slate-800 bg-slate-900/90 divide-y md:divide-y-0 md:divide-x divide-slate-800 text-center font-bold italic py-1 text-slate-300 text-[11px]">
                     <div className="flex items-center justify-center gap-1">
                       <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                       <span>Code CSS</span>
@@ -337,10 +337,10 @@ export const QuizTab: React.FC<QuizTabProps> = ({
 
                   {/* Code columns */}
                   <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800 font-mono text-[11px] p-0">
-                    <div className="p-2.5 bg-slate-950 text-amber-300/90 whitespace-pre overflow-x-auto leading-relaxed max-h-48">
+                    <div className="p-2.5 bg-slate-950 text-amber-300 whitespace-pre overflow-x-auto leading-relaxed max-h-48">
                       {q.snippet.css || '/* Không có định dạng CSS */'}
                     </div>
-                    <div className="p-2.5 bg-slate-950 text-blue-300/90 whitespace-pre overflow-x-auto leading-relaxed max-h-48">
+                    <div className="p-2.5 bg-slate-950 text-blue-300 whitespace-pre overflow-x-auto leading-relaxed max-h-48">
                       {q.snippet.html || '<!-- Không có mã HTML -->'}
                     </div>
                   </div>
@@ -354,26 +354,26 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                   const isSelected = userAnswer === optIdx;
                   const isThisCorrect = q.correctIndex === optIdx;
 
-                  let optionStyle = 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300';
-                  let badgeStyle = 'bg-slate-800 text-slate-400 border border-slate-700';
+                  let optionStyle = 'bg-slate-50 hover:bg-blue-50/40 border-slate-200 text-slate-700';
+                  let badgeStyle = 'bg-white text-slate-600 border border-slate-300';
 
                   if (isRevealed) {
                     if (isThisCorrect) {
                       // Correct option is always highlighted green once answered or revealed
-                      optionStyle = 'bg-emerald-950/60 border-emerald-500/80 text-emerald-200 font-semibold shadow-xs ring-1 ring-emerald-500/20';
-                      badgeStyle = 'bg-emerald-500 text-white border border-emerald-400 font-bold';
+                      optionStyle = 'bg-emerald-50 border-emerald-400 text-emerald-900 font-semibold shadow-xs ring-1 ring-emerald-400/30';
+                      badgeStyle = 'bg-emerald-600 text-white border border-emerald-500 font-bold';
                     } else if (isSelected && !isThisCorrect) {
                       // Selected wrong option highlighted in red
-                      optionStyle = 'bg-rose-950/60 border-rose-500/80 text-rose-300 font-medium';
-                      badgeStyle = 'bg-rose-500 text-white border border-rose-400 font-bold';
+                      optionStyle = 'bg-rose-50 border-rose-400 text-rose-900 font-medium';
+                      badgeStyle = 'bg-rose-600 text-white border border-rose-500 font-bold';
                     } else {
                       // Other unselected options dimmed
-                      optionStyle = 'bg-slate-950/40 border-slate-800/60 text-slate-400 opacity-80';
-                      badgeStyle = 'bg-slate-800/60 text-slate-500 border border-slate-800';
+                      optionStyle = 'bg-slate-50/60 border-slate-200 text-slate-400 opacity-75';
+                      badgeStyle = 'bg-slate-100 text-slate-400 border border-slate-200';
                     }
                   } else if (isSelected) {
-                    optionStyle = 'bg-blue-600/20 border-blue-500 text-blue-200 font-semibold shadow-xs';
-                    badgeStyle = 'bg-blue-500 text-white';
+                    optionStyle = 'bg-blue-50 border-blue-500 text-blue-900 font-semibold shadow-xs';
+                    badgeStyle = 'bg-blue-600 text-white';
                   }
 
                   return (
@@ -389,14 +389,14 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                       </span>
                       <span className="flex-1 pt-0.5">{option}</span>
                       {isRevealed && isThisCorrect && (
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 shrink-0 mt-0.5">
-                          <Check className="w-4 h-4 text-emerald-400" />
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 shrink-0 mt-0.5">
+                          <Check className="w-4 h-4 text-emerald-600" />
                           <span>Đáp án đúng</span>
                         </span>
                       )}
                       {isRevealed && isSelected && !isThisCorrect && (
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-rose-400 shrink-0 mt-0.5">
-                          <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-rose-700 shrink-0 mt-0.5">
+                          <XCircle className="w-3.5 h-3.5 text-rose-600" />
                           <span>Bạn chọn</span>
                         </span>
                       )}
@@ -410,21 +410,21 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                 <div className={`mt-2.5 p-3 rounded-lg border text-[11px] space-y-1.5 animate-fadeIn ${
                   isAnswered
                     ? isCorrect
-                      ? 'bg-emerald-950/30 border-emerald-500/30'
-                      : 'bg-rose-950/20 border-rose-500/30'
-                    : 'bg-blue-950/40 border-blue-500/25'
+                      ? 'bg-emerald-50 border-emerald-300'
+                      : 'bg-rose-50 border-rose-300'
+                    : 'bg-blue-50 border-blue-200'
                 }`}>
-                  <div className="font-bold flex items-center gap-1.5 text-blue-300">
-                    <ChevronRight className="w-3.5 h-3.5 text-blue-400" />
+                  <div className="font-bold flex items-center gap-1.5 text-blue-700">
+                    <ChevronRight className="w-3.5 h-3.5 text-blue-600" />
                     <span>
                       Giải thích chi tiết (Đáp án đúng:{' '}
-                      <strong className="text-emerald-300 underline underline-offset-2">
+                      <strong className="text-emerald-700 underline underline-offset-2">
                         {String.fromCharCode(65 + q.correctIndex)}
                       </strong>
                       ):
                     </span>
                   </div>
-                  <p className="text-slate-200 leading-relaxed pl-5">
+                  <p className="text-slate-700 leading-relaxed pl-5">
                     {q.explanation}
                   </p>
                 </div>

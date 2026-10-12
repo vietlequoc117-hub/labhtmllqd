@@ -311,22 +311,22 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
             // Header 1-3
             if (paragraph.startsWith('### ')) {
               return (
-                <h4 key={pIdx} className="font-bold text-sm text-blue-300 mt-2 mb-1 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>
+                <h4 key={pIdx} className="font-bold text-sm text-blue-700 mt-2.5 mb-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"></span>
                   {paragraph.replace('### ', '')}
                 </h4>
               );
             }
             if (paragraph.startsWith('## ')) {
               return (
-                <h3 key={pIdx} className="font-bold text-base text-amber-300 mt-2 mb-1">
+                <h3 key={pIdx} className="font-bold text-base text-slate-900 mt-2.5 mb-1">
                   {paragraph.replace('## ', '')}
                 </h3>
               );
             }
             if (paragraph.startsWith('# ')) {
               return (
-                <h2 key={pIdx} className="font-extrabold text-lg text-white mt-2 mb-1">
+                <h2 key={pIdx} className="font-extrabold text-lg text-slate-900 mt-2.5 mb-1">
                   {paragraph.replace('# ', '')}
                 </h2>
               );
@@ -344,7 +344,7 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
                     if (!clean) return null;
                     return (
                       <li key={lIdx} className="flex items-start gap-2">
-                        <span className="text-blue-400 font-bold shrink-0 mt-0.5">•</span>
+                        <span className="text-blue-600 font-bold shrink-0 mt-0.5">•</span>
                         <span>{formatInlineMarkdown(clean)}</span>
                       </li>
                     );
@@ -355,7 +355,7 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
 
             // Regular paragraph
             return (
-              <p key={pIdx} className="text-slate-200">
+              <p key={pIdx} className="text-slate-700">
                 {lines.map((l, lIdx) => (
                   <React.Fragment key={lIdx}>
                     {formatInlineMarkdown(l)}
@@ -376,21 +376,21 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
     return parts.map((token, i) => {
       if (token.startsWith('`') && token.endsWith('`')) {
         return (
-          <code key={i} className="px-1.5 py-0.5 mx-0.5 rounded bg-slate-800 text-amber-300 font-mono text-[11px] border border-slate-700">
+          <code key={i} className="px-1.5 py-0.5 mx-0.5 rounded bg-slate-100 text-blue-700 font-mono text-[11px] border border-slate-200">
             {token.slice(1, -1)}
           </code>
         );
       }
       if (token.startsWith('**') && token.endsWith('**')) {
         return (
-          <strong key={i} className="font-bold text-white">
+          <strong key={i} className="font-bold text-slate-900">
             {token.slice(2, -2)}
           </strong>
         );
       }
       if (token.startsWith('*') && token.endsWith('*')) {
         return (
-          <em key={i} className="italic text-slate-300">
+          <em key={i} className="italic text-slate-600">
             {token.slice(1, -1)}
           </em>
         );
@@ -402,40 +402,40 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-200">
       <div
-        className={`bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200 ${
+        className={`bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200 text-slate-800 ${
           isMaximized
             ? 'w-full h-full max-w-[98vw] max-h-[96vh]'
             : 'w-full max-w-3xl h-[88vh] max-h-[750px]'
         }`}
       >
         {/* HEADER */}
-        <div className="px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 ring-1 ring-white/20">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
                 <Bot className="w-5 h-5 text-white" />
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse"></span>
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm md:text-base font-extrabold text-white tracking-tight flex items-center gap-1.5">
+                <h3 className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5">
                   Trợ Lý AI Chuyên Gia HTML
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                     Cấp cao THPT
                   </span>
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
                   Tự động 100% • Không cần API
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+              <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
                 <span>Giải thích dễ hiểu, trực quan theo chuẩn Tin học 12</span>
-                <span className="text-slate-600">•</span>
-                <span className="text-blue-400 font-medium truncate max-w-[200px] md:max-w-[320px]">
+                <span className="text-slate-400">•</span>
+                <span className="text-blue-600 font-medium truncate max-w-[200px] md:max-w-[320px]">
                   {currentLesson.lessonNumber}: {currentLesson.title}
                 </span>
               </p>
@@ -445,21 +445,21 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
           <div className="flex items-center gap-1">
             <button
               onClick={handleClearChat}
-              className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition cursor-pointer"
+              className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition cursor-pointer"
               title="Làm mới cuộc trò chuyện"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsMaximized(!isMaximized)}
-              className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition cursor-pointer hidden sm:block"
+              className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition cursor-pointer hidden sm:block"
               title={isMaximized ? 'Thu nhỏ' : 'Phóng to'}
             >
               {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition cursor-pointer"
+              className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
               title="Đóng cửa sổ"
             >
               <X className="w-5 h-5" />
@@ -468,20 +468,20 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
         </div>
 
         {/* ZERO-SETUP REASSURANCE BANNER FOR STUDENTS */}
-        <div className="px-4 py-1.5 bg-indigo-950/40 border-b border-indigo-900/30 flex items-center justify-between text-[11px] text-indigo-200 shrink-0">
+        <div className="px-4 py-1.5 bg-blue-50/70 border-b border-blue-100 flex items-center justify-between text-[11px] text-blue-900 shrink-0">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>
               <b>Dành riêng cho học sinh THPT:</b> Đã tích hợp sẵn Trí tuệ Sư phạm Tin học 12, không cần đăng ký tài khoản hay thiết lập API!
             </span>
           </div>
-          <span className="text-emerald-400 font-bold shrink-0 hidden md:inline">● Sẵn sàng 100%</span>
+          <span className="text-emerald-700 font-bold shrink-0 hidden md:inline">● Sẵn sàng 100%</span>
         </div>
 
         {/* QUICK QUESTIONS CHIP CAROUSEL */}
-        <div className="px-4 py-2 bg-slate-950/60 border-b border-slate-800/80 shrink-0 overflow-x-auto scrollbar-none flex items-center gap-2">
-          <div className="text-[11px] font-bold text-slate-400 flex items-center gap-1 shrink-0">
-            <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+        <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 shrink-0 overflow-x-auto scrollbar-none flex items-center gap-2">
+          <div className="text-[11px] font-bold text-slate-500 flex items-center gap-1 shrink-0">
+            <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
             <span>Hỏi nhanh:</span>
           </div>
           {QUICK_QUESTIONS.map((q, idx) => (
@@ -489,7 +489,7 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
               key={idx}
               onClick={() => handleSendMessage(q.query, q.requiresCode)}
               disabled={isLoading}
-              className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-indigo-900/40 hover:border-indigo-500/40 border border-slate-700 text-slate-300 hover:text-indigo-200 text-[11px] font-medium transition cursor-pointer shrink-0 flex items-center gap-1.5 disabled:opacity-50"
+              className="px-2.5 py-1 rounded-full bg-white hover:bg-blue-50/70 hover:border-blue-300 border border-slate-200 text-slate-700 hover:text-blue-700 text-[11px] font-medium transition cursor-pointer shrink-0 flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               <span>{q.icon}</span>
               <span>{q.title}</span>
@@ -498,7 +498,7 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
         </div>
 
         {/* MESSAGES SCROLL AREA */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/40">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
           {messages.map((message) => {
             const isAi = message.sender === 'assistant';
             return (
@@ -507,23 +507,23 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
                 className={`flex items-start gap-2.5 md:gap-3 ${isAi ? 'justify-start' : 'justify-end'}`}
               >
                 {isAi && (
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-md">
-                    <Sparkles className="w-4 h-4 text-amber-300" />
+                  <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-xs">
+                    <Sparkles className="w-4 h-4 text-white" />
                   </div>
                 )}
 
                 <div
-                  className={`max-w-[85%] md:max-w-[78%] rounded-2xl p-3.5 shadow-md ${
+                  className={`max-w-[85%] md:max-w-[78%] rounded-2xl p-3.5 shadow-xs ${
                     isAi
-                      ? 'bg-slate-800/95 border border-slate-700/80 text-slate-200'
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+                      ? 'bg-white border border-slate-200 text-slate-800'
+                      : 'bg-blue-600 text-white'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1.5 pb-1 border-b border-white/10 text-[10px] text-slate-400">
+                  <div className={`flex items-center justify-between gap-2 mb-1.5 pb-1 border-b text-[10px] ${isAi ? 'border-slate-100 text-slate-400' : 'border-white/20 text-blue-100'}`}>
                     <span className="font-bold flex items-center gap-1">
                       {isAi ? 'Chuyên Gia HTML' : 'Học sinh'}
                       {message.hasCodeAttached && (
-                        <span className="bg-blue-900/60 text-blue-200 border border-blue-400/30 px-1 py-0.2 rounded text-[9px]">
+                        <span className={`px-1 py-0.2 rounded text-[9px] ${isAi ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-blue-700 text-white'}`}>
                           + Kèm mã hiện tại
                         </span>
                       )}
@@ -535,8 +535,8 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
                 </div>
 
                 {!isAi && (
-                  <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-md">
-                    <User className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-white shrink-0 shadow-xs">
+                    <User className="w-4 h-4 text-white" />
                   </div>
                 )}
               </div>
@@ -545,16 +545,16 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
 
           {isLoading && (
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-md animate-pulse">
-                <Sparkles className="w-4 h-4 text-amber-300" />
+              <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-xs animate-pulse">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-3.5 shadow-md flex items-center gap-2 text-xs text-indigo-300">
+              <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex items-center gap-2 text-xs text-blue-700">
                 <div className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce"></span>
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce"></span>
+                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.4s]"></span>
                 </div>
-                <span className="text-slate-300 italic">
+                <span className="text-slate-600 italic">
                   Chuyên gia đang suy nghĩ câu trả lời dễ hiểu nhất cho em...
                 </span>
               </div>
@@ -565,24 +565,24 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
         </div>
 
         {/* INPUT FORM & OPTIONS */}
-        <div className="p-3 bg-slate-950 border-t border-slate-800 shrink-0 space-y-2">
+        <div className="p-3 bg-white border-t border-slate-200 shrink-0 space-y-2">
           {/* Include code toggle */}
-          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={includeCode}
                 onChange={(e) => setIncludeCode(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-0 cursor-pointer"
+                className="rounded border-slate-300 text-blue-600 focus:ring-0 cursor-pointer"
               />
-              <span className="hover:text-slate-200">
+              <span className="hover:text-slate-800">
                 Gửi kèm mã HTML/CSS hiện tại của bài để thầy phân tích lỗi
               </span>
             </label>
-            <span className="text-slate-500 hidden sm:inline">Nhấn <b>Enter</b> để gửi, <b>Shift+Enter</b> để xuống dòng</span>
+            <span className="text-slate-400 hidden sm:inline">Nhấn <b>Enter</b> để gửi, <b>Shift+Enter</b> để xuống dòng</span>
           </div>
 
-          <div className="flex items-end gap-2 bg-slate-900 border border-slate-700 rounded-xl p-2 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition">
+          <div className="flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition">
             <textarea
               ref={inputRef}
               value={inputValue}
@@ -590,12 +590,12 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
               onKeyDown={handleKeyDown}
               placeholder="Hỏi chuyên gia về thẻ HTML, cú pháp, bài tập Tin học 12, cách sửa lỗi..."
               rows={2}
-              className="flex-1 bg-transparent text-xs md:text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none leading-relaxed"
+              className="flex-1 bg-transparent text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:outline-none resize-none leading-relaxed"
             />
             <button
               onClick={() => handleSendMessage()}
               disabled={isLoading || !inputValue.trim()}
-              className="p-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-indigo-900/30 shrink-0 active:scale-95"
+              className="p-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs shrink-0 active:scale-95"
               title="Gửi câu hỏi"
             >
               <Send className="w-4 h-4" />

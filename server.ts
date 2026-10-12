@@ -25,7 +25,7 @@ async function generateWithFallback(
   ai: GoogleGenAI,
   params: { contents: any; systemInstruction: string; temperature?: number }
 ) {
-  const models = ['gemini-3.1-flash-lite', 'gemini-flash-latest'];
+  const models = ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'];
   let lastError: any = null;
 
   for (const model of models) {
@@ -40,7 +40,7 @@ async function generateWithFallback(
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Model request timed out')), 1800)
+        setTimeout(() => reject(new Error('Model timeout')), 6500)
       );
 
       const response = await Promise.race([generatePromise, timeoutPromise]);
@@ -48,7 +48,6 @@ async function generateWithFallback(
         return response.text;
       }
     } catch (err: any) {
-      console.warn(`Model ${model} failed, trying fallback:`, err?.message?.slice(0, 100));
       lastError = err;
     }
   }
@@ -121,8 +120,8 @@ Nhiệm vụ của bạn:
 
       return res.json({ advice });
     }
-  } catch (error: any) {
-    console.warn('Gemini Tutor remote call failed, switching to pedagogical engine:', error?.message);
+  } catch (_err) {
+    // Graceful fallback to pedagogical engine without error logging
   }
 
   // Graceful Zero-API Pedagogical Fallback
@@ -201,11 +200,11 @@ TÔN CHỈ VÀ PHONG CÁCH SƯ PHẠM:
    - 🚀 Mẹo nhớ nhanh để làm bài thi trắc nghiệm học kỳ hoặc làm bài thực hành trên máy.
    - Luôn kết thúc bằng 1 lời động viên tinh thần tràn đầy năng lượng tích cực!
 
-3. KHI HỌC SINH GỬI KÈM MÃ NGUỒN CỦA MÌNH:
-   - Khen ngợi tinh thần tự học và viết code của em.
-   - Chỉ ra chính xác dòng hoặc thẻ đang gặp vấn đề.
-   - Giải thích cặn kẽ vì sao trình duyệt render ra như vậy.
-   - Hướng dẫn học sinh từng bước tự sửa chữa để làm chủ kiến thức.`;
+3. NGUYÊN TẮC SƯ PHẠM VÀNG (CHỈ HƯỚNG DẪN ĐỂ HỌC SINH TỰ SỬA, KHÔNG LÀM HỘ):
+   - Khen ngợi tinh thần chủ động lập trình của học sinh.
+   - Chỉ ra chính xác dòng hoặc thẻ đang gặp lỗi và giải thích nguyên nhân trực quan (vì sao trình duyệt hiển thị như vậy).
+   - TUYỆT ĐỐI KHÔNG làm hộ, không viết sẵn toàn bộ bài giải để học sinh chỉ việc copy-paste.
+   - Hướng dẫn gợi ý phương pháp, chỉ rõ quy tắc cú pháp cần thêm/sửa (ví dụ: thẻ nào cần thẻ đóng, cú pháp đóng thẻ như thế nào, thứ tự lồng thẻ ra sao) để học sinh tự giác gõ lại mã và ghi nhớ kiến thức sâu sắc.`;
 
       // Build contents array with past history if provided
       const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
@@ -254,8 +253,8 @@ TÔN CHỈ VÀ PHONG CÁCH SƯ PHẠM:
         return res.json({ answer });
       }
     }
-  } catch (error: any) {
-    console.warn('Gemini HTML Expert remote call failed, using pedagogical engine:', error?.message);
+  } catch (_err) {
+    // Graceful fallback to pedagogical engine without error logging
   }
 
   // Graceful Zero-API Pedagogical Fallback (100% Reliable, Instant, Zero-Setup)

@@ -84,20 +84,20 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-slate-900 border-l border-slate-800 select-none overflow-hidden">
+    <div className="h-full flex flex-col bg-white border-l border-slate-200 select-none overflow-hidden">
       {/* Top Bar: Preview Label & Viewport Controls */}
-      <div className="h-10 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-3 shrink-0">
+      <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-3 shrink-0">
         <div className="flex items-center gap-2">
-          <Eye className="w-3.5 h-3.5 text-blue-400" />
-          <span className="text-xs font-bold text-slate-200">Xem trước</span>
+          <Eye className="w-3.5 h-3.5 text-blue-600" />
+          <span className="text-xs font-bold text-slate-800">Xem trước trực tiếp</span>
         </div>
 
         {/* Viewport size toggles */}
-        <div className="flex items-center gap-1 text-slate-400">
+        <div className="flex items-center gap-1 text-slate-500">
           <button
             onClick={() => setDeviceMode('desktop')}
             className={`p-1.5 rounded transition cursor-pointer ${
-              deviceMode === 'desktop' ? 'bg-slate-800 text-blue-400' : 'hover:text-white'
+              deviceMode === 'desktop' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'hover:text-slate-900 hover:bg-slate-200/50'
             }`}
             title="Máy tính để bàn (100%)"
           >
@@ -106,7 +106,7 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
           <button
             onClick={() => setDeviceMode('tablet')}
             className={`p-1.5 rounded transition cursor-pointer ${
-              deviceMode === 'tablet' ? 'bg-slate-800 text-blue-400' : 'hover:text-white'
+              deviceMode === 'tablet' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'hover:text-slate-900 hover:bg-slate-200/50'
             }`}
             title="Máy tính bảng (768px)"
           >
@@ -115,7 +115,7 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
           <button
             onClick={() => setDeviceMode('mobile')}
             className={`p-1.5 rounded transition cursor-pointer ${
-              deviceMode === 'mobile' ? 'bg-slate-800 text-blue-400' : 'hover:text-white'
+              deviceMode === 'mobile' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'hover:text-slate-900 hover:bg-slate-200/50'
             }`}
             title="Điện thoại di động (375px)"
           >
@@ -123,14 +123,14 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
           </button>
           <button
             onClick={updateIframe}
-            className="p-1.5 hover:text-white hover:bg-slate-800 rounded transition cursor-pointer"
+            className="p-1.5 hover:text-slate-900 hover:bg-slate-200/50 rounded transition cursor-pointer"
             title="Tải lại iframe"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={openInNewWindow}
-            className="p-1.5 hover:text-white hover:bg-slate-800 rounded transition cursor-pointer"
+            className="p-1.5 hover:text-slate-900 hover:bg-slate-200/50 rounded transition cursor-pointer"
             title="Mở tab mới"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -139,27 +139,27 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
       </div>
 
       {/* VIEWPORT BODY */}
-      <div className="flex-1 overflow-hidden relative flex flex-col bg-slate-950">
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/60">
+      <div className="flex-1 overflow-hidden relative flex flex-col bg-slate-100">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Simulated Browser URL bar */}
-          <div className="h-8 bg-slate-900 border-b border-slate-800 px-3 flex items-center justify-between text-xs text-slate-400 shrink-0">
+          <div className="h-8 bg-slate-100 border-b border-slate-200 px-3 flex items-center justify-between text-xs text-slate-500 shrink-0">
             <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
               </div>
-              <div className="bg-slate-950/70 border border-slate-800 px-2 py-0.5 rounded text-[11px] text-slate-300 font-mono flex items-center gap-1.5">
-                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <div className="bg-white border border-slate-200 px-2.5 py-0.5 rounded text-[11px] text-slate-600 font-mono flex items-center gap-1.5 shadow-xs">
+                <ShieldCheck className="w-3 h-3 text-emerald-600" />
                 <span className="truncate">virtual://lqd-html-lab/{lesson.lessonNumber.toLowerCase().replace(' ', '')}/index.html</span>
               </div>
             </div>
           </div>
 
           {/* Iframe container with responsive device sizing */}
-          <div className="flex-1 bg-slate-950 flex items-center justify-center p-2 overflow-auto">
+          <div className="flex-1 bg-slate-100 flex items-center justify-center p-2.5 overflow-auto">
             <div
-              className={`h-full bg-white rounded-lg shadow-2xl overflow-hidden transition-all duration-300 border border-slate-700/60 ${
+              className={`h-full bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-300 border border-slate-200/90 ${
                 deviceMode === 'desktop'
                   ? 'w-full'
                   : deviceMode === 'tablet'

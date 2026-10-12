@@ -11,7 +11,6 @@ import { SolutionModal } from './components/SolutionModal';
 import { SampleModal } from './components/SampleModal';
 import { AiAssistantModal } from './components/AiAssistantModal';
 import { CodeSample } from './types';
-import { Bot, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [currentLesson, setCurrentLesson] = useState<Lesson>(LESSONS[0]);
@@ -268,7 +267,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 font-sans text-slate-800">
       {/* HEADER COMPONENT */}
       <Header
         lessons={LESSONS}
@@ -286,8 +285,8 @@ export default function App() {
 
       {/* 3-COLUMN MAIN WORKSPACE */}
       <main className="flex-1 flex overflow-hidden">
-        {/* COLUMN 1: Lesson Guide & Tasks (26%) */}
-        <div className="w-[28%] min-w-[280px] max-w-[380px] h-full overflow-hidden">
+        {/* COLUMN 1: Lesson Guide & Tasks (28%) */}
+        <div className="w-[28%] min-w-[280px] max-w-[380px] h-full overflow-hidden border-r border-slate-200 bg-white">
           <LessonGuide
             lesson={currentLesson}
             testResults={testResults}
@@ -319,7 +318,7 @@ export default function App() {
         </div>
 
         {/* COLUMN 2: Code Editor (38%) */}
-        <div className="w-[38%] min-w-[340px] flex-1 h-full overflow-hidden flex flex-col">
+        <div className="w-[38%] min-w-[340px] flex-1 h-full overflow-hidden flex flex-col border-r border-slate-200 bg-white">
           <div className="flex-1 overflow-hidden">
             <CodeEditor
               htmlCode={currentHtml}
@@ -345,7 +344,7 @@ export default function App() {
         </div>
 
         {/* COLUMN 3: Result Pane - Live Preview (34%) */}
-        <div className="w-[34%] min-w-[320px] max-w-[500px] h-full overflow-hidden">
+        <div className="w-[34%] min-w-[320px] max-w-[500px] h-full overflow-hidden bg-slate-50">
           <ResultPane
             lesson={currentLesson}
             htmlCode={currentHtml}
@@ -386,41 +385,27 @@ export default function App() {
         onInsertCodeSnippet={handleInsertSnippet}
       />
 
-      {/* FLOATING ACTION BUTTON (AI ASSISTANT TRIGGER) */}
-      <button
-        onClick={() => setIsAiAssistantOpen(true)}
-        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full shadow-2xl shadow-indigo-950/80 border border-white/20 transition-all cursor-pointer hover:scale-105 active:scale-95 group select-none"
-        title="Mở Trợ lý AI Chuyên gia HTML (Dành cho học sinh THPT)"
-      >
-        <div className="relative">
-          <Bot className="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full"></span>
-        </div>
-        <span className="text-xs font-bold tracking-wide pr-0.5">Trợ lý AI HTML</span>
-      </button>
-
       {/* Reset Confirmation Dialog (Replaces window.confirm) */}
       {isResetConfirmOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 text-slate-800">
+            <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block animate-pulse"></span>
               Xác nhận khôi phục mã nguồn?
             </h3>
-            <p className="text-xs text-slate-300 leading-relaxed mb-5">
-              Bạn có chắc chắn muốn đặt lại mã nguồn ban đầu của <b className="text-blue-400">{currentLesson.lessonNumber}: {currentLesson.title}</b>? Các chỉnh sửa hiện tại của bạn trong bài này sẽ được thay thế bằng mã khởi tạo chuẩn SGK.
+            <p className="text-xs text-slate-600 leading-relaxed mb-6">
+              Bạn có chắc chắn muốn đặt lại mã nguồn ban đầu của <b className="text-blue-600">{currentLesson.lessonNumber}: {currentLesson.title}</b>? Các chỉnh sửa hiện tại của bạn trong bài này sẽ được thay thế bằng mã khởi tạo chuẩn SGK.
             </p>
             <div className="flex items-center justify-end gap-2.5">
               <button
                 onClick={() => setIsResetConfirmOpen(false)}
-                className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
               >
                 Hủy bỏ
               </button>
               <button
                 onClick={executeResetCode}
-                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-950 transition cursor-pointer active:scale-95"
+                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-sm transition cursor-pointer active:scale-95"
               >
                 Đồng ý làm mới
               </button>

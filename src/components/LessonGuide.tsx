@@ -91,15 +91,15 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   };
 
   return (
-    <aside className="h-full flex flex-col bg-slate-900 border-r border-slate-800 select-none overflow-hidden">
+    <aside className="h-full flex flex-col bg-white border-r border-slate-200 select-none overflow-hidden text-slate-800">
       {/* Navigation Sub-Tabs */}
-      <div className="flex border-b border-slate-800 bg-slate-950/60 text-xs shrink-0">
+      <div className="flex border-b border-slate-200 bg-slate-50 text-xs shrink-0">
         <button
           onClick={() => setActiveTab('tasks')}
           className={`flex-1 py-2 px-2.5 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
             activeTab === 'tasks'
-              ? 'text-blue-400 border-b-2 border-blue-500 bg-slate-900/50'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'text-blue-600 border-b-2 border-blue-600 bg-white shadow-xs'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
           <ListChecks className="w-3.5 h-3.5" />
@@ -110,8 +110,8 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
           onClick={() => setActiveTab('theory')}
           className={`flex-1 py-2 px-2.5 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
             activeTab === 'theory'
-              ? 'text-blue-400 border-b-2 border-blue-500 bg-slate-900/50'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'text-blue-600 border-b-2 border-blue-600 bg-white shadow-xs'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
@@ -122,11 +122,11 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
           onClick={() => setActiveTab('samples')}
           className={`flex-1 py-2 px-1 font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
             activeTab === 'samples'
-              ? 'text-amber-400 border-b-2 border-amber-500 bg-slate-900/50'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'text-amber-600 border-b-2 border-amber-600 bg-white shadow-xs'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           <span className="font-bold">10 Mẫu</span>
         </button>
 
@@ -134,38 +134,38 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
           onClick={() => setActiveTab('quiz')}
           className={`flex-1 py-2 px-1 font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
             activeTab === 'quiz'
-              ? 'text-purple-400 border-b-2 border-purple-500 bg-slate-900/50'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'text-indigo-600 border-b-2 border-indigo-600 bg-white shadow-xs'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+          <HelpCircle className="w-3.5 h-3.5 text-indigo-500" />
           <span className="font-bold">10 Quiz</span>
         </button>
       </div>
 
       {/* Tab Content Area */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3.5 text-slate-300">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3.5 text-slate-700">
         {/* TAB 1: 5 NHIỆM VỤ THỬ THÁCH (CÓ SẴN KẾT QUẢ MỤC TIÊU) */}
         {activeTab === 'tasks' && (
           <div className="space-y-3">
             {/* Mission Progress Header */}
-            <div className="bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-slate-900 border border-blue-500/25 rounded-xl p-3 space-y-2">
+            <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                  <Target className="w-4 h-4 text-amber-400" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                  <Target className="w-4 h-4 text-amber-600" />
                   <span>5 Nhiệm Vụ Mục Tiêu (Lập trình để đạt kết quả)</span>
                 </div>
-                <span className="text-[10px] font-mono font-bold bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30">
+                <span className="text-[10px] font-mono font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
                   {passedMissionsCount}/5 Đạt
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
+              <p className="text-[11px] text-slate-600 leading-relaxed">
                 Mỗi nhiệm vụ có sẵn <b>kết quả mẫu mục tiêu</b> để em đối chiếu. Hãy gõ code HTML/CSS để tạo ra đúng kết quả đó!
               </p>
               {/* Progress bar */}
-              <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-emerald-400 h-1.5 rounded-full transition-all duration-300"
+                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${(passedMissionsCount / 5) * 100}%` }}
                 />
               </div>
@@ -176,8 +176,8 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                   onClick={() => setSelectedMissionFilter('all')}
                   className={`text-[10px] font-bold px-2 py-1 rounded-md transition shrink-0 cursor-pointer ${
                     selectedMissionFilter === 'all'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-slate-850 hover:bg-slate-800 text-slate-400'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
                   }`}
                 >
                   Tất cả (5)
@@ -190,14 +190,14 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                       onClick={() => setSelectedMissionFilter(m.id)}
                       className={`text-[10px] font-bold px-2 py-1 rounded-md transition shrink-0 flex items-center gap-1 cursor-pointer ${
                         selectedMissionFilter === m.id
-                          ? 'bg-blue-600 text-white shadow-sm'
+                          ? 'bg-blue-600 text-white shadow-xs'
                           : isPassed
-                          ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-slate-850 hover:bg-slate-800 text-slate-400'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                          : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
                       {isPassed ? (
-                        <Check className="w-3 h-3 text-emerald-400" />
+                        <Check className="w-3 h-3 text-emerald-600" />
                       ) : (
                         <span>NV {m.id}</span>
                       )}
@@ -231,24 +231,24 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                   return (
                     <div
                       key={m.id}
-                      className={`rounded-xl border transition-all duration-200 overflow-hidden shadow-sm ${
+                      className={`rounded-xl border transition-all duration-200 overflow-hidden shadow-xs ${
                         evalRes.passed
-                          ? 'bg-slate-900 border-emerald-500/40'
-                          : 'bg-slate-900/90 border-slate-700/80 hover:border-slate-600'
+                          ? 'bg-white border-emerald-300'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
                       }`}
                     >
                       {/* Mission Card Header */}
-                      <div className="p-3 bg-slate-850/60 border-b border-slate-800/80 flex items-start justify-between gap-2">
+                      <div className="p-3 bg-slate-50/80 border-b border-slate-200 flex items-start justify-between gap-2">
                         <div className="space-y-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                               {m.level}
                             </span>
-                            <h4 className="text-xs font-bold text-white leading-snug">
+                            <h4 className="text-xs font-bold text-slate-900 leading-snug">
                               {m.title}
                             </h4>
                           </div>
-                          <p className="text-[11px] text-slate-300 leading-relaxed">
+                          <p className="text-[11px] text-slate-600 leading-relaxed">
                             {m.description}
                           </p>
                         </div>
@@ -256,13 +256,13 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                         {/* Status badge */}
                         <div className="shrink-0">
                           {evalRes.passed ? (
-                            <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                               <span>Đã đạt ✓</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-300 text-[10px] font-medium px-2 py-0.5 rounded-full border border-amber-500/25">
-                              <Circle className="w-2.5 h-2.5 text-amber-400" />
+                            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-full border border-slate-200">
+                              <Circle className="w-2.5 h-2.5 text-slate-400" />
                               <span>Chưa đạt</span>
                             </span>
                           )}
@@ -273,16 +273,16 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                       <div className="p-3 space-y-2.5">
                         {/* Requirements */}
                         <div className="space-y-1">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                             Tiêu chí học sinh cần lập trình:
                           </span>
                           <div className="space-y-1">
                             {m.requirements.map((req, rIdx) => (
                               <div
                                 key={rIdx}
-                                className="flex items-start gap-1.5 text-[11px] text-slate-300"
+                                className="flex items-start gap-1.5 text-[11px] text-slate-700"
                               >
-                                <span className="text-blue-400 mt-0.5 font-mono text-[10px]">
+                                <span className="text-blue-600 mt-0.5 font-mono text-[10px]">
                                   •
                                 </span>
                                 <span>{req}</span>
@@ -292,7 +292,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                         </div>
 
                         {/* Target Result Action Bar */}
-                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-1.5 flex-wrap">
+                        <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-1.5 flex-wrap">
                           <button
                             onClick={() =>
                               setExpandedPreviewMissionId(
@@ -301,18 +301,18 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                             }
                             className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition cursor-pointer active:scale-95 ${
                               isPreviewOpen
-                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                : 'bg-slate-800 hover:bg-slate-750 text-slate-300 border-slate-700'
+                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                             }`}
                           >
                             {isPreviewOpen ? (
                               <>
-                                <EyeOff className="w-3.5 h-3.5 text-amber-400" />
+                                <EyeOff className="w-3.5 h-3.5 text-amber-600" />
                                 <span>Ẩn kết quả mẫu</span>
                               </>
                             ) : (
                               <>
-                                <Eye className="w-3.5 h-3.5 text-amber-400" />
+                                <Eye className="w-3.5 h-3.5 text-amber-600" />
                                 <span>Xem kết quả mục tiêu mẫu</span>
                               </>
                             )}
@@ -321,7 +321,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => setModalMission(m)}
-                              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+                              className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition cursor-pointer border border-slate-200"
                               title="Phóng to kết quả mẫu trong cửa sổ riêng"
                             >
                               <Maximize2 className="w-3.5 h-3.5" />
@@ -335,10 +335,10 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                                     m.targetResult.css
                                   )
                                 }
-                                className="flex items-center gap-1 text-[11px] font-semibold bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 px-2.5 py-1.5 rounded-lg transition cursor-pointer active:scale-95"
+                                className="flex items-center gap-1 text-[11px] font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1.5 rounded-lg transition cursor-pointer active:scale-95"
                                 title="Nạp mã kết quả mẫu này vào Editor"
                               >
-                                <Play className="w-3 h-3 fill-current" />
+                                <Play className="w-3 h-3 fill-current text-blue-600" />
                                 <span>Nạp mã mẫu</span>
                               </button>
                             )}
@@ -348,13 +348,13 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                         {/* Inline Target Preview Container */}
                         {isPreviewOpen && (
                           <div className="space-y-1.5 pt-1 animate-in fade-in zoom-in-95 duration-150">
-                            <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold">
+                            <div className="flex items-center justify-between text-[10px] text-amber-700 font-bold">
                               <span>MẪU KẾT QUẢ CẦN ĐẠT ĐƯỢC:</span>
-                              <span className="text-slate-400 font-normal">
+                              <span className="text-slate-500 font-normal">
                                 {m.targetResult.title}
                               </span>
                             </div>
-                            <div className="h-48 w-full rounded-lg bg-white overflow-hidden border-2 border-amber-500/40 shadow-inner">
+                            <div className="h-48 w-full rounded-lg bg-white overflow-hidden border-2 border-amber-300 shadow-inner">
                               <iframe
                                 title={`Mission ${m.id} Target Preview`}
                                 srcDoc={targetDoc}
@@ -369,14 +369,14 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                         <div
                           className={`p-2 rounded-lg text-[11px] flex items-start gap-1.5 ${
                             evalRes.passed
-                              ? 'bg-emerald-950/30 border border-emerald-500/30 text-emerald-300'
-                              : 'bg-slate-800/60 border border-slate-700/60 text-slate-300'
+                              ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                              : 'bg-slate-50 border border-slate-200 text-slate-700'
                           }`}
                         >
                           {evalRes.passed ? (
-                            <CheckCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                            <CheckCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                           ) : (
-                            <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                            <Info className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
                           )}
                           <div>
                             <span className="font-semibold">Đánh giá mã của em: </span>
@@ -385,8 +385,8 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                         </div>
 
                         {/* Hint box */}
-                        <div className="text-[10px] text-amber-300/90 bg-amber-950/20 border border-amber-500/20 rounded-lg p-2 flex items-start gap-1.5">
-                          <Info className="w-3 h-3 text-amber-400 shrink-0 mt-0.5" />
+                        <div className="text-[10px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-start gap-1.5">
+                          <Info className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
                           <span>
                             <b>Gợi ý:</b> {m.hint}
                           </span>
@@ -398,10 +398,10 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
             </div>
 
             {/* Toggle original SGK Checklist */}
-            <div className="pt-2 border-t border-slate-800/80">
+            <div className="pt-2 border-t border-slate-200">
               <button
                 onClick={() => setShowOriginalChecklist(!showOriginalChecklist)}
-                className="w-full text-left text-[11px] text-slate-400 hover:text-slate-200 py-1.5 flex items-center justify-between cursor-pointer"
+                className="w-full text-left text-[11px] text-slate-500 hover:text-slate-800 py-1.5 flex items-center justify-between cursor-pointer"
               >
                 <span>Xem thêm Checklist tiêu chuẩn SGK:</span>
                 <ChevronRight
@@ -420,8 +420,8 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                         key={item.id}
                         className={`p-2.5 rounded-lg border text-xs ${
                           status === true
-                            ? 'bg-emerald-950/20 border-emerald-500/30'
-                            : 'bg-slate-800/40 border-slate-700/50'
+                            ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                            : 'bg-slate-50 border-slate-200 text-slate-700'
                         }`}
                       >
                         <div className="flex items-start gap-2">
@@ -429,10 +429,10 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                             {idx + 1}.
                           </span>
                           <div>
-                            <div className="font-semibold text-slate-200 text-[11px]">
+                            <div className="font-semibold text-slate-900 text-[11px]">
                               {item.title}
                             </div>
-                            <div className="text-[10px] text-slate-400 mt-0.5">
+                            <div className="text-[10px] text-slate-500 mt-0.5">
                               {item.description}
                             </div>
                           </div>
@@ -450,24 +450,24 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
         {activeTab === 'theory' && (
           <div className="space-y-3.5">
             {/* Objective summary */}
-            <div className="bg-gradient-to-br from-blue-950/30 to-indigo-950/30 border border-blue-500/20 rounded-lg p-3">
-              <h4 className="text-[11px] font-bold text-blue-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <div className="bg-blue-50/70 border border-blue-200 rounded-lg p-3">
+              <h4 className="text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                 <BookOpen className="w-3.5 h-3.5" /> Mục tiêu bài học
               </h4>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-slate-700 leading-relaxed">
                 {lesson.objective}
               </p>
             </div>
 
             {/* Quick Summary points */}
             <div className="space-y-1.5">
-              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Điểm lý thuyết cốt lõi
               </h4>
-              <ul className="space-y-1 text-xs text-slate-300">
+              <ul className="space-y-1 text-xs text-slate-700">
                 {lesson.theorySummary.map((pt, i) => (
                   <li key={i} className="flex items-start gap-1.5 leading-relaxed">
-                    <ChevronRight className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                    <ChevronRight className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
                     <span>{pt}</span>
                   </li>
                 ))}
@@ -476,9 +476,9 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
 
             {/* Quick reference tags */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold uppercase tracking-wider">
                 <span>Thẻ quan trọng trong bài</span>
-                <span className="text-[10px] font-normal text-slate-500 lowercase">(Bấm để chèn)</span>
+                <span className="text-[10px] font-normal text-slate-400 lowercase">(Bấm để chèn)</span>
               </div>
 
               <div className="space-y-2">
@@ -486,23 +486,23 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                   <div
                     key={idx}
                     onClick={() => onInsertSnippet(ref.example)}
-                    className="p-2.5 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/70 hover:border-blue-500/50 rounded-lg text-xs transition cursor-pointer group"
+                    className="p-2.5 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-lg text-xs transition cursor-pointer group"
                     title="Nhấn để chèn vào vị trí con trỏ code"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <code className="text-blue-300 font-mono font-bold group-hover:text-blue-200">
+                      <code className="text-blue-700 font-mono font-bold">
                         {ref.tag}
                       </code>
-                      <span className="text-[10px] text-slate-400 font-medium">
+                      <span className="text-[10px] text-slate-500 font-medium">
                         {ref.name}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 mb-1.5">
+                    <p className="text-[11px] text-slate-600 mb-1.5">
                       {ref.description}
                     </p>
-                    <div className="flex items-center justify-between bg-slate-950/80 px-2 py-1 rounded text-[11px] font-mono text-emerald-300 border border-slate-800">
+                    <div className="flex items-center justify-between bg-white px-2 py-1 rounded text-[11px] font-mono text-emerald-700 border border-slate-200">
                       <span className="truncate">{ref.example}</span>
-                      <Code className="w-3 h-3 text-slate-500 group-hover:text-blue-400 shrink-0 ml-1" />
+                      <Code className="w-3 h-3 text-slate-400 group-hover:text-blue-600 shrink-0 ml-1" />
                     </div>
                   </div>
                 ))}
@@ -514,37 +514,37 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
         {/* TAB 3: 10 MÃ MẪU CÓ SẴN (CHẠY NGAY) */}
         {activeTab === 'samples' && (
           <div className="space-y-3">
-            <div className="bg-amber-950/20 border border-amber-500/30 rounded-lg p-2.5 text-xs text-amber-300 leading-relaxed flex items-center justify-between">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-800 leading-relaxed flex items-center justify-between">
               <span>Bấm &quot;Chạy ngay&quot; để nạp mã và quan sát kết quả:</span>
-              <span className="font-mono font-bold text-amber-400">{samples.length}/10</span>
+              <span className="font-mono font-bold text-amber-700">{samples.length}/10</span>
             </div>
 
             <div className="space-y-2.5">
               {samples.map((sample) => (
                 <div
                   key={sample.id}
-                  className="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-amber-500/40 rounded-xl p-3 text-xs space-y-2 transition shadow-sm"
+                  className="bg-white hover:bg-amber-50/20 border border-slate-200 hover:border-amber-300 rounded-xl p-3 text-xs space-y-2 transition shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-bold text-white text-xs leading-snug">
+                      <h4 className="font-bold text-slate-900 text-xs leading-snug">
                         {sample.title}
                       </h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">
+                      <p className="text-[11px] text-slate-600 mt-0.5 line-clamp-2">
                         {sample.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-700/60">
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100">
                     <span className="text-[10px] text-slate-500 font-mono">
                       {sample.css ? 'HTML + CSS' : 'HTML chuẩn'}
                     </span>
                     <button
                       onClick={() => onLoadSample && onLoadSample(sample)}
-                      className="flex items-center gap-1 bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] px-2.5 py-1 rounded-md transition shadow cursor-pointer active:scale-95"
+                      className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[11px] px-2.5 py-1 rounded-md transition shadow-xs cursor-pointer active:scale-95"
                     >
-                      <Play className="w-3 h-3 fill-current text-amber-100" />
+                      <Play className="w-3 h-3 fill-current text-white" />
                       <span>Chạy ngay</span>
                     </button>
                   </div>
@@ -565,27 +565,6 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
           />
         )}
       </div>
-
-      {/* Quick AI Advisor trigger button at bottom of panel */}
-      {onOpenAiAssistant && (
-        <div className="p-2.5 bg-slate-950/80 border-t border-slate-800/90 shrink-0">
-          <button
-            onClick={onOpenAiAssistant}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-950/70 via-purple-950/50 to-slate-900 hover:from-indigo-900/80 hover:to-purple-900/60 border border-indigo-500/30 text-indigo-200 text-xs font-semibold transition cursor-pointer shadow-sm group active:scale-98"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-indigo-600/40 border border-indigo-400/30 flex items-center justify-center text-amber-300">
-                <Bot className="w-3.5 h-3.5" />
-              </div>
-              <div className="text-left">
-                <p className="text-[11px] font-bold text-white leading-tight">Cần gợi ý? Hỏi Trợ lý AI</p>
-                <p className="text-[9px] text-emerald-400 font-medium">Tự động 100% • Không cần API</p>
-              </div>
-            </div>
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-          </button>
-        </div>
-      )}
 
       {/* Target Preview Fullscreen Modal */}
       <TargetPreviewModal
