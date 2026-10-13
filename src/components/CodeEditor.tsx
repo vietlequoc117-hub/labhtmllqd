@@ -18,7 +18,6 @@ import {
   ShieldAlert,
   Info,
   PenTool,
-  Play,
   Zap
 } from 'lucide-react';
 import {
@@ -41,7 +40,7 @@ interface CodeEditorProps {
   onChangeHtml: (value: string) => void;
   onChangeCss: (value: string) => void;
   fontSize?: number;
-  onRunCode: () => void;
+  onRunCode?: () => void;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -58,8 +57,21 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const preRef = useRef<HTMLPreElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
-  // Default to Monokai dark theme to match user's image exactly (pink tags, lime attributes, yellow strings)
-  const [editorTheme, setEditorTheme] = useState<EditorTheme>('monokai');
+  // Default to Light theme as requested by user
+  const [editorTheme, setEditorTheme] = useState<EditorTheme>(() => {
+    try {
+      const saved = localStorage.getItem('html12_editor_theme');
+      if (saved === 'monokai' || saved === 'light') return saved;
+    } catch {}
+    return 'light';
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('html12_editor_theme', editorTheme);
+    } catch {}
+  }, [editorTheme]);
+
   // Diagnostics drawer state
   const [showDiagnostics, setShowDiagnostics] = useState(true);
 
@@ -124,7 +136,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     // Run on Ctrl+Enter or Cmd+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
-      onRunCode();
+      onRunCode?.();
       return;
     }
 
@@ -264,15 +276,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
         {/* Real-time Diagnostics Indicator Badge & Actions */}
         <div className="flex items-center gap-1.5 text-slate-500">
-          {/* Run Code Button */}
-          <button
-            onClick={onRunCode}
-            className="flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded border border-emerald-700 shadow-xs transition active:scale-95 cursor-pointer"
-            title="Chạy đồng bộ HTML & CSS (Phím tắt: Ctrl + Enter)"
-          >
-            <Play className="w-3 h-3 fill-current" />
-            <span>Chạy mã</span>
-          </button>
           {/* Linter Status Pill */}
           <button
             onClick={() => setShowDiagnostics((prev) => !prev)}

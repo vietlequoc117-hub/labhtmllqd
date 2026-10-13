@@ -6,8 +6,7 @@ import {
   Settings as SettingsIcon,
   BookOpen,
   Bot,
-  Sparkles,
-  Play
+  Sparkles
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -71,19 +70,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-1.5 md:gap-2">
-        {/* Run Code Button */}
-        {onRunCode && (
-          <button
-            onClick={onRunCode}
-            disabled={isEvaluating}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50"
-            title="Chạy đồng bộ HTML & CSS và kiểm tra kết quả (Ctrl + Enter)"
-          >
-            <Play className="w-3.5 h-3.5 fill-current" />
-            <span>Chạy mã</span>
-          </button>
-        )}
-
         {/* Dedicated Senior AI Assistant Button */}
         {onOpenAiAssistant && (
           <button

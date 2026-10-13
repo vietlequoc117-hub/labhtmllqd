@@ -58,7 +58,7 @@ export const THEME_COLORS: Record<EditorTheme, HighlightColors> = {
   },
 };
 
-export function highlightHtmlCode(code: string, theme: EditorTheme = 'monokai'): string {
+export function highlightHtmlCode(code: string, theme: EditorTheme = 'light'): string {
   const colors = THEME_COLORS[theme];
   let result = '';
   let i = 0;
@@ -238,7 +238,7 @@ function highlightTagBlock(tagBlock: string, colors: HighlightColors): string {
   return out;
 }
 
-export function highlightCssCode(code: string, theme: EditorTheme = 'monokai'): string {
+export function highlightCssCode(code: string, theme: EditorTheme = 'light'): string {
   const colors = THEME_COLORS[theme];
   let result = '';
   let i = 0;
