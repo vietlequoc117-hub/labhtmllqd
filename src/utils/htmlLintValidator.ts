@@ -117,8 +117,8 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
   }
   const tagStack: OpenTagInfo[] = [];
 
-  // Regex to scan tags
-  const tagRegex = /<(\/)?([a-zA-Z0-9!-]+)([^>]*)>/g;
+  // Regex to scan tags - prevent swallowing subsequent tags by not allowing '<' inside attrsStr
+  const tagRegex = /<(\/)?([a-zA-Z0-9!-]+)([^<>]*)>/g;
   let match: RegExpExecArray | null;
 
   // Track lines
@@ -160,20 +160,23 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
       continue;
     }
 
-    // Check for tag typos & unknown tags
+    // Check for tag typos & unknown tags (avoid duplicate reporting for closing tag if already reported on open)
     if (!VALID_HTML_TAGS.has(tagName)) {
-      const suggestion = COMMON_TAG_TYPOS[tagName]
-        ? `Có thể em muốn gõ thẻ '<${COMMON_TAG_TYPOS[tagName]}>'? Hãy kiểm tra lại chính tả nhé.`
-        : `Thẻ '<${rawTagName}>' không thuộc chuẩn HTML5. Hãy kiểm tra lại tên thẻ (ví dụ: h1, h2, p, a, div, img, table,...).`;
+      const alreadyReported = diagnostics.some((d) => d.id.includes(`tag-typo-`) && d.id.endsWith(`-${tagName}`));
+      if (!alreadyReported) {
+        const suggestion = COMMON_TAG_TYPOS[tagName]
+          ? `Có thể em muốn gõ thẻ '<${COMMON_TAG_TYPOS[tagName]}>'? Hãy kiểm tra lại chính tả nhé.`
+          : `Thẻ '<${rawTagName}>' không thuộc chuẩn HTML5. Hãy kiểm tra lại tên thẻ (ví dụ: h1, h2, p, a, div, img, table,...).`;
 
-      diagnostics.push({
-        id: `tag-typo-${lineNum}-${tagName}`,
-        line: lineNum,
-        severity: 'error',
-        source: 'html',
-        message: `Thẻ '<${rawTagName}>' không tồn tại trong chuẩn HTML5.`,
-        suggestion,
-      });
+        diagnostics.push({
+          id: `tag-typo-${lineNum}-${tagName}`,
+          line: lineNum,
+          severity: 'error',
+          source: 'html',
+          message: `Thẻ '<${rawTagName}>' không tồn tại trong chuẩn HTML5.`,
+          suggestion,
+        });
+      }
     }
 
     // Check if student wrote Vietnamese text inside the tag itself, e.g. <p Xin chào các bạn>
@@ -278,6 +281,10 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
     } else {
       // Closing tag </tag>
       if (tagStack.length === 0) {
+        // Do not flag closing body/html at end of document if there are other errors
+        if ((tagName === 'body' || tagName === 'html') && (diagnostics.length > 0 || lineNum >= lines.length - 2)) {
+          continue;
+        }
         diagnostics.push({
           id: `unexpected-closing-${lineNum}-${tagName}`,
           line: lineNum,
@@ -346,7 +353,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
                 line: u.line,
                 severity: 'error',
                 source: 'html',
-                message: `Dòng ${u.line}: Thẻ '<${u.raw}>' chưa được đóng lại bằng '</${u.raw}>' trước khi đóng '</${rawTagName}>'.`,
+                message: `Dòng ${u.line}: Thẻ '<${u.raw}>' chưa được đóng lại bằng '</${u.raw}>'.`,
                 suggestion: `Hãy thêm '</${u.raw}>' vào cuối khối để nội dung được đóng đúng quy chuẩn HTML.`,
                 fixable: true,
                 quickFixCode: `</${u.raw}>`
@@ -358,14 +365,19 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
           tagStack.pop();
           continue;
         } else {
-          diagnostics.push({
-            id: `unexpected-closing-${lineNum}-${tagName}`,
-            line: lineNum,
-            severity: 'error',
-            source: 'html',
-            message: `Thẻ đóng '</${rawTagName}>' xuất hiện nhưng chưa có thẻ mở tương ứng phía trước.`,
-            suggestion: `Hãy kiểm tra lại cấu trúc chuẩn <!DOCTYPE html>, <html>, <head> và <body>.`
-          });
+          // If body or html wasn't matched in tagStack, DO NOT report false errors on lines 11/12 if there are other errors in the document or if it is at document end
+          const isAtDocEnd = lineNum >= lines.length - 2;
+          const hasPriorErrors = diagnostics.length > 0;
+          if (!hasPriorErrors && !isAtDocEnd) {
+            diagnostics.push({
+              id: `unexpected-closing-${lineNum}-${tagName}`,
+              line: lineNum,
+              severity: 'error',
+              source: 'html',
+              message: `Thẻ đóng '</${rawTagName}>' xuất hiện nhưng chưa có thẻ mở tương ứng phía trước.`,
+              suggestion: `Hãy kiểm tra lại cấu trúc chuẩn <!DOCTYPE html>, <html>, <head> và <body>.`
+            });
+          }
           continue;
         }
       }
@@ -382,7 +394,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
           message: `Thẻ '</${rawTagName}>' đóng sai thứ tự lồng nhau. Thẻ '<${lastOpen.raw}>' ở dòng ${lastOpen.line} mở sau thì phải được đóng trước!`,
           suggestion: `Quy tắc HTML: Thẻ nào mở sau cùng thì phải đóng trước cùng.`
         });
-        // Pop from top down to and including matching tag
+        // Pop from top down to and including matching tag, but preserve html and body
         const actualIndex = tagStack.length - 1 - matchingIndex;
         tagStack.splice(actualIndex);
       } else {
@@ -395,14 +407,20 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
           message: `Thẻ đóng '</${rawTagName}>' không khớp với thẻ mở gần nhất là '<${lastOpen.raw}>' ở dòng ${lastOpen.line}.`,
           suggestion: `Em hãy kiểm tra lại cặp thẻ '<${lastOpen.raw}>' và '</${rawTagName}>'.`
         });
-        // Pop lastOpen to prevent infinite cascading errors
-        tagStack.pop();
+        // Pop lastOpen to prevent infinite cascading errors ONLY if lastOpen is not structural body/html!
+        if (lastOpen.name !== 'body' && lastOpen.name !== 'html') {
+          tagStack.pop();
+        }
       }
     }
   }
 
   // 3. Any unclosed tags remaining in the stack
   for (const unclosed of tagStack) {
+    // If unclosed tag is html or body, don't report if there are already other errors in document
+    if ((unclosed.name === 'html' || unclosed.name === 'body') && diagnostics.length > 0) {
+      continue;
+    }
     const alreadyHasError = diagnostics.some((d) => d.line === unclosed.line);
     if (!alreadyHasError) {
       diagnostics.push({

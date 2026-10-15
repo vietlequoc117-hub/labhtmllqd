@@ -84,16 +84,16 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
     {
       id: 'welcome-1',
       sender: 'assistant',
-      text: `👋 **Chào em! Thầy là Trợ lý AI Chuyên gia HTML & Cố vấn Tin học 12.**
+      text: `👋 **Chào em! Thầy là Trợ Lý AI - Chuyên gia cấp cao HTML & Sư phạm Tin học 12.**
 
-⚡ **Hệ thống đã tích hợp sẵn 100% — Em KHÔNG CẦN thiết lập hay nhập bất kỳ API key nào!**
+⚡ **Hệ thống đã tích hợp sẵn 100% — Giải đáp tức thì và chính xác mọi câu hỏi!**
 
-Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **HTML, CSS và lập trình web** theo chuẩn Sách giáo khoa Tin học 12 (Bộ Kết nối tri thức với cuộc sống) một cách trực quan, dễ hiểu nhất dành riêng cho học sinh cấp THPT.
+Thầy ở đây để đồng hành và giải đáp chính xác mọi câu hỏi về **HTML, CSS và lập trình web** theo chuẩn W3C và Sách giáo khoa Tin học 12 (Bộ Kết nối tri thức với cuộc sống).
 
 ✨ Em có thể:
-- ❓ Đặt bất kỳ câu hỏi lý thuyết hoặc thực hành nào.
+- ❓ Đặt bất kỳ câu hỏi lý thuyết hoặc thực hành nào (về thẻ, thuộc tính, bố cục, bảng, form,...).
 - 🔍 Nhờ thầy **soi lỗi và nhận xét mã code** em đang làm ở bài: **${currentLesson.lessonNumber}: ${currentLesson.title}**.
-- 💡 Bấm vào các câu hỏi nhanh gợi ý bên dưới để thử ngay!`,
+- 💡 Bấm vào các câu hỏi gợi ý bên dưới để thử ngay!`,
       timestamp: 'Vừa xong',
     },
   ]);
@@ -422,14 +422,14 @@ Thầy ở đây để đồng hành và giải đáp mọi thắc mắc về **
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5">
-                  Trợ Lý AI Chuyên Gia HTML
+                  Trợ Lý AI
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                    Cấp cao THPT
+                    Chuyên gia cấp cao HTML
                   </span>
                 </h3>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
                   <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                  Tự động 100% • Không cần API
+                  Chuẩn W3C & SGK Tin học 12
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">

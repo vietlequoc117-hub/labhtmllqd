@@ -250,7 +250,7 @@ export function generateStandaloneHtml(): string {
       <div id="viewAITutor" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-900">
         <div class="p-3 border-b border-slate-800 bg-purple-950/20 text-xs text-purple-300 flex items-center justify-between">
           <span class="flex items-center gap-1.5 font-semibold">
-            <i class="fa-solid fa-graduation-cap"></i> Trợ lý Sư phạm Tin học 12
+            <i class="fa-solid fa-graduation-cap"></i> Trợ Lý AI
           </span>
           <button id="btnSetKey" class="text-[11px] underline text-purple-400 hover:text-purple-200">
             Cài đặt API Key
@@ -258,7 +258,7 @@ export function generateStandaloneHtml(): string {
         </div>
         <div id="aiChatHistory" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
           <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700/60 text-slate-300 leading-relaxed">
-            Xin chào em! Thầy/cô là Trợ lý Sư phạm Tin học 12. Khi em gặp khó khăn về thẻ HTML, bảng table hay biểu mẫu form, hãy hỏi thầy/cô nhé. Thầy/cô sẽ gợi ý phương hướng để em tự sửa code thành công!
+            Xin chào em! Thầy là Trợ Lý AI - Chuyên gia cấp cao HTML & Sư phạm Tin học 12. Khi em gặp khó khăn về thẻ HTML, bảng table hay biểu mẫu form, hãy hỏi thầy nhé. Thầy sẽ giải đáp chính xác và gợi ý để em tự sửa code thành công!
           </div>
         </div>
         <div class="p-3 border-t border-slate-800 bg-slate-950 shrink-0">

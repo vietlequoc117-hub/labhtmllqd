@@ -227,7 +227,7 @@ Trong HTML, các thẻ hiển thị nội dung được chia làm 2 họ chính:
 
   // 2. Bảng Table, Rowspan & Colspan
   {
-    keywords: ['table', 'rowspan', 'colspan', 'gộp ô', 'gộp dòng', 'gộp cột', 'bảng', 'thời khóa biểu', 'tr', 'td', 'th'],
+    keywords: ['table', 'rowspan', 'colspan', 'gộp ô', 'gộp dòng', 'gộp cột', 'bảng', 'thời khóa biểu', 'thẻ table', 'thẻ tr', 'thẻ td', 'thẻ th', '<table>', '<tr>', '<td>', '<th>', 'tạo bảng'],
     title: 'Cách dùng thẻ Table, Rowspan và Colspan chuẩn xác',
     generateAnswer: () => `### 🎯 Bản chất cốt lõi:
 Bảng trong HTML (\`<table>\`) được xây dựng **theo từng hàng từ trên xuống dưới**. Không có thẻ tạo cột trực tiếp, mà cột được hình thành bởi các ô nằm trong từng hàng.
@@ -525,7 +525,484 @@ Mọi phần tử HTML trên màn hình đều được trình duyệt coi như 
 
 🚀 **Mẹo chuyên gia:** Luôn thêm thuộc tính \`box-sizing: border-box;\` để khi cộng thêm \`padding\` và \`border\`, chiếc hộp không bị phình to làm vỡ layout trang web!`,
   },
+
+  // 9. Thẻ xuống dòng <br> và thẻ đường kẻ ngang <hr>
+  {
+    keywords: ['xuống dòng', 'ngắt dòng', '<br>', 'thẻ br', 'thẻ ngắt dòng', 'làm sao để xuống dòng', 'đường kẻ ngang', '<hr>', 'thẻ hr', 'gạch ngang'],
+    title: 'Thẻ xuống dòng <br> và thẻ đường kẻ ngang <hr> trong HTML',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+- **Thẻ xuống dòng:** Là thẻ \`<br>\` (viết tắt của **Break** hoặc Line Break).
+- **Thẻ đường kẻ ngang:** Là thẻ \`<hr>\` (viết tắt của **Horizontal Rule**).
+
+---
+
+### 💡 Đặc điểm quan trọng (Cực kỳ hay thi trắc nghiệm):
+1. Cả \`<br>\` và \`<hr>\` đều là **Thẻ đơn (Void Element / Empty Tag)**:
+   * **Không có nội dung** bên trong.
+   * **KHÔNG CẦN và KHÔNG ĐƯỢC VIẾT thẻ đóng** như \`</br>\` hay \`</hr>\`!
+   * Có thể viết là \`<br>\` hoặc \`<br />\` (chuẩn XHTML).
+2. Khi gặp \`<br>\`, trình duyệt sẽ ngay lập tức **ngắt văn bản sang dòng mới** mà không tạo thêm khoảng trống lớn như thẻ \`<p>\`.
+3. Khi gặp \`<hr>\`, trình duyệt sẽ vẽ một **đường kẻ ngang phân cách** giữa các phần nội dung của trang web.
+
+---
+
+### 💻 Mã ví dụ minh họa:
+\`\`\`html
+<p>
+  Trường THPT Chuyên Lê Quý Đôn<br>
+  Lớp 12A1 - Năm học 2024-2025<br>
+  Môn: Tin học 12
+</p>
+
+<!-- Đường kẻ ngang phân cách -->
+<hr>
+
+<p>Phần nội dung tiếp theo bên dưới đường kẻ.</p>
+\`\`\`
+
+🚀 **Mẹo nhớ thi:** Muốn xuống dòng giữa bài thơ, địa chỉ thì dùng \`<br>\`. Muốn kẻ đường phân cách các chủ đề thì dùng \`<hr>\`!`,
+  },
+
+  // 10. Thẻ tiêu đề Heading <h1> đến <h6>
+  {
+    keywords: ['tiêu đề', 'heading', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'thẻ h', 'kích thước tiêu đề'],
+    title: 'Các thẻ tiêu đề Heading từ <h1> đến <h6> trong HTML',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+Trong HTML5, các thẻ tiêu đề (Heading) được biểu diễn từ **\`<h1>\` đến \`<h6>\`**:
+- \`<h1>\`: Tiêu đề quan trọng nhất, chữ lớn nhất (thường là tên trang web hoặc tiêu đề bài viết chính).
+- \`<h2>\`: Tiêu đề mục lớn (Chương, phần chính).
+- \`<h3>\`: Tiêu đề mục con bên trong \`<h2>\`.
+- \`<h4>\`, \`<h5>\`, \`<h6>\`: Các tiêu đề nhỏ hơn giảm dần theo cấp bậc.
+
+---
+
+### 💡 Bản chất kỹ thuật & Quy tắc W3C:
+1. Tất cả các thẻ \`<h1>\`-\`<h6>\` đều là **Phần tử khối (Block element)**: Chúng luôn chiếm trọn chiều ngang và tự động xuống dòng.
+2. Chữ trong thẻ heading được trình duyệt **tự động in đậm (bold)**.
+3. **Quy tắc SEO & Chuẩn ngữ nghĩa:** Trong mỗi trang web chỉ nên có **duy nhất một thẻ \`<h1>\`** để máy tìm kiếm hiểu đúng chủ đề chính của trang.
+
+---
+
+### 💻 Ví dụ chuẩn cấp bậc tiêu đề:
+\`\`\`html
+<h1>CỔNG THÔNG TIN KHỐI 12</h1>
+<h2>1. Danh sách các câu lạc bộ</h2>
+<h3>1.1. Câu lạc bộ Tin học</h3>
+<h3>1.2. Câu lạc bộ Thể thao</h3>
+<h2>2. Lịch thi tốt nghiệp THPT</h2>
+\`\`\``,
+  },
+
+  // 11. Định dạng văn bản: In đậm, in nghiêng, gạch chân, highlight
+  {
+    keywords: ['in đậm', 'in nghiêng', 'gạch chân', 'thẻ b', 'thẻ strong', 'thẻ i', 'thẻ em', 'thẻ u', '<b>', '<strong>', '<i>', '<em>', '<u>', 'mark', 'del', 'sup', 'sub', 'chỉ số trên', 'chỉ số dưới', 'định dạng văn bản'],
+    title: 'Các thẻ định dạng văn bản thông dụng trong HTML',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+HTML cung cấp các thẻ nội dòng (Inline) chuyên dụng để định dạng chữ:
+
+| Thẻ HTML | Tác dụng hiển thị | Ý nghĩa ngữ nghĩa (Semantics) |
+| :--- | :--- | :--- |
+| \`<b>\` | **In đậm chữ** | Chỉ in đậm hình thức thông thường |
+| \`<strong>\` | **In đậm chữ** | **Nhấn mạnh tầm quan trọng** (Khuyên dùng) |
+| \`<i>\` | *In nghiêng chữ* | In nghiêng hình thức (thuật ngữ, tiếng nước ngoài) |
+| \`<em>\` | *In nghiêng chữ* | Nhấn mạnh giọng điệu (Emphasis) |
+| \`<u>\` | <u>Gạch chân chữ</u> | Gạch chân dưới từ |
+| \`<mark>\` | <mark>Tô sáng (highlight)</mark> | Nền màu vàng nổi bật như bút dạ quang |
+| \`<del>\` | ~~Gạch ngang chữ (xóa)~~ | Đánh dấu nội dung đã cũ, bị xóa |
+| \`<sup>\` | X² (Chỉ số trên) | Viết số mũ toán học, chú thích (Superscript) |
+| \`<sub>\` | H₂O (Chỉ số dưới) | Viết công thức hóa học (Subscript) |
+
+---
+
+### 💻 Mã ví dụ tổng hợp:
+\`\`\`html
+<p>Công thức hóa học của nước là <b>H<sub>2</sub>O</b>.</p>
+<p>Công thức định lý Pythagoras: <i>a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup></i>.</p>
+<p>Nhớ <strong>học kỹ lý thuyết Tin học 12</strong> trước ngày thi!</p>
+\`\`\``,
+  },
+
+  // 12. Thẻ Đa phương tiện: Âm thanh <audio>, Video <video>, Nhúng <iframe>
+  {
+    keywords: ['audio', 'video', 'iframe', 'chèn nhạc', 'chèn video', 'phát nhạc', 'nhúng trang', 'khung nội tuyến', 'controls'],
+    title: 'Chèn đa phương tiện Audio, Video và Iframe trong HTML',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+Trong HTML5 (Bài 11 SGK Tin học 12), chèn đa phương tiện được thực hiện qua 3 thẻ chính:
+
+1. 🎵 **Thẻ \`<audio>\` (Chèn tệp âm thanh/nhạc):**
+   * Thuộc tính bắt buộc để người dùng bấm Play/Pause: **\`controls\`**.
+   * Cú pháp chuẩn:
+\`\`\`html
+<audio controls>
+  <source src="bai-hat.mp3" type="audio/mpeg">
+  Trình duyệt của bạn không hỗ trợ thẻ audio.
+</audio>
+\`\`\`
+
+2. 🎬 **Thẻ \`<video>\` (Chèn video/clip):**
+   * Các thuộc tính cốt lõi: \`controls\`, \`width\`, \`height\`, \`poster\` (ảnh bìa).
+\`\`\`html
+<video width="480" height="270" controls>
+  <source src="gioi-thieu.mp4" type="video/mp4">
+  Trình duyệt không hỗ trợ xem video này.
+</video>
+\`\`\`
+
+3. 🪟 **Thẻ \`<iframe>\` (Khung nội tuyến nhúng trang web khác):**
+   * Nhúng một tài liệu HTML khác hoặc nhúng video YouTube, bản đồ Google Maps vào trang web hiện tại.
+\`\`\`html
+<iframe src="thong_tin.html" width="100%" height="300" title="Trang thông tin"></iframe>
+\`\`\`
+
+⚠️ **Cạm bẫy bài thi:** Nếu quên thuộc tính \`controls\`, thẻ \`<audio>\` và \`<video>\` sẽ bị ẩn hoàn toàn thanh điều khiển và học sinh sẽ không thấy nút bấm nghe/xem!`,
+  },
+
+  // 13. Phân biệt Class và ID trong HTML/CSS
+  {
+    keywords: ['class', 'id', 'phân biệt class và id', 'khác nhau giữa class và id', 'khi nào dùng class', 'khi nào dùng id'],
+    title: 'Phân biệt thuộc tính Class và ID trong HTML/CSS',
+    generateAnswer: () => `### 🎯 Bản chất cốt lõi:
+- 🏷️ **\`id\` (Identity - Mã định danh cá nhân):**
+  * Giống như **"Số Căn cước công dân (CCCD)"** của mỗi học sinh.
+  * Trong cùng một trang web, mỗi giá trị \`id\` **CHỈ ĐƯỢC XUẤT HIỆN DUY NHẤT 1 LẦN**!
+  * Trong CSS, bộ chọn ID được ký hiệu bằng dấu thăng: **\`#id-name\`**.
+
+- 🎨 **\`class\` (Class - Lớp/Nhóm):**
+  * Giống như **"Đồng phục lớp"** mà nhiều học sinh cùng mặc.
+  * Có thể gán cùng một \`class\` cho **NHIỀU phần tử HTML khác nhau** để cùng chia sẻ chung một kiểu dáng giao diện.
+  * Trong CSS, bộ chọn Class được ký hiệu bằng dấu chấm: **\`.class-name\`**.
+
+---
+
+### 💻 Bảng so sánh trực quan:
+\`\`\`html
+<!-- Thẻ này có id duy nhất -->
+<h1 id="tieu-de-chinh">TRANG CHỦ KHỐI 12</h1>
+
+<!-- Nhiều thẻ cùng mang class thong-bao -->
+<p class="thong-bao">Lịch kiểm tra Tin học vào sáng thứ Năm.</p>
+<p class="thong-bao">Nộp bài tập thực hành trước 17h00.</p>
+\`\`\`
+
+\`\`\`css
+/* Định dạng cho ID duy nhất */
+#tieu-de-chinh { color: #1e40af; text-align: center; }
+
+/* Định dạng chung cho tất cả các thẻ có class */
+.thong-bao { background-color: #fef08a; padding: 10px; border-left: 4px solid #eab308; }
+\`\`\`
+
+🚀 **Mẹo thi:** **# = ID** (Duy nhất), **. = Class** (Dùng chung cho nhiều thẻ)!`,
+  },
+
+  // 14. Menu lựa chọn <select> và ô nhập <textarea>
+  {
+    keywords: ['select', 'option', 'textarea', 'menu thả xuống', 'dropdown', 'nhập nhiều dòng', 'hộp văn bản'],
+    title: 'Thẻ <select>, <option> và <textarea> trong biểu mẫu Form',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+1. 🔽 **Thẻ \`<select>\` và \`<option>\` (Menu thả xuống / Dropdown list):**
+   * Dùng khi cần người dùng chọn 1 phương án trong danh sách dài (ví dụ: Chọn Tỉnh/Thành phố, chọn Năm sinh).
+   * \`<select>\` là khung bao bên ngoài, mỗi mục lựa chọn bên trong là thẻ \`<option>\`.
+   * Thuộc tính \`selected\` giúp chọn sẵn một mục mặc định.
+
+2. 📝 **Thẻ \`<textarea>\` (Ô nhập văn bản nhiều dòng):**
+   * Dùng để nhập nội dung dài như: Ý kiến đóng góp, lời nhắn, tiểu sử.
+   * Khác với \`<input type="text">\` (chỉ nhập 1 dòng ngắn).
+   * Thuộc tính: \`rows\` (số dòng), \`cols\` (số cột), \`placeholder\` (chữ gợi ý).
+
+---
+
+### 💻 Mã ví dụ mẫu:
+\`\`\`html
+<!-- Menu chọn lớp -->
+<label for="lop">Chọn lớp học:</label>
+<select id="lop" name="lop">
+  <option value="12a1">Lớp 12A1</option>
+  <option value="12a2" selected>Lớp 12A2 (Mặc định)</option>
+  <option value="12a3">Lớp 12A3</option>
+</select>
+
+<br><br>
+
+<!-- Ô nhập ý kiến nhiều dòng -->
+<label for="gopy">Ý kiến đóng góp:</label><br>
+<textarea id="gopy" name="gopy" rows="4" cols="40" placeholder="Nhập ý kiến của em tại đây..."></textarea>
+\`\`\``,
+  },
+
+  // 15. Cấu trúc chuẩn khung trang web HTML5
+  {
+    keywords: ['cấu trúc html', 'cấu trúc trang web', 'doctype', 'html lang', 'head', 'meta charset', 'utf-8', 'body', 'khung cơ bản'],
+    title: 'Cấu trúc tài liệu chuẩn của một trang web HTML5',
+    generateAnswer: () => `### 🎯 Bản chất cốt lõi:
+Một trang web HTML5 hợp lệ chuẩn W3C luôn bắt buộc phải có cấu trúc cây tài liệu (DOM) gồm các phần sau:
+
+\`\`\`html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiêu đề hiển thị trên tab trình duyệt</title>
+</head>
+<body>
+  <!-- Mọi nội dung người dùng nhìn thấy trên màn hình đều nằm ở đây -->
+  <h1>Xin chào thế giới!</h1>
+  <p>Trang web đầu tiên của em.</p>
+</body>
+</html>
+\`\`\`
+
+---
+
+### 💡 Giải nghĩa từng thành phần:
+1. \`<!DOCTYPE html>\`: Khai báo phiên bản tài liệu là **HTML5** để trình duyệt kết xuất chuẩn xác.
+2. \`<html lang="vi">\`: Thẻ gốc bao bọc toàn bộ mã HTML, ngôn ngữ tài liệu là Tiếng Việt.
+3. \`<head>\`: Phần đầu chứa các **siêu dữ liệu (metadata)** không hiển thị trực tiếp lên trang (như bảng mã, tiêu đề tab, liên kết file CSS).
+4. \`<meta charset="UTF-8">\`: Khai báo bảng mã ký tự Unicode để hiển thị **đúng dấu Tiếng Việt** mà không bị lỗi font (hình vuông hay ký tự lạ).
+5. \`<title>\`: Tiêu đề xuất hiện trên tab trình duyệt và kết quả tìm kiếm Google.
+6. \`<body>\`: Phần thân chứa **toàn bộ nội dung hiển thị** (chữ, hình ảnh, bảng biểu, liên kết, video).`,
+  },
+
+  // 16. Thẻ ngữ nghĩa Semantic HTML5
+  {
+    keywords: ['thẻ ngữ nghĩa', 'semantic', 'header', 'nav', 'main', 'footer', 'section', 'article', 'aside'],
+    title: 'Các thẻ ngữ nghĩa (Semantic HTML5) trong thiết kế web hiện đại',
+    generateAnswer: () => `### 🎯 Bản chất cốt lõi:
+Thẻ ngữ nghĩa (Semantic elements) là những thẻ mà **tên thẻ nói lên chính xác ý nghĩa và vai trò nội dung của nó** cho cả lập trình viên và các cỗ máy tìm kiếm (Google, Bing) hiểu được.
+
+---
+
+### 🏛️ Các thẻ ngữ nghĩa chuẩn SGK Tin học 12:
+- 🔝 **\`<header>\`**: Phần đầu trang web hoặc đầu bài viết (thường chứa logo, khẩu hiệu).
+- 🧭 **\`<nav>\`**: Thanh điều hướng chứa các liên kết thực đơn (Menu).
+- 📰 **\`<main>\`**: Khối chứa nội dung chính, quan trọng nhất của trang.
+- 📦 **\`<section>\`**: Một phần, một chuyên mục nội dung cụ thể trong trang.
+- 📄 **\`<article>\`**: Một bài viết độc lập hoàn chỉnh (như tin tức, bài blog).
+- 📎 **\`<aside>\`**: Cột phụ bên hông (Sidebar), chứa thông tin liên quan hoặc quảng cáo.
+- 🔻 **\`<footer>\`**: Phần chân trang (chứa thông tin bản quyền, địa chỉ trường, liên hệ).
+
+---
+
+### 💻 Ví dụ bố cục trang chuẩn:
+\`\`\`html
+<header>
+  <h1>THPT Chuyên Lê Quý Đôn</h1>
+  <nav>
+    <a href="#trangchu">Trang chủ</a> | <a href="#tintuc">Tin tức</a> | <a href="#lienhe">Liên hệ</a>
+  </nav>
+</header>
+
+<main>
+  <article>
+    <h2>Kết quả kỳ thi Học sinh giỏi cấp Tỉnh</h2>
+    <p>Chúc mừng các em học sinh khối 12 đạt giải cao...</p>
+  </article>
+</main>
+
+<footer>
+  <p>&copy; 2024 Trường THPT Chuyên Lê Quý Đôn. Môn Tin học 12.</p>
+</footer>
+\`\`\``,
+  },
 ];
+
+/**
+ * Phân tích và sinh câu trả lời trực tiếp cho bất kỳ thẻ HTML nào học sinh hỏi
+ */
+function answerDirectTagQuestion(tagName: string, question: string): string | null {
+  const t = tagName.toLowerCase();
+  
+  const TAG_DESCRIPTIONS: Record<string, { desc: string; type: 'void' | 'paired'; example: string; tip: string }> = {
+    br: {
+      desc: 'Dùng để ngắt dòng văn bản ngay tại vị trí đặt thẻ.',
+      type: 'void',
+      example: '<p>Dòng thứ nhất<br>Dòng thứ hai</p>',
+      tip: 'Là thẻ đơn, không có thẻ đóng </br>.'
+    },
+    hr: {
+      desc: 'Dùng để tạo một đường kẻ ngang phân cách các khối nội dung.',
+      type: 'void',
+      example: '<p>Đoạn trên</p><hr><p>Đoạn dưới</p>',
+      tip: 'Là thẻ đơn, không có thẻ đóng </hr>.'
+    },
+    p: {
+      desc: 'Dùng để tạo một đoạn văn bản (Paragraph).',
+      type: 'paired',
+      example: '<p>Đây là nội dung đoạn văn bản chuẩn mực.</p>',
+      tip: 'Là thẻ khối (block), tự động cách lề trên dưới.'
+    },
+    h1: {
+      desc: 'Tiêu đề cấp 1 quan trọng nhất và có kích thước chữ lớn nhất trang.',
+      type: 'paired',
+      example: '<h1>TÊN TRANG WEB CỦA LỚP 12</h1>',
+      tip: 'Mỗi trang web chỉ nên có 1 thẻ h1 duy nhất.'
+    },
+    h2: {
+      desc: 'Tiêu đề cấp 2 cho các phần, chuyên mục chính của bài viết.',
+      type: 'paired',
+      example: '<h2>1. Giới thiệu câu lạc bộ</h2>',
+      tip: 'Chữ tự động in đậm và có kích thước lớn.'
+    },
+    h3: {
+      desc: 'Tiêu đề cấp 3 cho các mục con nằm bên trong tiêu đề h2.',
+      type: 'paired',
+      example: '<h3>1.1. Lịch sinh hoạt định kỳ</h3>',
+      tip: 'Tuân thủ thứ tự phân cấp h1 > h2 > h3.'
+    },
+    a: {
+      desc: 'Tạo siêu liên kết (hyperlink) chuyển trang hoặc liên kết neo nội bộ.',
+      type: 'paired',
+      example: '<a href="https://moet.gov.vn" target="_blank">Bộ GD&ĐT</a>',
+      tip: 'Bắt buộc phải có thuộc tính href="đường-dẫn".'
+    },
+    img: {
+      desc: 'Dùng để chèn hình ảnh vào tài liệu web.',
+      type: 'void',
+      example: '<img src="logo.png" alt="Logo trường THPT" width="200">',
+      tip: 'Là thẻ đơn không có thẻ đóng </img>, bắt buộc phải có src và alt.'
+    },
+    table: {
+      desc: 'Dùng để tạo bảng dữ liệu dạng lưới gồm các hàng và cột.',
+      type: 'paired',
+      example: '<table border="1">\n  <tr><th>Tiêu đề cột</th></tr>\n  <tr><td>Dữ liệu ô</td></tr>\n</table>',
+      tip: 'Bảng xây dựng theo từng hàng <tr>, bên trong chứa <th> hoặc <td>.'
+    },
+    tr: {
+      desc: 'Tạo một hàng ngang (Table Row) trong bảng.',
+      type: 'paired',
+      example: '<tr><td>Ô 1</td><td>Ô 2</td></tr>',
+      tip: 'Chỉ được đặt trực tiếp bên trong thẻ <table> hoặc <tbody>.'
+    },
+    th: {
+      desc: 'Tạo ô tiêu đề (Table Header) của cột hoặc hàng trong bảng.',
+      type: 'paired',
+      example: '<th>Họ và Tên</th>',
+      tip: 'Chữ tự động được in đậm và căn giữa ô.'
+    },
+    td: {
+      desc: 'Tạo ô dữ liệu (Table Data) bình thường trong bảng.',
+      type: 'paired',
+      example: '<td>Nguyễn Văn A</td>',
+      tip: 'Chữ căn lề trái mặc định, luôn nằm trong thẻ <tr>.'
+    },
+    ul: {
+      desc: 'Tạo danh sách không thứ tự (Unordered List) với các dấu chấm tròn.',
+      type: 'paired',
+      example: '<ul>\n  <li>Mục 1</li>\n  <li>Mục 2</li>\n</ul>',
+      tip: 'Bên trong chỉ được chứa con trực tiếp là các thẻ <li>.'
+    },
+    ol: {
+      desc: 'Tạo danh sách có thứ tự (Ordered List) được đánh số 1, 2, 3... tự động.',
+      type: 'paired',
+      example: '<ol type="1">\n  <li>Bước một</li>\n  <li>Bước hai</li>\n</ol>',
+      tip: 'Có thuộc tính type="1" | "A" | "a" | "I" | "i".'
+    },
+    li: {
+      desc: 'Tạo từng mục phần tử (List Item) trong danh sách.',
+      type: 'paired',
+      example: '<li>Sách giáo khoa Tin học 12</li>',
+      tip: 'Bắt buộc phải nằm bên trong cặp thẻ <ul> hoặc <ol>.'
+    },
+    form: {
+      desc: 'Tạo biểu mẫu thu thập thông tin người dùng gửi lên máy chủ.',
+      type: 'paired',
+      example: '<form action="#" method="POST">\n  <input type="text" name="hoten">\n  <input type="submit" value="Gửi">\n</form>',
+      tip: 'Bao bọc các phần tử nhập liệu input, select, textarea, button.'
+    },
+    input: {
+      desc: 'Tạo ô nhập liệu cho người dùng (văn bản, mật khẩu, nút chọn, ngày tháng).',
+      type: 'void',
+      example: '<input type="text" name="username" placeholder="Nhập tên của bạn">',
+      tip: 'Là thẻ đơn không có thẻ đóng </input>, thuộc tính type quyết định kiểu nhập.'
+    },
+    button: {
+      desc: 'Tạo nút bấm tương tác trên trang web.',
+      type: 'paired',
+      example: '<button type="button" onclick="alert(\'Xin chào!\')">Bấm vào đây</button>',
+      tip: 'Trong form, mặc định nút có type="submit".'
+    },
+    div: {
+      desc: 'Tạo một khối chứa (Division) dạng block để gom nhóm các phần tử.',
+      type: 'paired',
+      example: '<div class="hop-noi-dung">\n  <h2>Tiêu đề</h2>\n  <p>Văn bản</p>\n</div>',
+      tip: 'Là thẻ khối, tự động xuống dòng và chiếm trọn 100% chiều ngang.'
+    },
+    span: {
+      desc: 'Tạo vùng chọn nội dòng (Inline) để định dạng từng từ hoặc đoạn chữ ngắn.',
+      type: 'paired',
+      example: '<p>Học sinh <span style="color: red; font-weight: bold;">Lớp 12</span> xuất sắc.</p>',
+      tip: 'Là thẻ nội dòng, không ngắt dòng, vừa khít nội dung.'
+    },
+    audio: {
+      desc: 'Chèn tệp âm thanh (nhạc, giọng nói) vào trang web.',
+      type: 'paired',
+      example: '<audio controls>\n  <source src="baihat.mp3" type="audio/mpeg">\n</audio>',
+      tip: 'Bắt buộc thêm thuộc tính controls để hiện thanh Play/Pause.'
+    },
+    video: {
+      desc: 'Chèn tệp video vào trang web.',
+      type: 'paired',
+      example: '<video width="400" controls>\n  <source src="clip.mp4" type="video/mp4">\n</video>',
+      tip: 'Nên đặt width và controls để người xem dễ điều khiển.'
+    },
+    iframe: {
+      desc: 'Tạo khung nội tuyến nhúng một trang web khác vào trang hiện tại.',
+      type: 'paired',
+      example: '<iframe src="thong_tin.html" width="100%" height="300"></iframe>',
+      tip: 'Cần thuộc tính src chỉ định địa chỉ trang được nhúng.'
+    },
+    b: {
+      desc: 'In đậm chữ (về mặt hình thức trực quan).',
+      type: 'paired',
+      example: '<b>Chữ in đậm</b>',
+      tip: 'Nếu muốn in đậm kèm nhấn mạnh ngữ nghĩa W3C thì nên dùng <strong>.'
+    },
+    strong: {
+      desc: 'In đậm chữ và nhấn mạnh tầm quan trọng của nội dung theo chuẩn ngữ nghĩa W3C.',
+      type: 'paired',
+      example: '<strong>Thông báo quan trọng!</strong>',
+      tip: 'Chuẩn SEO và hỗ trợ máy đọc màn hình tốt hơn thẻ <b>.'
+    },
+    i: {
+      desc: 'In nghiêng chữ (thuật ngữ, tên nước ngoài, tiếng địa phương).',
+      type: 'paired',
+      example: '<i>HTML (HyperText Markup Language)</i>',
+      tip: 'Nếu muốn nhấn mạnh giọng điệu theo ngữ nghĩa thì dùng <em>.'
+    },
+    em: {
+      desc: 'In nghiêng chữ và nhấn mạnh giọng điệu (Emphasis).',
+      type: 'paired',
+      example: '<em>Em nhất định phải lưu ý điều này.</em>',
+      tip: 'Chuẩn ngữ nghĩa HTML5.'
+    },
+    u: {
+      desc: 'Gạch chân dưới văn bản.',
+      type: 'paired',
+      example: '<u>Từ được gạch chân</u>',
+      tip: 'Tránh dùng u trong đoạn văn dài để người đọc không nhầm với liên kết link.'
+    },
+  };
+
+  const tagInfo = TAG_DESCRIPTIONS[t];
+  if (!tagInfo) return null;
+
+  return `### 🎯 Câu trả lời chính xác từ Chuyên gia HTML:
+Thẻ **\`<${t}>\`** trong HTML:
+- **Chức năng chính:** ${tagInfo.desc}
+- **Phân loại cú pháp:** ${tagInfo.type === 'void' ? '⚠️ **Thẻ đơn (Void element)** — Tuyệt đối KHÔNG có thẻ đóng `</' + t + '>`!' : '✅ **Thẻ cặp (Paired element)** — Bắt buộc phải có cặp mở `<' + t + '>` và đóng `</' + t + '>`. '}
+
+---
+
+### 💻 Mã ví dụ cú pháp chuẩn:
+\`\`\`html
+${tagInfo.example}
+\`\`\`
+
+---
+
+💡 **Lưu ý quan trọng:** ${tagInfo.tip}`;
+}
 
 /**
  * Trình xử lý thông minh tạo câu trả lời sư phạm khi không dùng API
@@ -538,7 +1015,7 @@ export function generateLocalPedagogicalAnswer(params: {
   includeCode?: boolean;
 }): string {
   const { question, lesson, codeHtml = '', codeCss = '', includeCode = false } = params;
-  const qLower = question.toLowerCase();
+  const qLower = question.toLowerCase().trim();
 
   // 1. Phân tích mã nguồn nếu có
   const analysis = (includeCode || qLower.includes('soi lỗi') || qLower.includes('code của em') || qLower.includes('sửa lỗi') || qLower.includes('kiểm tra'))
@@ -556,7 +1033,7 @@ export function generateLocalPedagogicalAnswer(params: {
     qLower.includes('đoạn mã');
 
   if (isReviewRequest && analysis) {
-    let reviewText = `👋 **Chào em! Thầy đã xem xét kỹ đoạn mã bài làm của em trong bài: "${lesson?.lessonNumber || 'Bài học'}: ${lesson?.title || 'Thực hành HTML'}".**\n\n`;
+    let reviewText = `👋 **Chào em! Thầy là Trợ Lý AI. Thầy đã soi kỹ bài làm của em trong: "${lesson?.lessonNumber || 'Bài học'}: ${lesson?.title || 'Thực hành HTML'}".**\n\n`;
 
     if (analysis.strengths.length > 0) {
       reviewText += `### 🌟 Điểm khen ngợi tinh thần làm bài:\n`;
@@ -567,7 +1044,7 @@ export function generateLocalPedagogicalAnswer(params: {
     }
 
     if (analysis.hasIssues) {
-      reviewText += `### 🔍 Những điểm cần sửa chữa hoặc cải thiện ngay:\n`;
+      reviewText += `### 🔍 Những điểm cần sửa chữa để code chuẩn xác:\n`;
       analysis.issues.forEach((issue) => {
         reviewText += `- ⚠️ **Vấn đề:** ${issue}\n`;
       });
@@ -581,17 +1058,39 @@ export function generateLocalPedagogicalAnswer(params: {
         reviewText += `\n`;
       }
     } else {
-      reviewText += `### 🎉 Chúc mừng em!\nĐoạn mã HTML và CSS của em có cú pháp rất sạch sẽ, các cặp thẻ đóng mở đầy đủ và chuẩn cấu trúc W3C.\n\n`;
-      reviewText += `💡 **Gợi ý nâng cao:** Em có thể trang trí thêm CSS như đổ bóng \`box-shadow\`, bo góc \`border-radius\`, hoặc thêm hiệu ứng di chuột \`:hover\` để trang web sinh động hơn nhé!\n\n`;
+      reviewText += `### 🎉 Chúc mừng em!\nĐoạn mã HTML và CSS của em rất chuẩn xác, cú pháp sạch sẽ, các cặp thẻ đóng mở đầy đủ theo chuẩn W3C.\n\n`;
+      reviewText += `💡 **Gợi ý nâng cao:** Em có thể trang trí thêm CSS như đổ bóng \`box-shadow\`, bo góc \`border-radius\`, hoặc hiệu ứng di chuột \`:hover\` để trang web bắt mắt hơn nhé!\n\n`;
     }
 
-    reviewText += `💪 *Em cứ tự tin chỉnh sửa mã trực tiếp ở khung soạn thảo bên trái và bấm "Chạy thử (Run)" để thấy kết quả ngay nhé! Thầy luôn đồng hành cùng em.*`;
+    reviewText += `💪 *Em cứ tự tin gõ mã ở khung soạn thảo bên trái và quan sát kết quả trực tiếp ở màn hình bên phải nhé! Thầy luôn đồng hành cùng em.*`;
     return reviewText;
   }
 
-  // 3. Khớp cơ sở tri thức theo từ khóa
+  // 3. Kiểm tra câu hỏi trực tiếp về một thẻ cụ thể (Ví dụ: "thẻ br là gì", "thẻ hr", "<p>", "thẻ a",...)
+  const tagInQuestionMatch = qLower.match(/thẻ\s+([a-zA-Z0-9]+)|<([a-zA-Z0-9]+)>/);
+  if (tagInQuestionMatch) {
+    const rawTag = tagInQuestionMatch[1] || tagInQuestionMatch[2];
+    const directTagAns = answerDirectTagQuestion(rawTag, question);
+    if (directTagAns) {
+      return directTagAns;
+    }
+  }
+
+  // Hàm so khớp từ khóa chính xác, tránh việc các từ ngắn như 'tr', 'th' ăn vào 'trong', 'thẻ'
+  const matchKnowledgeKeyword = (q: string, kw: string): boolean => {
+    const qClean = q.toLowerCase();
+    const kwClean = kw.toLowerCase();
+    if (kwClean.length <= 3) {
+      const escaped = kwClean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(?:^|[\\s<]|thẻ\\s+)${escaped}(?:$|[\\s>,.?])`, 'i');
+      return regex.test(qClean);
+    }
+    return qClean.includes(kwClean);
+  };
+
+  // 4. Khớp cơ sở tri thức theo từ khóa chuyên môn
   for (const item of KNOWLEDGE_BASE) {
-    const matched = item.keywords.some((kw) => qLower.includes(kw));
+    const matched = item.keywords.some((kw) => matchKnowledgeKeyword(qLower, kw));
     if (matched) {
       return item.generateAnswer({
         question,
@@ -603,11 +1102,19 @@ export function generateLocalPedagogicalAnswer(params: {
     }
   }
 
-  // 4. Nếu câu hỏi về bài học cụ thể trong SGK
-  if (lesson && (lesson.title || lesson.objective)) {
-    let lessonAdvice = `### 🎯 Thầy giải đáp câu hỏi của em dựa theo ${lesson.lessonNumber || 'Bài học'}: ${lesson.title || 'Thực hành HTML'}\n\n`;
+  // 5. Nếu học sinh HỎI RÕ VỀ BÀI HỌC NÀY (VD: "yêu cầu bài này", "bài 10 làm thế nào", "mục tiêu bài học")
+  const isAskingAboutCurrentLesson =
+    qLower.includes('bài này') ||
+    qLower.includes('yêu cầu bài') ||
+    qLower.includes('mục tiêu bài') ||
+    qLower.includes('hướng dẫn bài') ||
+    qLower.includes('làm bài này') ||
+    qLower.includes('bài thực hành này');
+
+  if (isAskingAboutCurrentLesson && lesson && (lesson.title || lesson.objective)) {
+    let lessonAdvice = `### 🎯 Thầy hướng dẫn trọng tâm ${lesson.lessonNumber || 'Bài học'}: ${lesson.title || 'Thực hành HTML'}\n\n`;
     if (lesson.objective) {
-      lessonAdvice += `**Mục tiêu trọng tâm của bài này:** ${lesson.objective}\n\n`;
+      lessonAdvice += `**Mục tiêu bài học:** ${lesson.objective}\n\n`;
     }
 
     if (lesson.theorySummary && lesson.theorySummary.length > 0) {
@@ -619,49 +1126,41 @@ export function generateLocalPedagogicalAnswer(params: {
     }
 
     if (lesson.quickReferences && lesson.quickReferences.length > 0) {
-      lessonAdvice += `### 💻 Cú pháp các thẻ quan trọng nhất:\n`;
+      lessonAdvice += `### 💻 Cú pháp các thẻ trọng tâm bài này:\n`;
       lesson.quickReferences.slice(0, 3).forEach((ref) => {
         lessonAdvice += `\`\`\`html\n/* ${ref.name}: ${ref.description} */\n${ref.example}\n\`\`\`\n`;
       });
     }
 
-    if (analysis && analysis.hasIssues) {
-      lessonAdvice += `\n---\n### 🔍 Soi nhanh bài code em đang viết:\n`;
-      analysis.issues.slice(0, 2).forEach((iss) => {
-        lessonAdvice += `- ⚠️ ${iss}\n`;
-      });
-    }
-
-    lessonAdvice += `\n🚀 *Nếu em cần hỏi chi tiết về một thẻ cụ thể nào (như div, span, table, form, img, a, css), em cứ gõ tên thẻ đó hỏi thầy nhé!*`;
     return lessonAdvice;
   }
 
-  // 5. Trả lời tổng quát sư phạm
-  return `### 🎯 Chào em! Thầy là Trợ lý AI Chuyên gia HTML Tin học 12.
+  // 6. Trả lời thông minh chuyên gia cấp cao HTML
+  return `### 🎯 Chào em! Thầy là Trợ Lý AI - Chuyên gia cấp cao HTML & Sư phạm Tin học 12.
 
 Về câu hỏi của em: **"${question}"**
 
-💡 **Định hướng từ thầy:**
-- Trong lập trình web HTML5 và CSS3, điều quan trọng nhất là **hiểu rõ cấu trúc cây tài liệu (DOM)**: bắt đầu từ \`<!DOCTYPE html>\`, thẻ \`<html>\`, phần đầu \`<head>\` (chứa siêu dữ liệu và tiêu đề), và phần thân \`<body>\` (chứa mọi nội dung hiển thị).
-- Mọi thẻ đều cần tuân thủ quy tắc đóng mở chuẩn xác: thẻ có nội dung thì dùng cặp \`<tag>...</tag>\`, thẻ đơn thì không cần thẻ đóng (\`<img>\`, \`<br>\`, \`<hr>\`, \`<input>\`).
+💡 **Giải đáp chuyên môn chuẩn W3C:**
+- Trong HTML5, mọi thành phần trên trang đều được biểu diễn thông qua các **thẻ (Tags)** đặt trong dấu ngoặc nhọn \`<...>\`.
+- **Quy tắc vàng HTML:**
+  1. **Thẻ cặp:** Có thẻ mở \`<tag>\` và thẻ đóng \`</tag>\` (ví dụ: \`<p>...</p>\`, \`<h1>...</h1>\`, \`<div>...</div>\`, \`<a>...</a>\`, \`<table>...</table>\`).
+  2. **Thẻ đơn (Void Element):** Không có thẻ đóng, không chứa chữ bên trong (ví dụ: \`<img>\`, \`<br>\`, \`<hr>\`, \`<input>\`, \`<meta>\`).
+  3. **Thuộc tính (Attributes):** Luôn nằm trong thẻ mở, dạng \`tên="giá trị"\` (ví dụ: \`href="link"\`, \`src="anh.jpg"\`, \`alt="mô tả"\`).
 
-💻 **Khung mã cơ bản chuẩn W3C:**
+💻 **Cấu trúc khung chuẩn của một trang HTML5:**
 \`\`\`html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Trang Web Tin Học 12</title>
-  <style>
-    body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
-  </style>
+  <title>Trang web Tin học 12</title>
 </head>
 <body>
-  <h1>Chào mừng đến với HTML5</h1>
-  <p>Đây là trang web thực hành của học sinh THPT.</p>
+  <h1>Tiêu đề chính của trang</h1>
+  <p>Nội dung đoạn văn thực hành.</p>
 </body>
 </html>
 \`\`\`
 
-✨ *Em có thể bấm vào các câu hỏi gợi ý bên dưới hoặc hỏi cụ thể về thẻ nào em đang thắc mắc nhé!*`;
+✨ *Em có thể hỏi thầy cụ thể về bất kỳ thẻ nào (như br, hr, a, img, table, form, div, span, video, audio) hoặc bấm các câu hỏi gợi ý bên dưới nhé!*`;
 }
