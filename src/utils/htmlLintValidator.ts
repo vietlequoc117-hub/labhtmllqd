@@ -286,52 +286,136 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
           message: `Thẻ đóng '</${rawTagName}>' xuất hiện nhưng không có thẻ mở '<${rawTagName}>' tương ứng phía trước.`,
           suggestion: `Hãy kiểm tra lại xem em có gõ thừa thẻ đóng này không.`
         });
-      } else {
-        const lastOpen = tagStack[tagStack.length - 1];
-        if (lastOpen.name === tagName) {
-          tagStack.pop();
-        } else {
-          // Nesting mismatch e.g. <b><i></b></i>
-          const matchingIndex = [...tagStack].reverse().findIndex((t) => t.name === tagName);
-          if (matchingIndex !== -1) {
-            diagnostics.push({
-              id: `nesting-mismatch-${lineNum}-${tagName}`,
-              line: lineNum,
-              severity: 'error',
-              source: 'html',
-              message: `Thẻ '</${rawTagName}>' đóng sai thứ tự lồng nhau. Thẻ '<${lastOpen.raw}>' ở dòng ${lastOpen.line} mở sau thì phải được đóng trước!`,
-              suggestion: `Quy tắc HTML: Thẻ nào mở sau cùng thì phải đóng trước cùng.`
-            });
-            // Pop up to the matching tag
-            const actualIndex = tagStack.length - 1 - matchingIndex;
-            tagStack.splice(actualIndex, 1);
-          } else {
-            diagnostics.push({
-              id: `unmatched-closing-${lineNum}-${tagName}`,
-              line: lineNum,
-              severity: 'error',
-              source: 'html',
-              message: `Thẻ đóng '</${rawTagName}>' không khớp với thẻ mở gần nhất là '<${lastOpen.raw}>' ở dòng ${lastOpen.line}.`,
-              suggestion: `Em hãy đóng thẻ '</${lastOpen.raw}>' trước hoặc kiểm tra lại cặp thẻ.`
-            });
-          }
+        continue;
+      }
+
+      const lastOpen = tagStack[tagStack.length - 1];
+
+      // Exact match (e.g. <h2>...</h2>, <p>...</p>)
+      if (lastOpen.name === tagName) {
+        tagStack.pop();
+        continue;
+      }
+
+      // 1. Same-line mismatch: e.g. `<h>...</h2>` or `<b>...</i>` on the same line
+      if (lastOpen.line === lineNum) {
+        // Tag opened and closed on the exact same line, but names don't match
+        const isLastOpenInvalid = !VALID_HTML_TAGS.has(lastOpen.name);
+
+        // Remove redundant tag-typo diagnostic recorded on this line for lastOpen so only 1 clear error appears on this line
+        const typoIdx = diagnostics.findIndex((d) => d.line === lineNum && d.id.startsWith(`tag-typo-${lineNum}-`));
+        if (typoIdx !== -1) {
+          diagnostics.splice(typoIdx, 1);
         }
+
+        const suggestion = isLastOpenInvalid
+          ? `Hãy sửa thẻ mở '<${lastOpen.raw}>' thành '<${rawTagName}>' để tạo cặp thẻ '<${rawTagName}>...</${rawTagName}>' hoàn chỉnh.`
+          : `Em hãy chỉnh sửa để cả thẻ mở và thẻ đóng có cùng tên: '<${rawTagName}>...</${rawTagName}>' hoặc '<${lastOpen.raw}>...</${lastOpen.raw}>'.`;
+
+        diagnostics.push({
+          id: `mismatched-pair-${lineNum}-${tagName}`,
+          line: lineNum,
+          severity: 'error',
+          source: 'html',
+          message: isLastOpenInvalid
+            ? `Dòng ${lineNum}: Thẻ mở '<${lastOpen.raw}>' sai chính tả và không khớp với thẻ đóng '</${rawTagName}>'.`
+            : `Dòng ${lineNum}: Cặp thẻ không đồng bộ giữa thẻ mở '<${lastOpen.raw}>' và thẻ đóng '</${rawTagName}>'.`,
+          suggestion
+        });
+
+        // Crucial fix: pop lastOpen so this typo doesn't cascade into </body>, </html> or later tags!
+        tagStack.pop();
+        continue;
+      }
+
+      // 2. Structural boundary tags: </body> or </html>
+      // When closing </body> or </html>, ANY unclosed inner tags belong to those inner lines, NOT to </body> or </html>!
+      if (tagName === 'body' || tagName === 'html') {
+        const targetIdx = [...tagStack].reverse().findIndex((t) => t.name === tagName);
+        if (targetIdx !== -1) {
+          const actualIndex = tagStack.length - 1 - targetIdx;
+          // Extract all inner tags between target and top of stack
+          const unclosedInner = tagStack.splice(actualIndex + 1);
+
+          for (const u of unclosedInner) {
+            // Check if this inner tag already has an error reported on its line
+            const alreadyHasError = diagnostics.some((d) => d.line === u.line);
+            if (!alreadyHasError) {
+              diagnostics.push({
+                id: `unclosed-tag-${u.line}-${u.name}`,
+                line: u.line,
+                severity: 'error',
+                source: 'html',
+                message: `Dòng ${u.line}: Thẻ '<${u.raw}>' chưa được đóng lại bằng '</${u.raw}>' trước khi đóng '</${rawTagName}>'.`,
+                suggestion: `Hãy thêm '</${u.raw}>' vào cuối khối để nội dung được đóng đúng quy chuẩn HTML.`,
+                fixable: true,
+                quickFixCode: `</${u.raw}>`
+              });
+            }
+          }
+
+          // Pop the structural tag itself (body or html) cleanly with ZERO errors on </body> or </html>!
+          tagStack.pop();
+          continue;
+        } else {
+          diagnostics.push({
+            id: `unexpected-closing-${lineNum}-${tagName}`,
+            line: lineNum,
+            severity: 'error',
+            source: 'html',
+            message: `Thẻ đóng '</${rawTagName}>' xuất hiện nhưng chưa có thẻ mở tương ứng phía trước.`,
+            suggestion: `Hãy kiểm tra lại cấu trúc chuẩn <!DOCTYPE html>, <html>, <head> và <body>.`
+          });
+          continue;
+        }
+      }
+
+      // 3. General nesting mismatch: check if tagName exists deeper in the stack
+      const matchingIndex = [...tagStack].reverse().findIndex((t) => t.name === tagName);
+      if (matchingIndex !== -1) {
+        // Found matching tag deeper in stack
+        diagnostics.push({
+          id: `nesting-mismatch-${lineNum}-${tagName}`,
+          line: lineNum,
+          severity: 'error',
+          source: 'html',
+          message: `Thẻ '</${rawTagName}>' đóng sai thứ tự lồng nhau. Thẻ '<${lastOpen.raw}>' ở dòng ${lastOpen.line} mở sau thì phải được đóng trước!`,
+          suggestion: `Quy tắc HTML: Thẻ nào mở sau cùng thì phải đóng trước cùng.`
+        });
+        // Pop from top down to and including matching tag
+        const actualIndex = tagStack.length - 1 - matchingIndex;
+        tagStack.splice(actualIndex);
+      } else {
+        // No match found in stack
+        diagnostics.push({
+          id: `unmatched-closing-${lineNum}-${tagName}`,
+          line: lineNum,
+          severity: 'error',
+          source: 'html',
+          message: `Thẻ đóng '</${rawTagName}>' không khớp với thẻ mở gần nhất là '<${lastOpen.raw}>' ở dòng ${lastOpen.line}.`,
+          suggestion: `Em hãy kiểm tra lại cặp thẻ '<${lastOpen.raw}>' và '</${rawTagName}>'.`
+        });
+        // Pop lastOpen to prevent infinite cascading errors
+        tagStack.pop();
       }
     }
   }
 
   // 3. Any unclosed tags remaining in the stack
   for (const unclosed of tagStack) {
-    diagnostics.push({
-      id: `unclosed-tag-${unclosed.line}-${unclosed.name}`,
-      line: unclosed.line,
-      severity: 'error',
-      source: 'html',
-      message: `Thẻ '<${unclosed.raw}>' ở dòng ${unclosed.line} chưa được đóng lại bằng '</${unclosed.raw}>'.`,
-      suggestion: `Hãy thêm '</${unclosed.raw}>' vào cuối khối để trình duyệt hiển thị chính xác.`,
-      fixable: true,
-      quickFixCode: `</${unclosed.raw}>`
-    });
+    const alreadyHasError = diagnostics.some((d) => d.line === unclosed.line);
+    if (!alreadyHasError) {
+      diagnostics.push({
+        id: `unclosed-tag-${unclosed.line}-${unclosed.name}`,
+        line: unclosed.line,
+        severity: 'error',
+        source: 'html',
+        message: `Thẻ '<${unclosed.raw}>' ở dòng ${unclosed.line} chưa được đóng lại bằng '</${unclosed.raw}>'.`,
+        suggestion: `Hãy thêm '</${unclosed.raw}>' vào cuối khối để trình duyệt hiển thị chính xác.`,
+        fixable: true,
+        quickFixCode: `</${unclosed.raw}>`
+      });
+    }
   }
 
   // 4. Check for unclosed opening bracket: e.g. `<p text` at end of line without `>`
