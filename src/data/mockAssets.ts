@@ -188,7 +188,7 @@ export const MOCK_THONG_TIN_HTML = `<!DOCTYPE html>
       <li><strong>Địa điểm:</strong> Nhà tập đa năng & Sân bóng cỏ nhân tạo</li>
       <li><strong>Trang thiết bị:</strong> Nhà trường cung cấp đầy đủ vợt, bóng và lưới</li>
     </ul>
-    <p><a href="javascript:history.back()" class="back-btn">&larr; Quay lại trang trước</a></p>
+    <button class="back-btn" onclick="window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*');">&larr; Quay lại trang chính (index.html)</button>
   </div>
 </body>
 </html>`;
@@ -400,6 +400,28 @@ export function resolveVirtualPaths(html: string): string {
         }, 4000);
       }
 
+      // Pre-patch existing external links to ensure target="_blank"
+      function patchAllLinks() {
+        var links = document.querySelectorAll('a');
+        for (var i = 0; i < links.length; i++) {
+          var a = links[i];
+          var h = a.getAttribute('href');
+          if (!h) continue;
+          var isExt = /^(https?:|\/\/|mailto:|tel:|www\.)/i.test(h) || /^[a-zA-Z0-9-]+\.(com|vn|edu\.vn|gov\.vn|net|org|io|dev|app|info)/i.test(h);
+          if (isExt) {
+            var fullUrl = h;
+            if (!/^(https?:|\/\/|mailto:|tel:)/i.test(h)) {
+              fullUrl = 'https://' + h;
+              a.setAttribute('href', fullUrl);
+            }
+            a.setAttribute('target', '_blank');
+            a.setAttribute('rel', 'noopener noreferrer');
+          }
+        }
+      }
+      patchAllLinks();
+      setTimeout(patchAllLinks, 300);
+
       document.addEventListener('click', function(e) {
         var link = e.target.closest('a');
         if (!link) return;
@@ -408,8 +430,9 @@ export function resolveVirtualPaths(html: string): string {
 
         // Case 1: In-page anchor link (#section, #muc-luc, etc.)
         if (href.charAt(0) === '#') {
-          if (href === '#') {
+          if (href === '#' || href === '') {
             e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
           }
           var targetId = href.substring(1);
@@ -421,18 +444,30 @@ export function resolveVirtualPaths(html: string): string {
           return;
         }
 
-        // Case 2: External URLs (https://, http://, //, mailto:, tel:)
-        // Crucial fix: External websites like YouTube or Google explicitly block iframe embedding via X-Frame-Options.
-        // Opening them in a new tab allows the student to verify their link works 100% without crashing the preview iframe!
-        if (/^(https?:|\\/\\/|mailto:|tel:)/i.test(href)) {
-          e.preventDefault();
-          showToast('Đang mở liên kết ngoài <b>' + href + '</b> trong tab mới (do YouTube/Google bảo mật không cho nhúng trong khung nhỏ)!');
+        // Case 2: External URLs (https://, http://, //, mailto:, tel:, or domain name like www.google.com)
+        var isHttpOrHttps = /^(https?:|\/\/|mailto:|tel:)/i.test(href);
+        var isDomainLike = /^(www\.|[a-zA-Z0-9-]+\.(com|vn|edu\.vn|gov\.vn|net|org|io|dev|app|info))/i.test(href);
+        var isExternal = isHttpOrHttps || isDomainLike;
+
+        if (isExternal) {
+          var targetUrl = href;
+          if (!isHttpOrHttps && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+            targetUrl = 'https://' + href;
+          }
+
+          link.setAttribute('href', targetUrl);
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
+
+          showToast('Đang mở liên kết: <b>' + targetUrl + '</b> ↗');
+
           try {
-            window.parent.postMessage({ type: 'OPEN_EXTERNAL_URL', url: href }, '*');
-            window.open(href, '_blank', 'noopener,noreferrer');
+            window.parent.postMessage({ type: 'OPEN_EXTERNAL_URL', url: targetUrl }, '*');
           } catch(err) {
             console.warn(err);
           }
+          // Do NOT call e.preventDefault()!
+          // Allowing native click behavior lets the browser open target="_blank" reliably in a new tab!
           return;
         }
 

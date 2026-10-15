@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Lesson } from '../types';
-import { resolveVirtualPaths } from '../data/mockAssets';
+import { resolveVirtualPaths, MOCK_THONG_TIN_HTML, MOCK_CLB_HTML } from '../data/mockAssets';
 import { lintHtmlCode, lintCssCode, CodeDiagnostic } from '../utils/htmlLintValidator';
 import {
   Eye,
@@ -45,33 +45,21 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
 
   const hasFatalErrors = fatalErrors.length > 0;
 
-  // Listen for navigation messages from the sandboxed iframe
-  useEffect(() => {
-    const handleMsg = (e: MessageEvent) => {
-      if (!e.data) return;
-      if (e.data.type === 'OPEN_EXTERNAL_URL' && e.data.url) {
-        setExternalToast(e.data.url);
-        try {
-          window.open(e.data.url, '_blank', 'noopener,noreferrer');
-        } catch (err) {
-          console.warn(err);
-        }
-        setTimeout(() => setExternalToast(null), 4500);
-      } else if (e.data.type === 'NAVIGATE_VIRTUAL_PAGE' && e.data.page) {
-        setCurrentVirtualPath(e.data.page);
-      } else if (e.data.type === 'RESTORE_MAIN_PAGE') {
-        setCurrentVirtualPath('index.html');
-        updateIframe();
-      }
-    };
-    window.addEventListener('message', handleMsg);
-    return () => window.removeEventListener('message', handleMsg);
-  }, []);
-
   // Update iframe preview content
-  const updateIframe = () => {
+  const updateIframe = (overridePath?: string) => {
     if (!iframeRef.current) return;
     if (hasFatalErrors) return; // Do not render normal preview if code has syntax errors
+
+    const targetPath = overridePath !== undefined ? overridePath : currentVirtualPath;
+
+    if (targetPath === 'thong_tin.html') {
+      iframeRef.current.srcdoc = resolveVirtualPaths(MOCK_THONG_TIN_HTML);
+      return;
+    }
+    if (targetPath === 'CLB.html' || targetPath === 'clb.html') {
+      iframeRef.current.srcdoc = resolveVirtualPaths(MOCK_CLB_HTML);
+      return;
+    }
 
     const processedHtml = resolveVirtualPaths(htmlCode);
     const cleanCss = cssCode.replace(/<\/?style>/gi, '').trim();
@@ -119,9 +107,28 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
     iframeRef.current.srcdoc = fullDocument;
   };
 
+  // Listen for navigation messages from the sandboxed iframe
+  useEffect(() => {
+    const handleMsg = (e: MessageEvent) => {
+      if (!e.data) return;
+      if (e.data.type === 'OPEN_EXTERNAL_URL' && e.data.url) {
+        setExternalToast(e.data.url);
+        setTimeout(() => setExternalToast(null), 6000);
+      } else if (e.data.type === 'NAVIGATE_VIRTUAL_PAGE' && e.data.page) {
+        setCurrentVirtualPath(e.data.page);
+        updateIframe(e.data.page);
+      } else if (e.data.type === 'RESTORE_MAIN_PAGE') {
+        setCurrentVirtualPath('index.html');
+        updateIframe('index.html');
+      }
+    };
+    window.addEventListener('message', handleMsg);
+    return () => window.removeEventListener('message', handleMsg);
+  }, [htmlCode, cssCode, hasFatalErrors]);
+
   useEffect(() => {
     setCurrentVirtualPath('index.html');
-    updateIframe();
+    updateIframe('index.html');
   }, [htmlCode, cssCode, lesson.id, hasFatalErrors]);
 
   const openInNewWindow = () => {
@@ -203,7 +210,7 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
             <Smartphone className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={updateIframe}
+            onClick={() => updateIframe()}
             className="p-1.5 hover:text-slate-900 hover:bg-slate-200/50 rounded transition cursor-pointer"
             title="Tải lại iframe"
           >
@@ -331,9 +338,21 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
               ) : (
                 <>
                   {externalToast && (
-                    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-3 py-1.5 rounded-lg text-xs shadow-lg border border-slate-700 flex items-center gap-2 animate-in fade-in slide-in-from-top-1 max-w-[90%]">
-                      <ExternalLink className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                      <span className="truncate">Đang mở liên kết trong tab mới: <b className="text-blue-300">{externalToast}</b></span>
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-3.5 py-2 rounded-xl text-xs shadow-xl border border-slate-700 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-2 max-w-[94%] select-none backdrop-blur-xs">
+                      <ExternalLink className="w-4 h-4 text-blue-400 shrink-0 animate-pulse" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-slate-300 text-[11px] block">Đang kết nối đến trang web:</span>
+                        <span className="text-blue-300 font-bold truncate block max-w-[200px] sm:max-w-xs">{externalToast}</span>
+                      </div>
+                      <a
+                        href={externalToast}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-2.5 py-1 rounded-lg text-[11px] shrink-0 flex items-center gap-1 transition shadow-xs cursor-pointer"
+                      >
+                        <span>Mở tab mới</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
                     </div>
                   )}
                   <iframe

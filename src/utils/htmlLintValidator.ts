@@ -178,7 +178,14 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
 
     // Check if student wrote Vietnamese text inside the tag itself, e.g. <p Xin chào các bạn>
     if (attrsStr.trim()) {
-      const hasVietnameseText = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(attrsStr);
+      // Strip all quoted attribute values first (e.g. alt="Biểu trưng Thể thao", title="...", placeholder="...")
+      // and unquoted attribute assignments (e.g. width=200)
+      const unquotedAttrs = attrsStr
+        .replace(/="[^"]*"/g, ' ')
+        .replace(/='[^']*'/g, ' ')
+        .replace(/=[^\s>]+/g, ' ');
+
+      const hasVietnameseText = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(unquotedAttrs);
       if (hasVietnameseText) {
         diagnostics.push({
           id: `text-inside-tag-${lineNum}`,
@@ -192,17 +199,31 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
     }
 
     // Check attribute quotes: e.g. class="test or href='link
-    const quoteCountSingle = (attrsStr.match(/'/g) || []).length;
     const quoteCountDouble = (attrsStr.match(/"/g) || []).length;
-    if (quoteCountSingle % 2 !== 0 || quoteCountDouble % 2 !== 0) {
+    if (quoteCountDouble % 2 !== 0) {
       diagnostics.push({
         id: `unclosed-quote-${lineNum}`,
         line: lineNum,
         severity: 'error',
         source: 'html',
-        message: `Dòng ${lineNum}: Trong thẻ '<${rawTagName}>' có giá trị thuộc tính chưa đóng dấu ngoặc kép hoặc ngoặc đơn.`,
-        suggestion: `Hãy đảm bảo mọi thuộc tính đều có cặp ngoặc đóng mở đầy đủ như: class="..." hoặc href="..."`,
+        message: `Dòng ${lineNum}: Trong thẻ '<${rawTagName}>' có giá trị thuộc tính chưa đóng dấu ngoặc kép '"'.`,
+        suggestion: `Hãy kiểm tra và đóng đủ cặp ngoặc kép cho thuộc tính, ví dụ: class="..." hoặc href="..."`,
       });
+    } else {
+      // Check single quotes only if single quotes are used for attribute values
+      if (attrsStr.includes("='") || attrsStr.includes("= '")) {
+        const quoteCountSingle = (attrsStr.match(/'/g) || []).length;
+        if (quoteCountSingle % 2 !== 0) {
+          diagnostics.push({
+            id: `unclosed-quote-${lineNum}`,
+            line: lineNum,
+            severity: 'error',
+            source: 'html',
+            message: `Dòng ${lineNum}: Trong thẻ '<${rawTagName}>' có giá trị thuộc tính chưa đóng dấu ngoặc đơn "'".`,
+            suggestion: `Hãy kiểm tra và đóng đủ cặp ngoặc đơn cho thuộc tính.`,
+          });
+        }
+      }
     }
 
     // Check table semantics: <td> or <th> without <tr>
@@ -321,7 +342,9 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
     const openBracketIdx = lineText.lastIndexOf('<');
     if (openBracketIdx !== -1) {
       const remaining = lineText.slice(openBracketIdx);
-      if (!remaining.includes('>') && !remaining.includes('<!--')) {
+      // Only flag if it actually looks like an HTML tag e.g. <div or </p or <h1, not a math comparison like 'x < 0'
+      const looksLikeTag = /^<\/?([a-zA-Z0-9!-]+)/.test(remaining);
+      if (looksLikeTag && !remaining.includes('>') && !remaining.includes('<!--')) {
         // If next line doesn't start with continuing attributes
         if (l === lines.length - 1 || !lines[l + 1].includes('>')) {
           diagnostics.push({
