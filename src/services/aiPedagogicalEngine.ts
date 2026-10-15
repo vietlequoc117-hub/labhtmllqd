@@ -1,4 +1,5 @@
 import { Lesson } from '../types';
+import { lintHtmlCode } from '../utils/htmlLintValidator';
 
 export interface CodeAnalysisResult {
   hasIssues: boolean;
@@ -800,10 +801,161 @@ Thẻ ngữ nghĩa (Semantic elements) là những thẻ mà **tên thẻ nói l
   </article>
 </main>
 
-<footer>
-  <p>&copy; 2024 Trường THPT Chuyên Lê Quý Đôn. Môn Tin học 12.</p>
 </footer>
 \`\`\``,
+  },
+
+  // 17. Thuộc tính target="_blank" mở tab mới
+  {
+    keywords: ['target', '_blank', 'target="_blank"', 'mở tab mới', 'mở trang trong thẻ mới', 'tab mới', 'mở cửa sổ mới'],
+    title: 'Thuộc tính target="_blank" mở liên kết trong tab mới',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+Trong HTML, để khi người dùng bấm vào đường link mà trang web mở ra trong **một thẻ (tab) mới** của trình duyệt mà không làm tắt trang hiện tại, ta sử dụng thuộc tính:
+**\`target="_blank"\`** bên trong thẻ \`<a>\`.
+
+---
+
+### 💻 Mã ví dụ cú pháp chuẩn W3C:
+\`\`\`html
+<!-- Mở liên kết ngoài trong tab mới -->
+<a href="https://moet.gov.vn" target="_blank" rel="noopener noreferrer">
+  Cổng thông tin Bộ Giáo dục và Đào tạo (Mở tab mới)
+</a>
+\`\`\`
+
+---
+
+💡 **Lưu ý chuyên gia bảo mật & W3C:**
+Khi dùng \`target="_blank"\`, chuẩn an toàn web khuyến nghị luôn thêm thuộc tính \`rel="noopener noreferrer"\` để chống trang web đích chiếm quyền điều khiển trang gốc (lỗi Tabnabbing).`,
+  },
+
+  // 18. Phân biệt đường dẫn tương đối và đường dẫn tuyệt đối
+  {
+    keywords: ['đường dẫn tương đối', 'đường dẫn tuyệt đối', 'relative', 'absolute', 'duong dan', 'khác nhau giữa đường dẫn', 'khi nào dùng đường dẫn tương đối'],
+    title: 'Phân biệt đường dẫn tương đối và đường dẫn tuyệt đối trong HTML',
+    generateAnswer: () => `### 🎯 Bản chất cốt lõi:
+Khi chèn ảnh (\`src\`) hoặc tạo liên kết (\`href\`), HTML sử dụng 2 loại đường dẫn:
+
+1. 🌐 **Đường dẫn tuyệt đối (Absolute URL):**
+   * Là địa chỉ đầy đủ bao gồm giao thức mạng (ví dụ: \`https://...\` hoặc \`http://...\`).
+   * Dùng khi muốn liên kết tới một tài nguyên nằm trên một máy chủ / website khác trên Internet.
+   * Ví dụ: \`href="https://vietnamnet.vn"\` hoặc \`src="https://images.unsplash.com/photo.jpg"\`.
+
+2. 📁 **Đường dẫn tương đối (Relative URL):**
+   * Là đường dẫn tính từ vị trí của file HTML hiện tại trong thư mục máy tính.
+   * Dùng khi liên kết giữa các trang web hoặc tệp ảnh trong cùng một dự án website của em.
+   * Cú pháp chuẩn SGK Tin học 12:
+     - \`thong_tin.html\`: File cùng thư mục với trang hiện tại.
+     - \`./images/logo.png\`: Vào thư mục con \`images\` để lấy ảnh.
+     - \`../trangchu.html\`: Lùi ra thư mục cha bên ngoài 1 cấp.
+
+---
+
+🚀 **Mẹo thi:** Trong các bài thực hành thiết kế web tại trường học, **luôn dùng đường dẫn tương đối** để khi nộp bài cho thầy cô hoặc copy sang máy khác trang web vẫn chạy bình thường!`,
+  },
+
+  // 19. Định dạng màu sắc và căn lề trong CSS (color, background-color, text-align)
+  {
+    keywords: ['màu chữ', 'đổi màu chữ', 'màu nền', 'đổi màu nền', 'căn giữa', 'can giua', 'can le', 'text-align', 'color', 'background-color', 'chữ màu đỏ', 'nền màu xanh'],
+    title: 'Định dạng màu sắc và căn lề chữ trong CSS',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+Trong CSS, để đổi màu chữ, màu nền và căn chỉnh lề văn bản, ta sử dụng 3 thuộc tính cơ bản nhất:
+
+1. 🎨 **\`color\` (Màu chữ):**
+   - Đặt màu cho văn bản: \`color: red;\` (Tên màu tiếng Anh) hoặc \`color: #2563eb;\` (Mã màu HEX).
+2. 🖌️ **\`background-color\` (Màu nền):**
+   - Đặt màu nền cho khối hoặc trang web: \`background-color: #f8fafc;\`.
+3. 📐 **\`text-align\` (Căn lề chữ):**
+   - \`text-align: center;\`: Căn giữa dòng.
+   - \`text-align: left;\`: Căn lề trái (mặc định).
+   - \`text-align: right;\`: Căn lề phải.
+   - \`text-align: justify;\`: Căn đều 2 bên mép.
+
+---
+
+### 💻 Mã ví dụ mẫu:
+\`\`\`html
+<!-- Dùng CSS nội tuyến (Inline) -->
+<h1 style="color: #1e3a8a; text-align: center;">CỔNG THÔNG TIN KHỐI 12</h1>
+<p style="background-color: #fef08a; color: #854d0e; padding: 10px;">
+  Thông báo: Tiết thực hành Tin học diễn ra tại phòng máy số 2.
+</p>
+\`\`\``,
+  },
+
+  // 20. Phông chữ và kích thước chữ (font-family, font-size, font-weight)
+  {
+    keywords: ['font chữ', 'phông chữ', 'cỡ chữ', 'kích thước chữ', 'font-size', 'font-family', 'font-weight', 'chữ to', 'chữ nhỏ', 'chữ đậm'],
+    title: 'Định dạng phông chữ và cỡ chữ trong CSS',
+    generateAnswer: () => `### 🎯 Câu trả lời chính xác:
+Để tùy chỉnh chữ trong CSS, ta dùng các thuộc tính thuộc họ **Font**:
+
+1. 🔤 **\`font-family\` (Kiểu phông chữ):**
+   - Chỉ định họ phông: \`font-family: Arial, sans-serif;\` hoặc \`font-family: 'Times New Roman', serif;\`.
+2. 📏 **\`font-size\` (Kích thước / Cỡ chữ):**
+   - Đơn vị pixel: \`font-size: 16px;\`, \`font-size: 24px;\` hoặc đơn vị \`rem\`.
+3. 🏋️ **\`font-weight\` (Độ đậm của chữ):**
+   - \`font-weight: bold;\` (in đậm) hoặc \`font-weight: normal;\` (bình thường), \`font-weight: 600;\`.
+4. ✨ **\`font-style\` (Kiểu dáng chữ):**
+   - \`font-style: italic;\` (in nghiêng).
+
+---
+
+### 💻 Mã ví dụ chuẩn:
+\`\`\`css
+p {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #334155;
+}
+
+.tieu-de-noi-bat {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+\`\`\``,
+  },
+
+  // 21. Thuộc tính biểu mẫu Form: required, placeholder, disabled, checked, name
+  {
+    keywords: ['required', 'placeholder', 'disabled', 'readonly', 'checked', 'thuộc tính form', 'bắt buộc nhập', 'chữ gợi ý trong ô nhập'],
+    title: 'Các thuộc tính bổ trợ quan trọng của thẻ Input trong Form',
+    generateAnswer: () => `### 🎯 Bản chất cốt lõi:
+Khi tạo ô nhập liệu \`<input>\`, các thuộc tính sau giúp nâng cao trải nghiệm người dùng:
+
+1. ⚠️ **\`required\` (Bắt buộc nhập):**
+   - Ngăn người dùng bỏ trống ô khi bấm nút Gửi. Nếu chưa nhập, trình duyệt sẽ cảnh báo: *"Vui lòng điền vào trường này"*.
+   - Cú pháp: \`<input type="text" name="hoten" required>\`.
+
+2. 💬 **\`placeholder\` (Văn bản gợi ý):**
+   - Hiển thị dòng chữ mờ mờ trong ô nhập để hướng dẫn người dùng mẫu nhập (khi người dùng gõ chữ vào thì dòng chữ này tự biến mất).
+   - Cú pháp: \`<input type="email" placeholder="ví_dụ: hs12@gmail.com">\`.
+
+3. 🔘 **\`checked\` (Chọn sẵn mặc định):**
+   - Dùng cho \`type="radio"\` hoặc \`type="checkbox"\` để chọn sẵn một mục khi vừa mở trang.
+   - Cú pháp: \`<input type="radio" name="gioitinh" value="Nam" checked>\`.
+
+4. 🚫 **\`disabled\` (Vô hiệu hóa):**
+   - Khóa ô nhập liệu, người dùng không thể bấm hay sửa được.`,
+  },
+
+  // 22. HTML là gì? CSS là gì? Chuẩn W3C
+  {
+    keywords: ['html là gì', 'css là gì', 'w3c là gì', 'ngôn ngữ đánh dấu', 'siêu văn bản', 'khái niệm html', 'vai trò của html'],
+    title: 'Khái niệm HTML, CSS và tổ chức chuẩn hóa web W3C',
+    generateAnswer: () => `### 🎯 Bản chất cốt lõi:
+- 🧱 **HTML (HyperText Markup Language - Ngôn ngữ đánh dấu siêu văn bản):**
+  * Là bộ xương cốt lõi xây dựng nên mọi trang web trên thế giới.
+  * HTML sử dụng các **thẻ (Tags)** để định nghĩa cấu trúc: Tiêu đề, đoạn văn, hình ảnh, bảng biểu, liên kết và video.
+  * HTML **không phải là ngôn ngữ lập trình** (vì không có biến, vòng lặp hay cấu trúc rẽ nhánh logic phức tạp) mà là **ngôn ngữ đánh dấu cấu trúc**.
+
+- 🎨 **CSS (Cascading Style Sheets - Bảng định kiểu tầng):**
+  * Là lớp áo trang trí diện mạo bên ngoài: Màu sắc, phông chữ, kích thước, khoảng cách lề và bố cục hiển thị trên màn hình.
+
+- 🌐 **W3C (World Wide Web Consortium):**
+  * Tổ chức quốc tế do Tim Berners-Lee sáng lập, chịu trách nhiệm ban hành các tiêu chuẩn kỹ thuật thống nhất cho Internet (như chuẩn HTML5, CSS3) để mọi trình duyệt (Chrome, Edge, Firefox, Safari) đều hiển thị trang web nhất quán.`,
   },
 ];
 
@@ -982,6 +1134,114 @@ function answerDirectTagQuestion(tagName: string, question: string): string | nu
       example: '<u>Từ được gạch chân</u>',
       tip: 'Tránh dùng u trong đoạn văn dài để người đọc không nhầm với liên kết link.'
     },
+    mark: {
+      desc: 'Tô sáng nổi bật một đoạn chữ với nền vàng như dùng bút dạ quang.',
+      type: 'paired',
+      example: '<mark>Nội dung quan trọng cần chú ý</mark>',
+      tip: 'Rất hữu ích khi làm nổi bật từ khóa tìm kiếm.'
+    },
+    del: {
+      desc: 'Đánh dấu đoạn văn bản bị gạch ngang (đã xóa/nội dung cũ).',
+      type: 'paired',
+      example: '<del>Giá cũ: 100.000đ</del> <span>Giá mới: 80.000đ</span>',
+      tip: 'Thường kết hợp với thẻ <ins> để chỉ nội dung mới thay thế.'
+    },
+    sup: {
+      desc: 'Tạo chữ/số chỉ số trên (Superscript) như số mũ toán học.',
+      type: 'paired',
+      example: '<p>Công thức diện tích hình tròn: S = &pi;r<sup>2</sup></p>',
+      tip: 'Chữ tự động co nhỏ lại và nâng lên phía trên dòng.'
+    },
+    sub: {
+      desc: 'Tạo chữ/số chỉ số dưới (Subscript) như công thức hóa học.',
+      type: 'paired',
+      example: '<p>Khí Carbon Dioxide: CO<sub>2</sub></p>',
+      tip: 'Chữ tự động co nhỏ lại và hạ xuống dưới chân dòng.'
+    },
+    select: {
+      desc: 'Tạo danh sách thực đơn lựa chọn thả xuống (Dropdown menu) trong Form.',
+      type: 'paired',
+      example: '<select name="lop">\n  <option value="12a1">Lớp 12A1</option>\n  <option value="12a2">Lớp 12A2</option>\n</select>',
+      tip: 'Bao bọc các thẻ con <option> bên trong.'
+    },
+    option: {
+      desc: 'Tạo từng mục phương án lựa chọn nằm bên trong thẻ <select>.',
+      type: 'paired',
+      example: '<option value="tin12" selected>Tin học 12</option>',
+      tip: 'Có thuộc tính selected để chọn sẵn mặc định.'
+    },
+    textarea: {
+      desc: 'Tạo ô nhập văn bản dài nhiều dòng (nhận xét, góp ý, bài viết).',
+      type: 'paired',
+      example: '<textarea rows="4" cols="30" placeholder="Ý kiến đóng góp..."></textarea>',
+      tip: 'Là thẻ cặp bắt buộc phải đóng </textarea>, khác với thẻ đơn <input>.'
+    },
+    meta: {
+      desc: 'Khai báo siêu dữ liệu (metadata) của trang web (bảng mã charset, viewport).',
+      type: 'void',
+      example: '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+      tip: 'Luôn đặt trong thẻ <head>, là thẻ đơn không có thẻ đóng.'
+    },
+    title: {
+      desc: 'Đặt tiêu đề trang hiển thị trên tab trình duyệt và kết quả tìm kiếm Google.',
+      type: 'paired',
+      example: '<title>Trang web Tin học 12 - Lớp 12A1</title>',
+      tip: 'Bắt buộc nằm trong cặp thẻ <head>...</head>.'
+    },
+    head: {
+      desc: 'Phần đầu tài liệu chứa thông tin cấu hình, tiêu đề, mã CSS và siêu dữ liệu.',
+      type: 'paired',
+      example: '<head>\n  <meta charset="UTF-8">\n  <title>Tiêu đề</title>\n</head>',
+      tip: 'Nội dung trong <head> không hiển thị trực tiếp trên giao diện màn hình.'
+    },
+    body: {
+      desc: 'Phần thân trang web chứa toàn bộ nội dung hiển thị cho người xem.',
+      type: 'paired',
+      example: '<body>\n  <h1>Tiêu đề chính</h1>\n  <p>Đoạn văn</p>\n</body>',
+      tip: 'Mọi chữ, ảnh, bảng, video mà người xem thấy đều phải nằm trong <body>.'
+    },
+    html: {
+      desc: 'Thẻ gốc (Root element) bao bọc toàn bộ mã nguồn của trang web.',
+      type: 'paired',
+      example: '<html lang="vi">\n  <head>...</head>\n  <body>...</body>\n</html>',
+      tip: 'Nên thêm thuộc tính lang="vi" để khai báo ngôn ngữ Tiếng Việt.'
+    },
+    style: {
+      desc: 'Dùng để nhúng mã định kiểu CSS nội bộ (Internal CSS) vào tài liệu.',
+      type: 'paired',
+      example: '<style>\n  h1 { color: #2563eb; text-align: center; }\n</style>',
+      tip: 'Thường đặt bên trong thẻ <head> của tài liệu HTML.'
+    },
+    link: {
+      desc: 'Liên kết tài nguyên bên ngoài (như tệp CSS, font chữ, favicon) vào trang.',
+      type: 'void',
+      example: '<link rel="stylesheet" href="style.css">',
+      tip: 'Là thẻ đơn, đặt trong phần <head>.'
+    },
+    header: {
+      desc: 'Thẻ ngữ nghĩa (Semantic) đại diện cho phần đầu trang web hoặc đầu bài viết.',
+      type: 'paired',
+      example: '<header>\n  <h1>TÊN WEBSITE</h1>\n</header>',
+      tip: 'Giúp cấu trúc trang rõ ràng, chuẩn SEO W3C.'
+    },
+    nav: {
+      desc: 'Thẻ ngữ nghĩa đại diện cho thanh điều hướng chứa các liên kết thực đơn.',
+      type: 'paired',
+      example: '<nav>\n  <a href="#home">Trang chủ</a> | <a href="#about">Giới thiệu</a>\n</nav>',
+      tip: 'Chuyên dùng cho Menu chính của website.'
+    },
+    main: {
+      desc: 'Thẻ ngữ nghĩa bao bọc khối nội dung chính, quan trọng nhất của trang.',
+      type: 'paired',
+      example: '<main>\n  <article>...</article>\n</main>',
+      tip: 'Mỗi trang web chỉ nên có 1 thẻ <main> duy nhất.'
+    },
+    footer: {
+      desc: 'Thẻ ngữ nghĩa đại diện cho phần chân trang (chứa bản quyền, thông tin liên hệ).',
+      type: 'paired',
+      example: '<footer>\n  <p>&copy; 2024 Bản quyền thuộc về Lớp 12A1</p>\n</footer>',
+      tip: 'Luôn nằm ở cuối cùng của phần thân <body>.'
+    },
   };
 
   const tagInfo = TAG_DESCRIPTIONS[t];
@@ -1066,29 +1326,92 @@ export function generateLocalPedagogicalAnswer(params: {
     return reviewText;
   }
 
-  // 3. Kiểm tra câu hỏi trực tiếp về một thẻ cụ thể (Ví dụ: "thẻ br là gì", "thẻ hr", "<p>", "thẻ a",...)
-  const tagInQuestionMatch = qLower.match(/thẻ\s+([a-zA-Z0-9]+)|<([a-zA-Z0-9]+)>/);
+function stripVietnameseDiacritics(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase();
+}
+
+  // 3. Kiểm tra nếu học sinh hỏi về một dòng cụ thể (Ví dụ: "lỗi dòng 7", "dòng 7 bị sai gì", "tại sao dòng 7 lỗi")
+  const lineMatch = qLower.match(/dòng\s*(\d+)|dong\s*(\d+)|line\s*(\d+)/i);
+  if (lineMatch && codeHtml) {
+    const targetLine = parseInt(lineMatch[1] || lineMatch[2] || lineMatch[3], 10);
+    const codeLines = codeHtml.split('\n');
+    if (targetLine >= 1 && targetLine <= codeLines.length) {
+      const lineContent = codeLines[targetLine - 1];
+      const allDiags = lintHtmlCode(codeHtml);
+      const lineDiag = allDiags.find((d) => d.line === targetLine);
+
+      let lineAnswer = `### 🎯 Nhận xét chuyên gia về Dòng ${targetLine}:\n\n`;
+      lineAnswer += `Mã nguồn tại **dòng ${targetLine}** của em:\n\`\`\`html\n${lineContent}\n\`\`\`\n\n`;
+
+      if (lineDiag) {
+        lineAnswer += `⚠️ **Lỗi phát hiện:** ${lineDiag.message}\n\n`;
+        if (lineDiag.suggestion) {
+          lineAnswer += `💡 **Hướng dẫn sửa:** ${lineDiag.suggestion}\n\n`;
+        }
+        if (lineDiag.quickFixCode) {
+          lineAnswer += `🔧 **Đoạn mã gợi ý:** \`${lineDiag.quickFixCode}\`\n\n`;
+        }
+      } else {
+        lineAnswer += `✅ **Đánh giá:** Dòng ${targetLine} có cú pháp hợp lệ, không có lỗi trực tiếp tại dòng này.\n\n`;
+        if (allDiags.length > 0) {
+          lineAnswer += `Tuy nhiên bài làm của em đang có lỗi ở các dòng khác:\n`;
+          allDiags.forEach((d) => {
+            lineAnswer += `- **Dòng ${d.line}:** ${d.message}\n`;
+          });
+        }
+      }
+      return lineAnswer;
+    }
+  }
+
+  // 4. Kiểm tra câu hỏi trực tiếp về một thẻ cụ thể (Ví dụ: "thẻ br là gì", "thẻ hr", "<p>", "thẻ a",...)
+  const tagInQuestionMatch = qLower.match(/thẻ\s+([a-zA-Z0-9]+)|the\s+([a-zA-Z0-9]+)|<([a-zA-Z0-9]+)>/);
   if (tagInQuestionMatch) {
-    const rawTag = tagInQuestionMatch[1] || tagInQuestionMatch[2];
+    const rawTag = tagInQuestionMatch[1] || tagInQuestionMatch[2] || tagInQuestionMatch[3];
     const directTagAns = answerDirectTagQuestion(rawTag, question);
     if (directTagAns) {
       return directTagAns;
     }
   }
 
-  // Hàm so khớp từ khóa chính xác, tránh việc các từ ngắn như 'tr', 'th' ăn vào 'trong', 'thẻ'
+  // Quét các thẻ HTML phổ biến nếu câu hỏi chứa tên thẻ dạng từ đơn (ví dụ: "br dùng làm gì", "tác dụng của hr", "thẻ img",...)
+  const POPULAR_TAGS = [
+    'br', 'hr', 'p', 'a', 'img', 'table', 'tr', 'td', 'th', 'ul', 'ol', 'li',
+    'form', 'input', 'button', 'select', 'textarea', 'div', 'span',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'audio', 'video', 'iframe',
+    'b', 'strong', 'i', 'em', 'u', 'mark', 'del', 'sup', 'sub',
+    'meta', 'title', 'head', 'body', 'html', 'style', 'link', 'header', 'nav', 'main', 'footer'
+  ];
+  for (const pt of POPULAR_TAGS) {
+    const ptRegex = new RegExp(`(?:^|[\\s<]|thẻ\\s+|the\\s+)${pt}(?:$|[\\s>,.?])`, 'i');
+    if (ptRegex.test(qLower)) {
+      const directAns = answerDirectTagQuestion(pt, question);
+      if (directAns) return directAns;
+    }
+  }
+
+  // Hàm so khớp từ khóa chính xác, hỗ trợ cả tiếng Việt có dấu và không dấu
+  const qStripped = stripVietnameseDiacritics(qLower);
   const matchKnowledgeKeyword = (q: string, kw: string): boolean => {
     const qClean = q.toLowerCase();
     const kwClean = kw.toLowerCase();
+    const kwStripped = stripVietnameseDiacritics(kwClean);
+
     if (kwClean.length <= 3) {
       const escaped = kwClean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`(?:^|[\\s<]|thẻ\\s+)${escaped}(?:$|[\\s>,.?])`, 'i');
-      return regex.test(qClean);
+      const regex = new RegExp(`(?:^|[\\s<]|thẻ\\s+|the\\s+)${escaped}(?:$|[\\s>,.?])`, 'i');
+      if (regex.test(qClean) || regex.test(qStripped)) return true;
+      return false;
     }
-    return qClean.includes(kwClean);
+    return qClean.includes(kwClean) || qStripped.includes(kwStripped);
   };
 
-  // 4. Khớp cơ sở tri thức theo từ khóa chuyên môn
+  // 5. Khớp cơ sở tri thức theo từ khóa chuyên môn
   for (const item of KNOWLEDGE_BASE) {
     const matched = item.keywords.some((kw) => matchKnowledgeKeyword(qLower, kw));
     if (matched) {
@@ -1102,14 +1425,16 @@ export function generateLocalPedagogicalAnswer(params: {
     }
   }
 
-  // 5. Nếu học sinh HỎI RÕ VỀ BÀI HỌC NÀY (VD: "yêu cầu bài này", "bài 10 làm thế nào", "mục tiêu bài học")
+  // 6. Nếu học sinh HỎI RÕ VỀ BÀI HỌC NÀY (VD: "yêu cầu bài này", "bài 10 làm thế nào", "mục tiêu bài học")
   const isAskingAboutCurrentLesson =
     qLower.includes('bài này') ||
     qLower.includes('yêu cầu bài') ||
     qLower.includes('mục tiêu bài') ||
     qLower.includes('hướng dẫn bài') ||
     qLower.includes('làm bài này') ||
-    qLower.includes('bài thực hành này');
+    qLower.includes('bài thực hành này') ||
+    qStripped.includes('bai nay') ||
+    qStripped.includes('yeu cau');
 
   if (isAskingAboutCurrentLesson && lesson && (lesson.title || lesson.objective)) {
     let lessonAdvice = `### 🎯 Thầy hướng dẫn trọng tâm ${lesson.lessonNumber || 'Bài học'}: ${lesson.title || 'Thực hành HTML'}\n\n`;
@@ -1135,7 +1460,7 @@ export function generateLocalPedagogicalAnswer(params: {
     return lessonAdvice;
   }
 
-  // 6. Trả lời thông minh chuyên gia cấp cao HTML
+  // 7. Trả lời thông minh chuyên gia cấp cao HTML
   return `### 🎯 Chào em! Thầy là Trợ Lý AI - Chuyên gia cấp cao HTML & Sư phạm Tin học 12.
 
 Về câu hỏi của em: **"${question}"**

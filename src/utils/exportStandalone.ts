@@ -109,28 +109,22 @@ export function generateStandaloneHtml(): string {
     
     <!-- COLUMN 1: GUIDE & TASKS (26%) -->
     <section class="w-[28%] bg-slate-900 border-r border-slate-800 flex flex-col h-full overflow-hidden">
-      <!-- Scrollable Tabs: Nhiệm vụ, Kiến thức, 10 Mẫu -->
+      <!-- Scrollable Tabs: Kiến thức đứng trước, 10 Mẫu, sau đó Nhiệm vụ -->
       <div class="flex border-b border-slate-800 bg-slate-950/60 text-xs shrink-0">
-        <button id="guideTabTasks" class="flex-1 py-2 px-2 font-semibold text-blue-400 border-b-2 border-blue-500 transition">
-          <i class="fa-solid fa-list-check mr-1"></i>Nhiệm vụ
-        </button>
-        <button id="guideTabTheory" class="flex-1 py-2 px-2 font-semibold text-slate-400 hover:text-slate-200 transition">
+        <button id="guideTabTheory" class="flex-1 py-2 px-2 font-semibold text-blue-400 border-b-2 border-blue-500 transition">
           <i class="fa-solid fa-book-open mr-1"></i>Kiến thức
         </button>
         <button id="guideTabSamples" class="flex-1 py-2 px-2 font-semibold text-amber-400 hover:text-amber-200 transition">
           <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>10 Mẫu
         </button>
+        <button id="guideTabTasks" class="flex-1 py-2 px-2 font-semibold text-slate-400 hover:text-slate-200 transition">
+          <i class="fa-solid fa-list-check mr-1"></i>Nhiệm vụ
+        </button>
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 space-y-4">
-        <!-- Panel 1: Checklists -->
-        <div id="panelTasks" class="space-y-3">
-          <div class="text-xs text-slate-400">Hoàn thành các tiêu chí sau và bấm <b>Chấm tự động</b>:</div>
-          <div id="checklistsContainer" class="space-y-2.5"></div>
-        </div>
-
-        <!-- Panel 2: Theory & Quick References -->
-        <div id="panelTheory" class="hidden space-y-4">
+        <!-- Panel 1: Theory & Quick References (Active by default) -->
+        <div id="panelTheory" class="space-y-4">
           <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-3">
             <h4 class="text-xs font-bold text-blue-300 uppercase tracking-wider mb-2">Mục tiêu bài học</h4>
             <p id="lessonObjective" class="text-xs text-slate-300 leading-relaxed"></p>
@@ -141,13 +135,19 @@ export function generateStandaloneHtml(): string {
           </div>
         </div>
 
-        <!-- Panel 3: 10 Mã Mẫu -->
+        <!-- Panel 2: 10 Mã Mẫu -->
         <div id="panelSamples" class="hidden space-y-3">
           <div class="text-xs text-amber-300 font-semibold flex items-center justify-between">
             <span>Kho 10 mã mẫu có sẵn (chạy ngay):</span>
             <span class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded text-[10px] font-mono">10/10</span>
           </div>
           <div id="samplesListContainer" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Panel 3: Checklists (Nhiệm vụ) -->
+        <div id="panelTasks" class="hidden space-y-3">
+          <div class="text-xs text-slate-400">Hoàn thành các tiêu chí sau và bấm <b>Chấm tự động</b>:</div>
+          <div id="checklistsContainer" class="space-y-2.5"></div>
         </div>
       </div>
     </section>

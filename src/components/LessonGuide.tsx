@@ -54,7 +54,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   loadedSnippetQuestionId,
   onOpenAiAssistant,
 }) => {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'theory' | 'samples' | 'quiz'>('tasks');
+  const [activeTab, setActiveTab] = useState<'theory' | 'samples' | 'tasks' | 'quiz'>('theory');
   const [selectedMissionFilter, setSelectedMissionFilter] = useState<number | 'all'>('all');
   const [expandedPreviewMissionId, setExpandedPreviewMissionId] = useState<number | null>(null);
   const [modalMission, setModalMission] = useState<LessonMission | null>(null);
@@ -92,20 +92,8 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
 
   return (
     <aside className="h-full flex flex-col bg-white border-r border-slate-200 select-none overflow-hidden text-slate-800">
-      {/* Navigation Sub-Tabs */}
+      {/* Navigation Sub-Tabs: Kiến thức đứng trước tiên, sau đó 10 Mẫu, sau đó Nhiệm vụ, rồi 10 Quiz */}
       <div className="flex border-b border-slate-200 bg-slate-50 text-xs shrink-0">
-        <button
-          onClick={() => setActiveTab('tasks')}
-          className={`flex-1 py-2 px-2.5 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeTab === 'tasks'
-              ? 'text-blue-600 border-b-2 border-blue-600 bg-white shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <ListChecks className="w-3.5 h-3.5" />
-          <span>Nhiệm vụ</span>
-        </button>
-
         <button
           onClick={() => setActiveTab('theory')}
           className={`flex-1 py-2 px-2.5 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -128,6 +116,18 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           <span className="font-bold">10 Mẫu</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('tasks')}
+          className={`flex-1 py-2 px-2.5 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'tasks'
+              ? 'text-blue-600 border-b-2 border-blue-600 bg-white shadow-xs'
+              : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <ListChecks className="w-3.5 h-3.5" />
+          <span>Nhiệm vụ</span>
         </button>
 
         <button

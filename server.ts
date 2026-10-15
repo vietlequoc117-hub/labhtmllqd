@@ -25,7 +25,7 @@ async function generateWithFallback(
   ai: GoogleGenAI,
   params: { contents: any; systemInstruction: string; temperature?: number }
 ) {
-  const models = ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'];
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro'];
   let lastError: any = null;
 
   for (const model of models) {
@@ -40,7 +40,7 @@ async function generateWithFallback(
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Model timeout')), 25000)
+        setTimeout(() => reject(new Error('Model timeout')), 15000)
       );
 
       const response = await Promise.race([generatePromise, timeoutPromise]);

@@ -440,15 +440,16 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
   for (let l = 0; l < lines.length; l++) {
     const lineText = lines[l];
     const lineNum = l + 1;
-    // Check if line has a '<' that doesn't have a matching '>' on this line or immediately following
+    // Check if line has a '<' that doesn't have a matching '>' on this line
     const openBracketIdx = lineText.lastIndexOf('<');
     if (openBracketIdx !== -1) {
       const remaining = lineText.slice(openBracketIdx);
       // Only flag if it actually looks like an HTML tag e.g. <div or </p or <h1, not a math comparison like 'x < 0'
       const looksLikeTag = /^<\/?([a-zA-Z0-9!-]+)/.test(remaining);
       if (looksLikeTag && !remaining.includes('>') && !remaining.includes('<!--')) {
-        // If next line doesn't start with continuing attributes
-        if (l === lines.length - 1 || !lines[l + 1].includes('>')) {
+        const nextLine = l < lines.length - 1 ? lines[l + 1] : '';
+        const isNextLineNewTag = /^\s*</.test(nextLine);
+        if (l === lines.length - 1 || isNextLineNewTag || !nextLine.includes('>')) {
           diagnostics.push({
             id: `unclosed-bracket-${lineNum}`,
             line: lineNum,
@@ -462,10 +463,26 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
     }
   }
 
-  // Sort by line number ascending
-  diagnostics.sort((a, b) => a.line - b.line);
+  // 5. Final sanitation:
+  // If the document has specific errors on content lines (such as line 7),
+  // NEVER report false cascaded errors on lines 11/12 (the closing </body> and </html> lines).
+  const sanitizedDiagnostics = diagnostics.filter((diag) => {
+    const lineContent = lines[diag.line - 1]?.trim().toLowerCase() || '';
+    const isClosingStructuralLine =
+      lineContent === '</body>' ||
+      lineContent === '</html>' ||
+      lineContent === '</body></html>';
+    // If this is a clean closing </body> or </html> line and other errors exist elsewhere, suppress it
+    if (isClosingStructuralLine && diagnostics.some((d) => d.line !== diag.line)) {
+      return false;
+    }
+    return true;
+  });
 
-  return diagnostics;
+  // Sort by line number ascending
+  sanitizedDiagnostics.sort((a, b) => a.line - b.line);
+
+  return sanitizedDiagnostics;
 }
 
 export function lintCssCode(css: string): CodeDiagnostic[] {
