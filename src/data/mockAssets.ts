@@ -200,18 +200,66 @@ export const MOCK_CLB_HTML = `<!DOCTYPE html>
   <title>CLB Thể Thao Học Đường</title>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      padding: 24px;
       background: #eff6ff;
       color: #1e3a8a;
+      line-height: 1.6;
+      margin: 0;
     }
-    h2 { border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border: 1px solid #bfdbfe;
+      max-width: 550px;
+      margin: 20px auto;
+    }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      margin-bottom: 12px;
+    }
+    h2 { margin-top: 0; color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 8px; }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      background: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-size: 13px;
+    }
+    .back-btn:hover { background: #1d4ed8; }
   </style>
 </head>
 <body>
-  <h2>Câu Lạc Bộ Thể Thao THPT</h2>
-  <p>Rèn luyện sức khỏe, tự tin tỏa sáng với các bộ môn Bóng đá, Cầu lông, Bóng rổ, Cờ vua.</p>
-  <p><strong>Lịch thi đấu tuần này:</strong> Chung kết giải bóng đá Khối 12 diễn ra vào 8h00 sáng Chủ nhật.</p>
+  <div class="card">
+    <span class="badge">Trang liên kết phụ: CLB.html</span>
+    <h2>Câu Lạc Bộ Thể Thao THPT</h2>
+    <p>Chào mừng bạn đã điều hướng thành công đến trang <strong>CLB.html</strong>!</p>
+    <p>Rèn luyện sức khỏe, tự tin tỏa sáng với các bộ môn Bóng đá, Cầu lông, Bóng rổ, Cờ vua.</p>
+    <ul>
+      <li><strong>Bóng đá:</strong> Sân cỏ nhân tạo - Chiều Thứ 3 & Thứ 5</li>
+      <li><strong>Cầu lông:</strong> Nhà tập đa năng - Chiều Thứ 4 & Thứ 7</li>
+      <li><strong>Lịch thi đấu tuần này:</strong> Chung kết giải bóng đá Khối 12 diễn ra vào 8h00 sáng Chủ nhật.</li>
+    </ul>
+    <button class="back-btn" onclick="window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*');">&larr; Quay lại trang chính (index.html)</button>
+  </div>
 </body>
 </html>`;
 
@@ -305,25 +353,127 @@ export function resolveVirtualPaths(html: string): string {
   processed = processed.replace(/src=["'](?:audio\/)?Quoc_ca\.mp3["']/gi, `src="${SAMPLE_AUDIO_URL}"`);
   processed = processed.replace(/<source([^>]+)src=["'](?:audio\/)?Quoc_ca\.mp3["']/gi, `<source$1src="${SAMPLE_AUDIO_URL}"`);
 
-  // Inject a small script to intercept navigation to thong_tin.html or CLB.html inside iframe
+  // Inject script to intercept link clicks:
+  // 1. External links (https://, http://, etc.) -> opened safely in new tab via window.open & parent postMessage (preventing YouTube/Google X-Frame-Options sad-face crash!)
+  // 2. Relative virtual pages (CLB.html, thong_tin.html, or any other .html) -> renders virtual subpage with back button
+  // 3. Anchor links (#section) -> smooth scroll
   const virtualNavigationScript = `
+  <style>
+    .virtual-toast-alert {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: toastIn 0.2s ease-out;
+      border: 1px solid #334155;
+      max-width: 90%;
+      text-align: left;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translate(-50%, -10px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+  </style>
   <script>
-    document.addEventListener('click', function(e) {
-      const link = e.target.closest('a');
-      if (!link) return;
-      const href = link.getAttribute('href');
-      if (href === 'thong_tin.html') {
-        e.preventDefault();
-        document.open();
-        document.write(${JSON.stringify(MOCK_THONG_TIN_HTML)});
-        document.close();
-      } else if (href === 'CLB.html') {
-        e.preventDefault();
-        document.open();
-        document.write(${JSON.stringify(MOCK_CLB_HTML)});
-        document.close();
+    (function() {
+      function showToast(msg) {
+        var old = document.getElementById('virtual-link-toast');
+        if (old) old.remove();
+        var toast = document.createElement('div');
+        toast.id = 'virtual-link-toast';
+        toast.className = 'virtual-toast-alert';
+        toast.innerHTML = '<span>🔗</span><span>' + msg + '</span>';
+        document.body.appendChild(toast);
+        setTimeout(function() {
+          if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 4000);
       }
-    });
+
+      document.addEventListener('click', function(e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        var href = link.getAttribute('href');
+        if (!href) return;
+
+        // Case 1: In-page anchor link (#section, #muc-luc, etc.)
+        if (href.charAt(0) === '#') {
+          if (href === '#') {
+            e.preventDefault();
+            return;
+          }
+          var targetId = href.substring(1);
+          var targetElem = document.getElementById(targetId) || document.querySelector('[name="' + targetId + '"]');
+          if (targetElem) {
+            e.preventDefault();
+            targetElem.scrollIntoView({ behavior: 'smooth' });
+          }
+          return;
+        }
+
+        // Case 2: External URLs (https://, http://, //, mailto:, tel:)
+        // Crucial fix: External websites like YouTube or Google explicitly block iframe embedding via X-Frame-Options.
+        // Opening them in a new tab allows the student to verify their link works 100% without crashing the preview iframe!
+        if (/^(https?:|\\/\\/|mailto:|tel:)/i.test(href)) {
+          e.preventDefault();
+          showToast('Đang mở liên kết ngoài <b>' + href + '</b> trong tab mới (do YouTube/Google bảo mật không cho nhúng trong khung nhỏ)!');
+          try {
+            window.parent.postMessage({ type: 'OPEN_EXTERNAL_URL', url: href }, '*');
+            window.open(href, '_blank', 'noopener,noreferrer');
+          } catch(err) {
+            console.warn(err);
+          }
+          return;
+        }
+
+        // Case 3: Local virtual HTML pages (CLB.html, thong_tin.html, or other pages)
+        e.preventDefault();
+        var cleanHref = href.replace(/^(\\.\\/|\\/)/, '').toLowerCase();
+
+        if (cleanHref.indexOf('clb') !== -1) {
+          window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: 'CLB.html' }, '*');
+          document.open();
+          document.write(${JSON.stringify(MOCK_CLB_HTML)});
+          document.close();
+        } else if (cleanHref.indexOf('thong_tin') !== -1) {
+          window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: 'thong_tin.html' }, '*');
+          document.open();
+          document.write(${JSON.stringify(MOCK_THONG_TIN_HTML)});
+          document.close();
+        } else {
+          var fileName = href.replace(/^(\\.\\/|\\/)/, '');
+          window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: fileName }, '*');
+          var genericHtml = '<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><title>' + fileName + '</title>' +
+            '<style>' +
+            'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:24px;background:#f8fafc;color:#1e293b;line-height:1.6;margin:0;}' +
+            '.card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);border:1px solid #e2e8f0;max-width:550px;margin:20px auto;}' +
+            '.badge{display:inline-block;background:#e0e7ff;color:#4338ca;font-size:12px;font-weight:700;padding:4px 10px;border-radius:9999px;margin-bottom:12px;}' +
+            'h2{margin-top:0;color:#0f172a;border-bottom:2px solid #6366f1;padding-bottom:8px;}' +
+            '.btn{display:inline-flex;align-items:center;margin-top:16px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;}' +
+            '.btn:hover{background:#4338ca;}' +
+            '</style></head><body><div class="card">' +
+            '<span class="badge">Trang ảo: ' + fileName + '</span>' +
+            '<h2>✓ Thẻ liên kết hoạt động chính xác!</h2>' +
+            '<p>Em đã liên kết thành công đến tệp <code>&lt;a href="' + href + '"&gt;</code>.</p>' +
+            '<p>Trong môi trường web thật, trình duyệt sẽ tải trang <strong>' + fileName + '</strong> tương ứng trong cùng thư mục dự án.</p>' +
+            '<button class="btn" onclick="window.parent.postMessage({ type: \\'RESTORE_MAIN_PAGE\\' }, \\'*\\');">&larr; Quay lại trang chính (index.html)</button>' +
+            '</div></body></html>';
+          document.open();
+          document.write(genericHtml);
+          document.close();
+        }
+      });
+    })();
   <\/script>
   `;
 

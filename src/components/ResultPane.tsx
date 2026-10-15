@@ -31,6 +31,8 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [currentVirtualPath, setCurrentVirtualPath] = useState('index.html');
+  const [externalToast, setExternalToast] = useState<string | null>(null);
 
   // Linter diagnostics for HTML and CSS
   const htmlDiagnostics = useMemo(() => lintHtmlCode(htmlCode), [htmlCode]);
@@ -42,6 +44,29 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
   }, [htmlDiagnostics, cssDiagnostics]);
 
   const hasFatalErrors = fatalErrors.length > 0;
+
+  // Listen for navigation messages from the sandboxed iframe
+  useEffect(() => {
+    const handleMsg = (e: MessageEvent) => {
+      if (!e.data) return;
+      if (e.data.type === 'OPEN_EXTERNAL_URL' && e.data.url) {
+        setExternalToast(e.data.url);
+        try {
+          window.open(e.data.url, '_blank', 'noopener,noreferrer');
+        } catch (err) {
+          console.warn(err);
+        }
+        setTimeout(() => setExternalToast(null), 4500);
+      } else if (e.data.type === 'NAVIGATE_VIRTUAL_PAGE' && e.data.page) {
+        setCurrentVirtualPath(e.data.page);
+      } else if (e.data.type === 'RESTORE_MAIN_PAGE') {
+        setCurrentVirtualPath('index.html');
+        updateIframe();
+      }
+    };
+    window.addEventListener('message', handleMsg);
+    return () => window.removeEventListener('message', handleMsg);
+  }, []);
 
   // Update iframe preview content
   const updateIframe = () => {
@@ -95,6 +120,7 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
   };
 
   useEffect(() => {
+    setCurrentVirtualPath('index.html');
     updateIframe();
   }, [htmlCode, cssCode, lesson.id, hasFatalErrors]);
 
@@ -206,8 +232,20 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
               </div>
               <div className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[11px] text-slate-600 font-mono flex items-center gap-1.5 shadow-xs truncate">
                 <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
-                <span className="truncate">virtual://lqd-html-lab/{lesson.lessonNumber.toLowerCase().replace(' ', '')}/index.html</span>
+                <span className="truncate">virtual://lqd-html-lab/{lesson.lessonNumber.toLowerCase().replace(' ', '')}/{currentVirtualPath}</span>
               </div>
+              {currentVirtualPath !== 'index.html' && (
+                <button
+                  onClick={() => {
+                    setCurrentVirtualPath('index.html');
+                    updateIframe();
+                  }}
+                  className="text-[10px] text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded transition cursor-pointer shrink-0"
+                  title="Quay lại trang chính index.html"
+                >
+                  ← Về index.html
+                </button>
+              )}
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shadow-2xs">
@@ -291,12 +329,20 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
                   </div>
                 </div>
               ) : (
-                <iframe
-                  ref={iframeRef}
-                  title="Kết quả trang web học sinh"
-                  sandbox="allow-scripts"
-                  className="w-full h-full border-0 bg-white"
-                />
+                <>
+                  {externalToast && (
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-3 py-1.5 rounded-lg text-xs shadow-lg border border-slate-700 flex items-center gap-2 animate-in fade-in slide-in-from-top-1 max-w-[90%]">
+                      <ExternalLink className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <span className="truncate">Đang mở liên kết trong tab mới: <b className="text-blue-300">{externalToast}</b></span>
+                    </div>
+                  )}
+                  <iframe
+                    ref={iframeRef}
+                    title="Kết quả trang web học sinh"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-modals"
+                    className="w-full h-full border-0 bg-white"
+                  />
+                </>
               )}
             </div>
           </div>
