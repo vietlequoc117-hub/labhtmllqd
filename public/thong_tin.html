@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông tin chi tiết - Tin học 12</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f8fafc;
+      color: #0f172a;
+      line-height: 1.6;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      max-width: 650px;
+      margin: 20px auto;
+      border: 1px solid #e2e8f0;
+      border-top: 6px solid #2563eb;
+    }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    h1 {
+      color: #1e40af;
+      margin-top: 0;
+      font-size: 22px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+    p {
+      color: #334155;
+      font-size: 14px;
+    }
+    ul {
+      background: #f1f5f9;
+      padding: 16px 20px 16px 36px;
+      border-radius: 10px;
+      border-left: 4px solid #3b82f6;
+      margin: 16px 0;
+    }
+    li {
+      margin-bottom: 8px;
+      color: #1e293b;
+      font-size: 13.5px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      background: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-size: 13px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .back-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Trang liên kết phụ: thong_tin.html</span>
+    <h1>Thông Tin Hoạt Động Đoàn &amp; CLB</h1>
+    <p>Chào mừng bạn đã điều hướng thành công đến trang <strong>thong_tin.html</strong>!</p>
+    <p>Đây là trang thông tin chi tiết chứa nội dung điều lệ, nội quy và danh sách các câu lạc bộ ngoại khóa của trường THPT trong học kỳ này.</p>
+    <ul>
+      <li><strong>Thời gian sinh hoạt:</strong> Chiều thứ Bảy hàng tuần (14h00 - 17h00)</li>
+      <li><strong>Địa điểm:</strong> Nhà tập đa năng &amp; Sân bóng cỏ nhân tạo</li>
+      <li><strong>Trang thiết bị:</strong> Nhà trường cung cấp đầy đủ dụng cụ học tập, bóng và lưới</li>
+    </ul>
+    <button class="back-btn" onclick="if (window.parent && window.parent !== window) { window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*'); } else { window.history.back(); }">&larr; Quay lại trang chính (index.html)</button>
+  </div>
+</body>
+</html>

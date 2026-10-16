@@ -2,8 +2,10 @@ import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { generateLocalPedagogicalAnswer, analyzeStudentCode } from './src/services/aiPedagogicalEngine.ts';
+import { MOCK_THONG_TIN_HTML, MOCK_CLB_HTML } from './src/data/mockAssets.ts';
 
 dotenv.config();
 
@@ -262,6 +264,25 @@ TÔN CHỈ VÀ NGUYÊN TẮC HÀNG ĐẦU:
   });
 
   return res.json({ answer: localAnswer });
+});
+
+// Explicit Virtual Lab HTML Page Handlers (100% immune to 404 on iframe or browser navigation)
+app.get(['/thong_tin.html', '/thong-tin.html', '/thongtin.html'], (req, res) => {
+  const filePath = path.resolve(__dirname, 'public', 'thong_tin.html');
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(MOCK_THONG_TIN_HTML);
+});
+
+app.get(['/CLB.html', '/clb.html'], (req, res) => {
+  const filePath = path.resolve(__dirname, 'public', 'CLB.html');
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(MOCK_CLB_HTML);
 });
 
 async function startServer() {

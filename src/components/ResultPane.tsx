@@ -50,13 +50,14 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
     if (!iframeRef.current) return;
     if (hasFatalErrors) return; // Do not render normal preview if code has syntax errors
 
-    const targetPath = overridePath !== undefined ? overridePath : currentVirtualPath;
+    const rawPath = overridePath !== undefined ? overridePath : currentVirtualPath;
+    const cleanPath = rawPath.toLowerCase().trim().split('#')[0].split('?')[0].replace(/^(\.\/|\/)/, '');
 
-    if (targetPath === 'thong_tin.html') {
+    if (cleanPath === 'thong_tin.html' || cleanPath === 'thongtin.html' || cleanPath === 'thong-tin.html') {
       iframeRef.current.srcdoc = resolveVirtualPaths(MOCK_THONG_TIN_HTML);
       return;
     }
-    if (targetPath === 'CLB.html' || targetPath === 'clb.html') {
+    if (cleanPath === 'clb.html') {
       iframeRef.current.srcdoc = resolveVirtualPaths(MOCK_CLB_HTML);
       return;
     }
@@ -245,7 +246,7 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
                 <button
                   onClick={() => {
                     setCurrentVirtualPath('index.html');
-                    updateIframe();
+                    updateIframe('index.html');
                   }}
                   className="text-[10px] text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded transition cursor-pointer shrink-0"
                   title="Quay lại trang chính index.html"

@@ -167,14 +167,23 @@ export const MOCK_THONG_TIN_HTML = `<!DOCTYPE html>
       border-radius: 9999px;
       margin-bottom: 12px;
     }
-    a.back-btn {
-      display: inline-block;
-      margin-top: 16px;
-      color: #2563eb;
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      background: #2563eb;
+      color: #ffffff;
       text-decoration: none;
       font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-size: 13px;
+      transition: background 0.2s, transform 0.1s;
     }
-    a.back-btn:hover { text-decoration: underline; }
+    .back-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
   </style>
 </head>
 <body>
@@ -188,7 +197,7 @@ export const MOCK_THONG_TIN_HTML = `<!DOCTYPE html>
       <li><strong>Địa điểm:</strong> Nhà tập đa năng & Sân bóng cỏ nhân tạo</li>
       <li><strong>Trang thiết bị:</strong> Nhà trường cung cấp đầy đủ vợt, bóng và lưới</li>
     </ul>
-    <button class="back-btn" onclick="window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*');">&larr; Quay lại trang chính (index.html)</button>
+    <button class="back-btn" onclick="if (window.parent && window.parent !== window) { window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*'); } else if (window.opener) { window.close(); } else { window.history.back(); }">&larr; Quay lại trang chính (index.html)</button>
   </div>
 </body>
 </html>`;
@@ -258,7 +267,7 @@ export const MOCK_CLB_HTML = `<!DOCTYPE html>
       <li><strong>Cầu lông:</strong> Nhà tập đa năng - Chiều Thứ 4 & Thứ 7</li>
       <li><strong>Lịch thi đấu tuần này:</strong> Chung kết giải bóng đá Khối 12 diễn ra vào 8h00 sáng Chủ nhật.</li>
     </ul>
-    <button class="back-btn" onclick="window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*');">&larr; Quay lại trang chính (index.html)</button>
+    <button class="back-btn" onclick="if (window.parent && window.parent !== window) { window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*'); } else { window.history.back(); }">&larr; Quay lại trang chính (index.html)</button>
   </div>
 </body>
 </html>`;
@@ -354,7 +363,7 @@ export function resolveVirtualPaths(html: string): string {
   processed = processed.replace(/<source([^>]+)src=["'](?:audio\/)?Quoc_ca\.mp3["']/gi, `<source$1src="${SAMPLE_AUDIO_URL}"`);
 
   // Inject script to intercept link clicks:
-  // 1. External links (https://, http://, etc.) -> opened safely in new tab via window.open & parent postMessage (preventing YouTube/Google X-Frame-Options sad-face crash!)
+  // 1. External links (https://, http://, etc.) -> opened safely in new tab via window.open & parent postMessage
   // 2. Relative virtual pages (CLB.html, thong_tin.html, or any other .html) -> renders virtual subpage with back button
   // 3. Anchor links (#section) -> smooth scroll
   const virtualNavigationScript = `
@@ -400,6 +409,21 @@ export function resolveVirtualPaths(html: string): string {
         }, 4000);
       }
 
+      function isExternalUrl(h) {
+        if (!h) return false;
+        var lower = h.toLowerCase();
+        return lower.indexOf('http://') === 0 ||
+               lower.indexOf('https://') === 0 ||
+               lower.indexOf('//') === 0 ||
+               lower.indexOf('mailto:') === 0 ||
+               lower.indexOf('tel:') === 0 ||
+               lower.indexOf('www.') === 0 ||
+               lower.indexOf('google.com') !== -1 ||
+               lower.indexOf('moet.gov.vn') !== -1 ||
+               lower.indexOf('youtube.com') !== -1 ||
+               lower.indexOf('facebook.com') !== -1;
+      }
+
       // Pre-patch existing external links to ensure target="_blank"
       function patchAllLinks() {
         var links = document.querySelectorAll('a');
@@ -407,10 +431,9 @@ export function resolveVirtualPaths(html: string): string {
           var a = links[i];
           var h = a.getAttribute('href');
           if (!h) continue;
-          var isExt = /^(https?:|\/\/|mailto:|tel:|www\.)/i.test(h) || /^[a-zA-Z0-9-]+\.(com|vn|edu\.vn|gov\.vn|net|org|io|dev|app|info)/i.test(h);
-          if (isExt) {
+          if (isExternalUrl(h)) {
             var fullUrl = h;
-            if (!/^(https?:|\/\/|mailto:|tel:)/i.test(h)) {
+            if (h.toLowerCase().indexOf('www.') === 0) {
               fullUrl = 'https://' + h;
               a.setAttribute('href', fullUrl);
             }
@@ -444,14 +467,10 @@ export function resolveVirtualPaths(html: string): string {
           return;
         }
 
-        // Case 2: External URLs (https://, http://, //, mailto:, tel:, or domain name like www.google.com)
-        var isHttpOrHttps = /^(https?:|\/\/|mailto:|tel:)/i.test(href);
-        var isDomainLike = /^(www\.|[a-zA-Z0-9-]+\.(com|vn|edu\.vn|gov\.vn|net|org|io|dev|app|info))/i.test(href);
-        var isExternal = isHttpOrHttps || isDomainLike;
-
-        if (isExternal) {
+        // Case 2: External URLs
+        if (isExternalUrl(href)) {
           var targetUrl = href;
-          if (!isHttpOrHttps && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+          if (href.toLowerCase().indexOf('www.') === 0) {
             targetUrl = 'https://' + href;
           }
 
@@ -466,28 +485,60 @@ export function resolveVirtualPaths(html: string): string {
           } catch(err) {
             console.warn(err);
           }
-          // Do NOT call e.preventDefault()!
-          // Allowing native click behavior lets the browser open target="_blank" reliably in a new tab!
           return;
         }
 
         // Case 3: Local virtual HTML pages (CLB.html, thong_tin.html, or other pages)
         e.preventDefault();
-        var cleanHref = href.replace(/^(\\.\\/|\\/)/, '').toLowerCase();
+        e.stopPropagation();
+        var cleanHref = href.replace(/^(\.\/|\/)/, '').toLowerCase();
 
-        if (cleanHref.indexOf('clb') !== -1) {
-          window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: 'CLB.html' }, '*');
-          document.open();
-          document.write(${JSON.stringify(MOCK_CLB_HTML)});
-          document.close();
-        } else if (cleanHref.indexOf('thong_tin') !== -1) {
-          window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: 'thong_tin.html' }, '*');
-          document.open();
-          document.write(${JSON.stringify(MOCK_THONG_TIN_HTML)});
-          document.close();
+        var isClb = cleanHref.indexOf('clb') !== -1;
+        var isThongTin = cleanHref.indexOf('thong_tin') !== -1 || cleanHref.indexOf('thongtin') !== -1 || cleanHref.indexOf('thong-tin') !== -1;
+
+        if (isClb) {
+          if (window.parent && window.parent !== window) {
+            try {
+              window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: 'CLB.html' }, '*');
+            } catch(err) {
+              console.warn(err);
+            }
+          } else {
+            try {
+              document.open();
+              document.write(${JSON.stringify(MOCK_CLB_HTML)});
+              document.close();
+            } catch(err) {
+              console.warn(err);
+            }
+          }
+          return;
+        } else if (isThongTin) {
+          if (window.parent && window.parent !== window) {
+            try {
+              window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: 'thong_tin.html' }, '*');
+            } catch(err) {
+              console.warn(err);
+            }
+          } else {
+            try {
+              document.open();
+              document.write(${JSON.stringify(MOCK_THONG_TIN_HTML)});
+              document.close();
+            } catch(err) {
+              console.warn(err);
+            }
+          }
+          return;
         } else {
-          var fileName = href.replace(/^(\\.\\/|\\/)/, '');
-          window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: fileName }, '*');
+          var fileName = href.replace(/^(\.\/|\/)/, '');
+          if (window.parent && window.parent !== window) {
+            try {
+              window.parent.postMessage({ type: 'NAVIGATE_VIRTUAL_PAGE', page: fileName }, '*');
+            } catch(err) {
+              console.warn(err);
+            }
+          }
           var genericHtml = '<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><title>' + fileName + '</title>' +
             '<style>' +
             'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:24px;background:#f8fafc;color:#1e293b;line-height:1.6;margin:0;}' +
@@ -501,20 +552,32 @@ export function resolveVirtualPaths(html: string): string {
             '<h2>✓ Thẻ liên kết hoạt động chính xác!</h2>' +
             '<p>Em đã liên kết thành công đến tệp <code>&lt;a href="' + href + '"&gt;</code>.</p>' +
             '<p>Trong môi trường web thật, trình duyệt sẽ tải trang <strong>' + fileName + '</strong> tương ứng trong cùng thư mục dự án.</p>' +
-            '<button class="btn" onclick="window.parent.postMessage({ type: \\'RESTORE_MAIN_PAGE\\' }, \\'*\\');">&larr; Quay lại trang chính (index.html)</button>' +
+            '<button class="btn" onclick="if (window.parent && window.parent !== window) { window.parent.postMessage({ type: \\'RESTORE_MAIN_PAGE\\' }, \\'*\\'); } else { window.history.back(); }">&larr; Quay lại trang chính (index.html)</button>' +
             '</div></body></html>';
-          document.open();
-          document.write(genericHtml);
-          document.close();
+          if (!window.parent || window.parent === window) {
+            try {
+              document.open();
+              document.write(genericHtml);
+              document.close();
+            } catch(err) {
+              console.warn(err);
+            }
+          }
         }
-      });
+      }, true);
     })();
   <\/script>
   `;
 
-  // Inject iframe src virtual resolver
-  processed = processed.replace(/src=["']thong_tin\.html["']/gi, `src="data:text/html;charset=utf-8,${encodeURIComponent(MOCK_THONG_TIN_HTML)}"`);
-  processed = processed.replace(/src=["']CLB\.html["']/gi, `src="data:text/html;charset=utf-8,${encodeURIComponent(MOCK_CLB_HTML)}"`);
+  // Inject iframe src virtual resolver (supports thong_tin.html, ./thong_tin.html, /thong_tin.html, clb.html)
+  processed = processed.replace(
+    /<iframe([^>]*?)src=["'](?:\.\/|\/)?thong_?tin\.html["']/gi,
+    `<iframe$1src="/thong_tin.html" srcdoc="${MOCK_THONG_TIN_HTML.replace(/"/g, '&quot;')}"`
+  );
+  processed = processed.replace(
+    /<iframe([^>]*?)src=["'](?:\.\/|\/)?clb\.html["']/gi,
+    `<iframe$1src="/CLB.html" srcdoc="${MOCK_CLB_HTML.replace(/"/g, '&quot;')}"`
+  );
 
   // Attach virtualNavigationScript before </body> or at the end
   if (processed.includes('</body>')) {

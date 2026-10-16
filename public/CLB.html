@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLB Thể Thao Học Đường - Tin học 12</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      padding: 24px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      border: 1px solid #bfdbfe;
+      max-width: 600px;
+      margin: 20px auto;
+      border-top: 6px solid #3b82f6;
+    }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 12px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #1e40af;
+      border-bottom: 2px solid #bfdbfe;
+      padding-bottom: 10px;
+      font-size: 22px;
+    }
+    ul {
+      background: #f8fafc;
+      padding: 16px 20px 16px 36px;
+      border-radius: 10px;
+      border-left: 4px solid #3b82f6;
+      margin: 16px 0;
+    }
+    li {
+      margin-bottom: 8px;
+      color: #1e293b;
+      font-size: 13.5px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+      background: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    .back-btn:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Trang liên kết phụ: CLB.html</span>
+    <h2>Câu Lạc Bộ Thể Thao THPT</h2>
+    <p>Chào mừng bạn đã điều hướng thành công đến trang <strong>CLB.html</strong>!</p>
+    <p>Rèn luyện sức khỏe, tự tin tỏa sáng với các bộ môn Bóng đá, Cầu lông, Bóng rổ, Cờ vua.</p>
+    <ul>
+      <li><strong>Bóng đá:</strong> Sân cỏ nhân tạo - Chiều Thứ 3 &amp; Thứ 5</li>
+      <li><strong>Cầu lông:</strong> Nhà tập đa năng - Chiều Thứ 4 &amp; Thứ 7</li>
+      <li><strong>Lịch thi đấu tuần này:</strong> Chung kết giải bóng đá Khối 12 diễn ra vào 8h00 sáng Chủ nhật.</li>
+    </ul>
+    <button class="back-btn" onclick="if (window.parent && window.parent !== window) { window.parent.postMessage({ type: 'RESTORE_MAIN_PAGE' }, '*'); } else { window.history.back(); }">&larr; Quay lại trang chính (index.html)</button>
+  </div>
+</body>
+</html>

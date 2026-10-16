@@ -222,7 +222,7 @@ export function generateStandaloneHtml(): string {
           </button>
         </div>
         <div class="flex-1 bg-white relative">
-          <iframe id="previewFrame" sandbox="allow-scripts" class="w-full h-full border-0"></iframe>
+          <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-popups" class="w-full h-full border-0"></iframe>
         </div>
       </div>
 
