@@ -210,20 +210,6 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
           >
             <Smartphone className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={() => updateIframe()}
-            className="p-1.5 hover:text-slate-900 hover:bg-slate-200/50 rounded transition cursor-pointer"
-            title="Tải lại iframe"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={openInNewWindow}
-            className="p-1.5 hover:text-slate-900 hover:bg-slate-200/50 rounded transition cursor-pointer"
-            title="Mở tab mới"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
 

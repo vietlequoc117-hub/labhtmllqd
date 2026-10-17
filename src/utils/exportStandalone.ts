@@ -217,9 +217,6 @@ export function generateStandaloneHtml(): string {
             <i class="fa-solid fa-globe text-slate-500"></i>
             <span class="text-[11px] text-slate-300 truncate">virtual-browser://khu-thuc-hanh-12</span>
           </span>
-          <button id="reloadIframe" class="hover:text-white transition" title="Tải lại iframe">
-            <i class="fa-solid fa-rotate-right text-xs"></i>
-          </button>
         </div>
         <div class="flex-1 bg-white relative">
           <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-popups" class="w-full h-full border-0"></iframe>
@@ -707,7 +704,9 @@ export function generateStandaloneHtml(): string {
     document.getElementById('tabPreview').onclick = () => switchResultTab('preview');
     document.getElementById('tabGrader').onclick = () => switchResultTab('grader');
     document.getElementById('tabAITutor').onclick = () => switchResultTab('ai');
-    document.getElementById('reloadIframe').onclick = runCode;
+    if (document.getElementById('reloadIframe')) {
+      document.getElementById('reloadIframe').onclick = runCode;
+    }
 
     // Guide tabs
     const gTasks = document.getElementById('guideTabTasks');
