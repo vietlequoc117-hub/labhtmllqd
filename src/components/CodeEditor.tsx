@@ -32,6 +32,24 @@ import {
   CodeDiagnostic
 } from '../utils/htmlLintValidator';
 
+const VOID_TAGS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+  '!doctype',
+]);
+
 interface CodeEditorProps {
   htmlCode: string;
   cssCode: string;
@@ -132,6 +150,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     handleScroll();
   }, [currentCode, fontSize]);
 
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Run on Ctrl+Enter or Cmd+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -156,28 +175,159 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       return;
     }
 
-    // Auto-indent on Enter
+    // Auto-closing HTML tag when '>' is pressed
+    if (activeTab === 'html' && e.key === '>') {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start !== end) return;
+
+      const value = textarea.value;
+      const textBefore = value.substring(0, start);
+      const textAfter = value.substring(end);
+
+      // Check if textBefore ends with an opening tag: <tagname or <tagname attr="val"
+      const match = textBefore.match(/<([a-zA-Z][a-zA-Z0-9-]*)(?:\s+[^>]*)?$/);
+
+      if (match) {
+        const fullTagWithoutGt = match[0];
+        const tagName = match[1].toLowerCase();
+        const isSelfClosing = fullTagWithoutGt.trim().endsWith('/');
+
+        if (!VOID_TAGS.has(tagName) && !isSelfClosing) {
+          e.preventDefault();
+
+          // Check if textAfter already starts with closing tag </tagName>
+          const expectedClosing = `</${tagName}>`;
+          if (textAfter.trimStart().startsWith(expectedClosing)) {
+            textarea.value = textBefore + '>' + textAfter;
+            textarea.selectionStart = textarea.selectionEnd = start + 1;
+            setCode(textarea.value);
+            return;
+          }
+
+          // Insert '>' + '</tagName>' and place cursor right after '>'
+          const closingTag = `></${tagName}>`;
+          textarea.value = textBefore + closingTag + textAfter;
+          const newCursorPos = start + 1;
+          textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+          setCode(textarea.value);
+          return;
+        }
+      }
+    }
+
+    // Auto-indent & smart line break on Enter
     if (e.key === 'Enter') {
       const textarea = textareaRef.current;
       if (!textarea) return;
 
-      const cursorPosition = textarea.selectionStart;
-      const textBeforeCursor = textarea.value.substring(0, cursorPosition);
-      const currentLine = textBeforeCursor.split('\n').pop() || '';
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start !== end) return;
+
+      const value = textarea.value;
+      const textBefore = value.substring(0, start);
+      const textAfter = value.substring(end);
+
+      // Smart Enter between <tag> and </tag>
+      const matchBefore = textBefore.match(/<([a-zA-Z][a-zA-Z0-9-]*)[^>]*>$/);
+      const matchAfter = textAfter.match(/^<\/([a-zA-Z][a-zA-Z0-9-]*)>/);
+
+      if (
+        activeTab === 'html' &&
+        matchBefore &&
+        matchAfter &&
+        matchBefore[1].toLowerCase() === matchAfter[1].toLowerCase()
+      ) {
+        e.preventDefault();
+
+        const currentLine = textBefore.split('\n').pop() || '';
+        const indentMatch = currentLine.match(/^\s*/);
+        const currentIndent = indentMatch ? indentMatch[0] : '';
+        const innerIndent = currentIndent + '  ';
+
+        const insertText = `\n${innerIndent}\n${currentIndent}`;
+        textarea.value = textBefore + insertText + textAfter;
+
+        const newCursorPos = start + 1 + innerIndent.length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+        setCode(textarea.value);
+        return;
+      }
+
+      // Standard auto-indent on Enter
+      const currentLine = textBefore.split('\n').pop() || '';
       const match = currentLine.match(/^\s+/);
       const indentation = match ? match[0] : '';
 
       if (indentation) {
         e.preventDefault();
-        const value = textarea.value;
         const insertText = '\n' + indentation;
-        textarea.value =
-          value.substring(0, cursorPosition) +
-          insertText +
-          value.substring(textarea.selectionEnd);
+        textarea.value = textBefore + insertText + textAfter;
         textarea.selectionStart = textarea.selectionEnd =
-          cursorPosition + insertText.length;
+          start + insertText.length;
         setCode(textarea.value);
+      }
+      return;
+    }
+
+    // Auto-close quote pairs "" and '' in HTML attributes
+    if ((e.key === '"' || e.key === "'") && activeTab === 'html') {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start !== end) return;
+
+      const value = textarea.value;
+      const textBefore = value.substring(0, start);
+      const textAfter = value.substring(end);
+      const quoteChar = e.key;
+
+      if (textAfter.startsWith(quoteChar)) {
+        e.preventDefault();
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+        return;
+      }
+
+      const lastOpenBracket = textBefore.lastIndexOf('<');
+      const lastCloseBracket = textBefore.lastIndexOf('>');
+
+      if (lastOpenBracket > lastCloseBracket && /=\s*$/.test(textBefore)) {
+        e.preventDefault();
+        textarea.value = textBefore + quoteChar + quoteChar + textAfter;
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+        setCode(textarea.value);
+        return;
+      }
+    }
+
+    // Smart Backspace for empty quote pairs "" or ''
+    if (e.key === 'Backspace') {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start !== end) return;
+
+      const value = textarea.value;
+      const textBefore = value.substring(0, start);
+      const textAfter = value.substring(end);
+
+      if (
+        (textBefore.endsWith('"') && textAfter.startsWith('"')) ||
+        (textBefore.endsWith("'") && textAfter.startsWith("'"))
+      ) {
+        e.preventDefault();
+        textarea.value = textBefore.slice(0, -1) + textAfter.slice(1);
+        textarea.selectionStart = textarea.selectionEnd = start - 1;
+        setCode(textarea.value);
+        return;
       }
     }
   };

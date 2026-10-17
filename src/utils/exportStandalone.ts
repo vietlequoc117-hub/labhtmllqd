@@ -629,18 +629,78 @@ export function generateStandaloneHtml(): string {
       saveCurrentCode();
     };
 
+    const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr', '!doctype']);
+
     document.getElementById('codeEditor').onkeydown = (e) => {
+      const editor = e.target;
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         runCode();
-      } else if (e.key === 'Tab') {
+        return;
+      }
+
+      if (e.key === 'Tab') {
         e.preventDefault();
-        const editor = e.target;
         const start = editor.selectionStart;
         const end = editor.selectionEnd;
         editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
         editor.selectionStart = editor.selectionEnd = start + 2;
         saveCurrentCode();
+        return;
+      }
+
+      if (activeEditorTab === 'html' && e.key === '>') {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        if (start === end) {
+          const val = editor.value;
+          const textBefore = val.substring(0, start);
+          const textAfter = val.substring(end);
+          const match = textBefore.match(/<([a-zA-Z][a-zA-Z0-9-]*)(?:\s+[^>]*)?$/);
+          if (match) {
+            const tagName = match[1].toLowerCase();
+            const isSelfClosing = match[0].trim().endsWith('/');
+            if (!VOID_TAGS.has(tagName) && !isSelfClosing) {
+              e.preventDefault();
+              const expectedClosing = '</' + tagName + '>';
+              if (textAfter.trimStart().startsWith(expectedClosing)) {
+                editor.value = textBefore + '>' + textAfter;
+                editor.selectionStart = editor.selectionEnd = start + 1;
+              } else {
+                editor.value = textBefore + '></' + tagName + '>' + textAfter;
+                editor.selectionStart = editor.selectionEnd = start + 1;
+              }
+              saveCurrentCode();
+              runCode();
+              return;
+            }
+          }
+        }
+      }
+
+      if (e.key === 'Enter') {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        if (start === end && activeEditorTab === 'html') {
+          const val = editor.value;
+          const textBefore = val.substring(0, start);
+          const textAfter = val.substring(end);
+          const matchBefore = textBefore.match(/<([a-zA-Z][a-zA-Z0-9-]*)[^>]*>$/);
+          const matchAfter = textAfter.match(/^<\/([a-zA-Z][a-zA-Z0-9-]*)>/);
+          if (matchBefore && matchAfter && matchBefore[1].toLowerCase() === matchAfter[1].toLowerCase()) {
+            e.preventDefault();
+            const currentLine = textBefore.split('\n').pop() || '';
+            const indentMatch = currentLine.match(/^\s*/);
+            const currentIndent = indentMatch ? indentMatch[0] : '';
+            const innerIndent = currentIndent + '  ';
+            const insertText = '\n' + innerIndent + '\n' + currentIndent;
+            editor.value = textBefore + insertText + textAfter;
+            editor.selectionStart = editor.selectionEnd = start + 1 + innerIndent.length;
+            saveCurrentCode();
+            runCode();
+            return;
+          }
+        }
       }
     };
 
