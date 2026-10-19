@@ -14,11 +14,7 @@ import {
   Lightbulb,
   CheckCircle2,
   ShieldCheck,
-  Globe,
-  Target,
-  Layers,
-  BookOpen,
-  Filter
+  Globe
 } from 'lucide-react';
 import { Lesson } from '../types';
 import { LESSONS } from '../data/lessons';
@@ -43,136 +39,14 @@ interface AiAssistantModalProps {
   onInsertCodeSnippet?: (snippet: string) => void;
 }
 
-interface QuickQuestion {
-  category: 'all' | 'html' | 'css' | 'review';
-  icon: string;
-  title: string;
-  query: string;
-  requiresCode?: boolean;
-}
-
-const CATEGORIZED_QUESTIONS: QuickQuestion[] = [
-  // 1. Toàn bộ chương trình (Bài 7 -> Bài 18)
-  {
-    category: 'all',
-    icon: '🗺️',
-    title: 'Lộ trình 12 bài Tin 12',
-    query: 'Thầy tóm tắt giúp em lộ trình toàn bộ 12 bài học HTML và CSS trong chương trình Tin học 12 gồm những bài nào và mục tiêu chính là gì?',
-  },
-  {
-    category: 'all',
-    icon: '🏛️',
-    title: 'Cấu trúc Website hoàn chỉnh',
-    query: 'Một trang web chuẩn hoàn chỉnh theo chuẩn HTML5 gồm những phần chính nào (<header>, <nav>, <main>, <footer>)? Cho em code mẫu chuẩn nhé!',
-  },
-  {
-    category: 'all',
-    icon: '⚖️',
-    title: 'So sánh HTML và CSS',
-    query: 'HTML và CSS khác nhau như thế nào? Tại sao người ta nói HTML là bộ khung xương còn CSS là trang trí nội thất của trang web?',
-  },
-  {
-    category: 'all',
-    icon: '🎯',
-    title: '5 Bẫy thi hay mất điểm',
-    query: 'Trong các đề thi trắc nghiệm và thực hành Tin học 12, những lỗi sai nào học sinh hay mắc phải và dễ bị trừ điểm nhất?',
-  },
-
-  // 2. Chuyên đề HTML (Bài 7 -> Bài 12)
-  {
-    category: 'html',
-    icon: '💡',
-    title: 'Block vs Inline',
-    query: 'Thẻ block (<div>, <p>, <h1>) khác gì thẻ inline (<span>, <a>)? Cho em ví dụ đời thực dễ nhớ để làm bài thi nhé!',
-  },
-  {
-    category: 'html',
-    icon: '📐',
-    title: 'Bảng: Rowspan & Colspan',
-    query: 'Làm sao để nhớ và sử dụng thuộc tính rowspan (gộp dòng) và colspan (gộp cột) trong thẻ <table> mà không bị lệch ô?',
-  },
-  {
-    category: 'html',
-    icon: '📝',
-    title: 'Biểu mẫu Form & Input',
-    query: 'Các loại input thông dụng nhất trong thẻ <form> thi Tin học 12 hay hỏi (text, radio, checkbox, submit, date, select) cách dùng ra sao?',
-  },
-  {
-    category: 'html',
-    icon: '🖼️',
-    title: 'Thẻ <img>, Video & Iframe',
-    query: 'Cách nhúng ảnh <img> có thuộc tính alt, video có controls và nhúng trang con bằng thẻ <iframe> chuẩn W3C như thế nào?',
-  },
-  {
-    category: 'html',
-    icon: '🔗',
-    title: 'Liên kết & Thẻ <a>',
-    query: 'Phân biệt liên kết tuyệt đối, liên kết tương đối cùng thư mục và liên kết neo nội bộ (#id) trong thẻ <a>?',
-  },
-
-  // 3. Chuyên đề CSS (Bài 13 -> Bài 18)
-  {
-    category: 'css',
-    icon: '🎨',
-    title: '3 Cách viết CSS',
-    query: 'Phân biệt 3 cách nhúng CSS vào trang web (Inline, Internal, External). Khi nào thì nên dùng cách nào?',
-  },
-  {
-    category: 'css',
-    icon: '📦',
-    title: 'Mô hình hộp Box Model',
-    query: 'Bản chất của mô hình hộp (Box Model) trong CSS là gì? Phân biệt margin (lề ngoài) và padding (đệm trong)?',
-  },
-  {
-    category: 'css',
-    icon: '🏷️',
-    title: 'Bộ chọn Class (.) vs ID (#)',
-    query: 'Khi nào dùng bộ chọn Class (.ten-lop) và khi nào dùng bộ chọn ID (#ten-id)? Mức độ ưu tiên của chúng ra sao?',
-  },
-  {
-    category: 'css',
-    icon: '↔️',
-    title: 'Căn giữa margin: auto',
-    query: 'Làm thế nào để căn giữa một khối <div> ra giữa màn hình bằng margin: auto và width?',
-  },
-  {
-    category: 'css',
-    icon: '🌈',
-    title: 'Màu sắc HEX & RGBA',
-    query: 'Cách sử dụng mã màu HEX (ví dụ #2563eb) và màu có độ trong suốt RGBA (rgba(0,0,0,0.5)) trong CSS?',
-  },
-
-  // 4. Soi lỗi bài làm
-  {
-    category: 'review',
-    icon: '🔍',
-    title: 'Soi lỗi mã bài làm',
-    query: 'Chuyên gia xem giúp em đoạn mã HTML/CSS em đang viết trong bài này có lỗi sai cú pháp hay chỗ nào chưa chuẩn không?',
-    requiresCode: true,
-  },
-];
-
 export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
   isOpen,
   onClose,
   currentLesson,
-  allLessons = LESSONS,
-  onSelectLesson,
   currentHtml,
   currentCss,
   onInsertCodeSnippet,
 }) => {
-  // Question Scope: 'all' = Toàn bộ chương trình (Bài 7 -> 18), 'specific' = Theo bài học cụ thể
-  const [questionScope, setQuestionScope] = useState<'all' | 'specific'>('all');
-  const [selectedLessonId, setSelectedLessonId] = useState<number>(currentLesson.id);
-  const [activeChipCategory, setActiveChipCategory] = useState<'all' | 'html' | 'css' | 'review'>('all');
-
-  const activeLesson = allLessons.find((l) => l.id === selectedLessonId) || currentLesson;
-
-  // Sync selectedLessonId when currentLesson changes externally
-  useEffect(() => {
-    setSelectedLessonId(currentLesson.id);
-  }, [currentLesson.id]);
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -192,7 +66,6 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
   ]);
 
   const [inputValue, setInputValue] = useState('');
-  const [includeCode, setIncludeCode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -227,7 +100,14 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
     const questionText = (textToSend || inputValue).trim();
     if (!questionText || isLoading) return;
 
-    const shouldAttachCode = forceIncludeCode !== undefined ? forceIncludeCode : includeCode;
+    // Determine if student code should be attached: true if forced, or question asks to review code
+    const lowerQ = questionText.toLowerCase();
+    const isCodeReview = forceIncludeCode ||
+      lowerQ.includes('soi lỗi') ||
+      lowerQ.includes('xem giúp') ||
+      lowerQ.includes('kiểm tra code') ||
+      lowerQ.includes('sửa lỗi') ||
+      lowerQ.includes('mã của em');
 
     const userMessageId = 'msg-' + Date.now();
     const newUserMessage: Message = {
@@ -235,7 +115,7 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
       sender: 'user',
       text: questionText,
       timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-      hasCodeAttached: shouldAttachCode,
+      hasCodeAttached: isCodeReview,
     };
 
     setMessages((prev) => [...prev, newUserMessage]);
@@ -254,13 +134,8 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
 
       let answerText = '';
 
-      const targetTitle = questionScope === 'all'
-        ? 'Toàn bộ chương trình Tin học 12 (HTML5 & CSS3 - Bài 7 đến Bài 18)'
-        : `${activeLesson.lessonNumber}: ${activeLesson.title}`;
-
-      const targetObjective = questionScope === 'all'
-        ? 'Giải đáp toàn diện, liên hệ kiến thức tổng thể giữa các bài học trong toàn bộ chương trình Tin học 12.'
-        : activeLesson.objective;
+      const targetTitle = 'Toàn bộ chương trình Tin học 12 (HTML5 & CSS3 - Bài 7 đến Bài 18)';
+      const targetObjective = 'Giải đáp toàn diện, liên hệ kiến thức tổng thể giữa các bài học trong toàn bộ chương trình Tin học 12.';
 
       try {
         const response = await fetch('/api/gemini/html-expert', {
@@ -269,12 +144,12 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
           body: JSON.stringify({
             question: questionText,
             history: historyPayload,
-            scope: questionScope,
+            scope: 'all',
             lessonTitle: targetTitle,
             lessonObjective: targetObjective,
-            codeHtml: shouldAttachCode ? currentHtml : '',
-            codeCss: shouldAttachCode ? currentCss : '',
-            includeCode: shouldAttachCode,
+            codeHtml: isCodeReview ? currentHtml : '',
+            codeCss: isCodeReview ? currentCss : '',
+            includeCode: isCodeReview,
           }),
         });
 
@@ -292,16 +167,14 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
       if (!answerText) {
         answerText = generateLocalPedagogicalAnswer({
           question: questionText,
-          lesson: questionScope === 'all'
-            ? {
-                lessonNumber: 'Toàn khóa',
-                title: 'Toàn bộ chương trình Tin học 12 (HTML & CSS)',
-                objective: 'Kiến thức tổng hợp toàn diện các bài từ Bài 7 đến Bài 18',
-              }
-            : activeLesson,
-          codeHtml: shouldAttachCode ? currentHtml : '',
-          codeCss: shouldAttachCode ? currentCss : '',
-          includeCode: shouldAttachCode,
+          lesson: {
+            lessonNumber: 'Toàn khóa',
+            title: 'Toàn bộ chương trình Tin học 12 (HTML & CSS)',
+            objective: 'Kiến thức tổng hợp toàn diện các bài từ Bài 7 đến Bài 18',
+          },
+          codeHtml: isCodeReview ? currentHtml : '',
+          codeCss: isCodeReview ? currentCss : '',
+          includeCode: isCodeReview,
         });
       }
 
@@ -317,16 +190,14 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
       console.error('Chat error fallback:', err);
       const fallbackText = generateLocalPedagogicalAnswer({
         question: questionText,
-        lesson: questionScope === 'all'
-          ? {
-              lessonNumber: 'Toàn khóa',
-              title: 'Toàn bộ chương trình Tin học 12 (HTML & CSS)',
-              objective: 'Kiến thức tổng hợp toàn diện các bài từ Bài 7 đến Bài 18',
-            }
-          : activeLesson,
-        codeHtml: shouldAttachCode ? currentHtml : '',
-        codeCss: shouldAttachCode ? currentCss : '',
-        includeCode: shouldAttachCode,
+        lesson: {
+          lessonNumber: 'Toàn khóa',
+          title: 'Toàn bộ chương trình Tin học 12 (HTML & CSS)',
+          objective: 'Kiến thức tổng hợp toàn diện các bài từ Bài 7 đến Bài 18',
+        },
+        codeHtml: isCodeReview ? currentHtml : '',
+        codeCss: isCodeReview ? currentCss : '',
+        includeCode: isCodeReview,
       });
 
       const assistantMessage: Message = {
@@ -353,11 +224,7 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
       {
         id: 'welcome-reset-' + Date.now(),
         sender: 'assistant',
-        text: `🔄 **Cuộc trò chuyện đã được làm mới.**\n\n${
-          questionScope === 'all'
-            ? '🌐 **Chế độ hiện tại:** Đặt câu hỏi tổng thể toàn bộ chương trình (Bài 7 đến Bài 18).'
-            : `🎯 **Chế độ hiện tại:** Đang tập trung vào **${activeLesson.lessonNumber}: ${activeLesson.title}**.`
-        }\n\nHãy đặt bất kỳ câu hỏi nào em thắc mắc nhé! Thầy luôn sẵn sàng giải đáp.`,
+        text: `🔄 **Cuộc trò chuyện đã được làm mới.**\n\n🌐 **Chế độ:** Giải đáp tổng thể toàn bộ chương trình Tin học 12 (Tất cả các bài từ Bài 7 đến Bài 18).\n\nHãy đặt bất kỳ câu hỏi nào em thắc mắc nhé! Thầy luôn sẵn sàng giải đáp.`,
         timestamp: 'Vừa xong',
       },
     ]);
@@ -507,10 +374,7 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
 
   if (!isOpen) return null;
 
-  // Filtered quick questions according to active tab
-  const filteredQuestions = activeChipCategory === 'all'
-    ? CATEGORIZED_QUESTIONS
-    : CATEGORIZED_QUESTIONS.filter((q) => q.category === activeChipCategory);
+
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-200">
@@ -538,23 +402,16 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
                     Chuyên gia cấp cao HTML & CSS
                   </span>
                 </h3>
-                {questionScope === 'all' ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs">
-                    <Globe className="w-3.5 h-3.5 text-emerald-600" />
-                    Chế độ: Toàn bộ chương trình (Bài 7 - 18)
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-300 shadow-2xs">
-                    <Target className="w-3.5 h-3.5 text-blue-600" />
-                    Chế độ: {activeLesson.lessonNumber}
-                  </span>
-                )}
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs">
+                  <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                  Toàn bộ chương trình (Bài 7 - 18)
+                </span>
               </div>
               <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
                 <span>Giải thích chuẩn W3C & SGK Tin học 12</span>
                 <span className="text-slate-400">•</span>
                 <span className="text-blue-600 font-medium">
-                  {questionScope === 'all' ? 'Hỏi đáp mọi bài học & câu hỏi tổng hợp' : `${activeLesson.lessonNumber}: ${activeLesson.title}`}
+                  Giải đáp tổng thể mọi bài học & câu hỏi toàn khóa
                 </span>
               </p>
             </div>
@@ -585,138 +442,7 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
           </div>
         </div>
 
-        {/* SCOPE SELECTOR: TOÀN BỘ CHƯƠNG TRÌNH VS THEO BÀI CỤ THỂ */}
-        <div className="px-4 py-2 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 border-b border-blue-200/80 flex items-center justify-between gap-3 flex-wrap shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-              <Layers className="w-3.5 h-3.5 text-blue-600" />
-              Phạm vi:
-            </span>
-            <div className="inline-flex p-0.5 bg-white border border-slate-300 rounded-lg shadow-2xs">
-              <button
-                onClick={() => setQuestionScope('all')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  questionScope === 'all'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-blue-700 hover:bg-slate-100'
-                }`}
-                title="Học sinh có thể hỏi tổng quát mọi bài từ Bài 7 đến Bài 18, so sánh và liên hệ kiến thức"
-              >
-                <Globe className="w-3.5 h-3.5" />
-                <span>Toàn bộ chương trình (Tất cả các bài)</span>
-              </button>
-              <button
-                onClick={() => setQuestionScope('specific')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  questionScope === 'specific'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-blue-700 hover:bg-slate-100'
-                }`}
-                title="Tập trung hỏi sâu và soi lỗi cho một bài học cụ thể"
-              >
-                <Target className="w-3.5 h-3.5" />
-                <span>Theo bài cụ thể</span>
-              </button>
-            </div>
-          </div>
 
-          {questionScope === 'specific' ? (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-slate-600 font-medium">Chọn bài:</span>
-              <select
-                value={selectedLessonId}
-                onChange={(e) => {
-                  const newId = Number(e.target.value);
-                  setSelectedLessonId(newId);
-                  const found = allLessons.find((l) => l.id === newId);
-                  if (found && onSelectLesson) {
-                    onSelectLesson(found);
-                  }
-                }}
-                className="text-xs font-semibold bg-white border border-blue-300 text-blue-900 rounded-lg px-2.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs cursor-pointer max-w-[240px]"
-              >
-                {allLessons.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.lessonNumber}: {l.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <div className="text-[11px] text-emerald-800 font-medium flex items-center gap-1 bg-emerald-100/70 px-2.5 py-0.5 rounded-full border border-emerald-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>Thầy giải đáp toàn bộ kiến thức Bài 7 - 18, không giới hạn!</span>
-            </div>
-          )}
-        </div>
-
-        {/* QUICK QUESTIONS CHIP CAROUSEL WITH CATEGORY FILTERS */}
-        <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 shrink-0 space-y-1.5">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <span className="font-bold text-slate-500 flex items-center gap-1 shrink-0">
-              <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-              Gợi ý hỏi nhanh:
-            </span>
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-              <button
-                onClick={() => setActiveChipCategory('all')}
-                className={`px-2 py-0.5 rounded-md font-semibold text-[10px] transition cursor-pointer ${
-                  activeChipCategory === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200/70 hover:bg-slate-200 text-slate-700'
-                }`}
-              >
-                🌐 Toàn khóa
-              </button>
-              <button
-                onClick={() => setActiveChipCategory('html')}
-                className={`px-2 py-0.5 rounded-md font-semibold text-[10px] transition cursor-pointer ${
-                  activeChipCategory === 'html'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200/70 hover:bg-slate-200 text-slate-700'
-                }`}
-              >
-                📘 HTML (B7-12)
-              </button>
-              <button
-                onClick={() => setActiveChipCategory('css')}
-                className={`px-2 py-0.5 rounded-md font-semibold text-[10px] transition cursor-pointer ${
-                  activeChipCategory === 'css'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200/70 hover:bg-slate-200 text-slate-700'
-                }`}
-              >
-                🎨 CSS (B13-18)
-              </button>
-              <button
-                onClick={() => setActiveChipCategory('review')}
-                className={`px-2 py-0.5 rounded-md font-semibold text-[10px] transition cursor-pointer ${
-                  activeChipCategory === 'review'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200/70 hover:bg-slate-200 text-slate-700'
-                }`}
-              >
-                🔍 Soi lỗi bài làm
-              </button>
-            </div>
-          </div>
-
-          {/* Chips list */}
-          <div className="overflow-x-auto scrollbar-none flex items-center gap-2 pt-0.5">
-            {filteredQuestions.map((q, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSendMessage(q.query, q.requiresCode)}
-                disabled={isLoading}
-                className="px-2.5 py-1 rounded-full bg-white hover:bg-blue-50/70 hover:border-blue-300 border border-slate-200 text-slate-700 hover:text-blue-700 text-[11px] font-medium transition cursor-pointer shrink-0 flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
-              >
-                <span>{q.icon}</span>
-                <span>{q.title}</span>
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* MESSAGES SCROLL AREA */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
@@ -787,20 +513,9 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
 
         {/* INPUT FORM & OPTIONS */}
         <div className="p-3 bg-white border-t border-slate-200 shrink-0 space-y-2">
-          {/* Include code toggle */}
-          <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={includeCode}
-                onChange={(e) => setIncludeCode(e.target.checked)}
-                className="rounded border-slate-300 text-blue-600 focus:ring-0 cursor-pointer"
-              />
-              <span className="hover:text-slate-800">
-                Gửi kèm mã HTML/CSS bài học hiện tại ({currentLesson.lessonNumber}) để thầy soi lỗi
-              </span>
-            </label>
-            <span className="text-slate-400 hidden sm:inline">Nhấn <b>Enter</b> để gửi, <b>Shift+Enter</b> để xuống dòng</span>
+          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+            <span>Hỏi bất kỳ kiến thức nào về HTML, CSS và chương trình Tin học 12 (Bài 7 - 18)</span>
+            <span className="hidden sm:inline">Nhấn <b>Enter</b> để gửi, <b>Shift+Enter</b> để xuống dòng</span>
           </div>
 
           <div className="flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition">
@@ -809,11 +524,7 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={
-                questionScope === 'all'
-                  ? 'Hỏi bất kỳ kiến thức nào trong toàn bộ chương trình Tin học 12 (Bài 7 đến 18, so sánh, ôn thi, cấu trúc web...)'
-                  : `Hỏi về kiến thức hoặc soi lỗi trong ${activeLesson.lessonNumber}: ${activeLesson.title}...`
-              }
+              placeholder="Hỏi bất kỳ kiến thức nào trong toàn bộ chương trình Tin học 12 (Bài 7 đến 18, so sánh, ôn thi, cấu trúc web...)"
               rows={2}
               className="flex-1 bg-transparent text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:outline-none resize-none leading-relaxed"
             />
