@@ -407,6 +407,8 @@ export default function App() {
         isOpen={isAiAssistantOpen}
         onClose={() => setIsAiAssistantOpen(false)}
         currentLesson={currentLesson}
+        allLessons={LESSONS}
+        onSelectLesson={(lesson) => setCurrentLesson(lesson)}
         currentHtml={currentHtml}
         currentCss={currentCss}
         onInsertCodeSnippet={handleInsertSnippet}

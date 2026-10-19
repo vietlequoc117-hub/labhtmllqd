@@ -185,6 +185,163 @@ interface KnowledgeItem {
 }
 
 const KNOWLEDGE_BASE: KnowledgeItem[] = [
+  // 0. Tổng quan lộ trình toàn bộ 12 bài học Tin học 12 (HTML & CSS)
+  {
+    keywords: [
+      'toan bo chuong trinh', 'tat ca cac bai', 'tong quan chuong trinh', 'lo trinh', 'bao nhieu bai',
+      'cac bai hoc', 'chuong trinh tin hoc 12', 'tong the', 'tom tat cac bai', 'tin hoc 12 hoc gi',
+      'toàn bộ chương trình', 'tất cả các bài', 'tổng quan', 'lộ trình', 'các bài học', 'tổng thể'
+    ],
+    title: 'Tổng quan toàn bộ 12 bài học HTML & CSS trong chương trình Tin học 12',
+    generateAnswer: () => `### 🎯 Bức tranh toàn cảnh: Chương trình HTML & CSS Tin học 12 (Bộ Kết nối tri thức)
+Chương trình được thiết kế khoa học gồm **12 bài học thực hành xuyên suốt** chia thành 2 giai đoạn lớn:
+
+---
+
+### 📘 GIAI ĐOẠN 1: XÂY DỰNG KHUNG SƯỜN & NỘI DUNG VỚI HTML (Bài 7 → Bài 12)
+1. **Bài 7: HTML và Cấu trúc trang web** — Cấu trúc \`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, \`<body>\`, tiêu đề \`<h1>\`-\`<h6>\`, đoạn văn \`<p>\`, ngắt dòng \`<br>\`, kẻ ngang \`<hr>\`.
+2. **Bài 8: Định dạng văn bản** — In đậm (\`<b>\`, \`<strong>\`), in nghiêng (\`<i>\`, \`<em>\`), gạch chân (\`<u>\`), số mũ \`<sup>\`, chỉ số dưới \`<sub>\`, đánh dấu \`<mark>\`.
+3. **Bài 9: Bảng (Table) và Danh sách** — Bảng \`<table>\`, \`<tr>\`, \`<th>\`, \`<td>\`, gộp dòng \`rowspan\`, gộp cột \`colspan\`; Danh sách không thứ tự \`<ul>\`, có thứ tự \`<ol>\`, mục \`<li>\`.
+4. **Bài 10: Liên kết trong trang web** — Thẻ \`<a>\`, thuộc tính \`href\`, liên kết tuyệt đối (URL), liên kết tương đối (tệp nội bộ), liên kết neo nội bộ (\`#id\`), liên kết hình ảnh.
+5. **Bài 11: Đa phương tiện & Iframe** — Nhúng ảnh \`<img>\`, video \`<video controls>\`, âm thanh \`<audio controls>\`, khung nhúng nội tuyến \`<iframe>\`.
+6. **Bài 12: Biểu mẫu (Form)** — Thẻ \`<form>\`, các loại \`<input>\` (text, number, date, radio, checkbox, submit, reset), danh sách thả xuống \`<select>/<option>\`, hộp văn bản \`<textarea>\`.
+
+---
+
+### 🎨 GIAI ĐOẠN 2: THIẾT KẾ GIAO DIỆN & TRANG TRÍ VỚI CSS (Bài 13 → Bài 18)
+7. **Bài 13: Làm quen với CSS** — 3 cách nhúng CSS (Inline, Internal, External), bộ chọn phần tử (\`p\`), bộ chọn lớp (\`.class\`), bộ chọn định danh (\`#id\`).
+8. **Bài 14: Định dạng văn bản bằng CSS** — Kiểu chữ \`font-family\`, cỡ chữ \`font-size\`, căn lề \`text-align\`, độ dãn dòng \`line-height\`, trang trí \`text-decoration\`.
+9. **Bài 15: Tạo màu cho chữ và nền** — Màu chữ \`color\`, màu nền \`background-color\`, đường viền \`border\`, bo góc \`border-radius\`, đổ bóng \`box-shadow\`.
+10. **Bài 16: Định dạng khung (Box Model)** — Mô hình hộp 4 lớp: \`content\`, \`padding\`, \`border\`, \`margin\`, kỹ thuật căn giữa khối \`margin: auto\`, \`box-sizing: border-box\`.
+11. **Bài 17: Mức ưu tiên của các bộ chọn** — Thứ tự tầng CSS (Cascading), quy tắc ghi đè (\`!important\` > Inline > ID > Class > Element).
+12. **Bài 18: Thực hành tổng hợp** — Tích hợp toàn diện HTML và CSS để tạo website giới thiệu trường học, CLB hoặc dự án cá nhân hoàn chỉnh.
+
+---
+
+💡 **Lời khuyên từ thầy:** *Em đang muốn tìm hiểu sâu hoặc ôn tập bài nào trong 12 bài trên, cứ thoải mái hỏi thầy nhé!*`,
+  },
+
+  // 0.1 Cấu trúc tổng thể của một trang web chuẩn (Full Web Architecture)
+  {
+    keywords: [
+      'cau truc tong the', 'website hoan chinh', 'trang web hoan chinh', 'gom nhung phan nao', 'bo cuc website',
+      'header nav main footer', 'xay dung website', 'cấu trúc tổng thể', 'trang web hoàn chỉnh', 'website chuẩn'
+    ],
+    title: 'Cấu trúc tổng thể của một website hoàn chỉnh chuẩn HTML5 & CSS3',
+    generateAnswer: () => `### 🎯 Cấu trúc chuẩn của một website hoàn chỉnh (Semantic HTML5)
+Một trang web hiện đại theo chuẩn W3C và SGK Tin học 12 luôn được tổ chức theo cấu trúc ngữ nghĩa rõ ràng gồm **5 khối chính**:
+
+---
+
+### 🏗️ Sơ đồ bố cục chuẩn:
+1. 🏷️ **\`<header>\` (Phần đầu trang):** Chứa Logo, Tiêu đề chính của website (\`<h1>\`) và khẩu hiệu (slogan).
+2. 🧭 **\`<nav>\` (Thanh điều hướng):** Chứa thanh Menu các liên kết (\`<a href="...">\`) dẫn đến Trang chủ, Giới thiệu, Tin tức, Liên hệ.
+3. 📰 **\`<main>\` (Khối nội dung cốt lõi):** Chứa nội dung chính của trang web. Bên trong chia thành các \`<section>\` (chuyên mục) hoặc \`<article>\` (bài viết).
+4. 📌 **\`<aside>\` (Thanh bên / Sidebar - tùy chọn):** Chứa danh mục phụ, tin xem nhiều, quảng cáo hoặc liên kết nhanh.
+5. 📜 **\`<footer>\` (Chân trang):** Chứa thông tin bản quyền, địa chỉ liên hệ, email nhà trường, liên kết mạng xã hội.
+
+---
+
+### 💻 Mã khung sườn website hoàn chỉnh mẫu:
+\`\`\`html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Trường THPT Chuyên</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 1. Header -->
+  <header>
+    <h1>CỔNG THÔNG TIN ĐOÀN TRƯỜNG THPT</h1>
+    <p>Năng động - Sáng tạo - Chinh phục tri thức</p>
+  </header>
+
+  <!-- 2. Menu Navigation -->
+  <nav>
+    <a href="#trang-chu">Trang chủ</a> |
+    <a href="#hoat-dong">Hoạt động</a> |
+    <a href="#clb">Câu lạc bộ</a> |
+    <a href="#lien-he">Liên hệ</a>
+  </nav>
+
+  <!-- 3. Nội dung chính -->
+  <main>
+    <section id="hoat-dong">
+      <h2>Hoạt Động Nổi Bật Tuần Này</h2>
+      <p>Hội thao thanh niên khỏe khối 12 diễn ra sôi nổi tại sân bóng.</p>
+    </section>
+  </main>
+
+  <!-- 4. Chân trang -->
+  <footer>
+    <p>&copy; 2024 Đoàn Trường THPT. Thiết kế bởi Học sinh Khối 12.</p>
+  </footer>
+</body>
+</html>
+\`\`\`
+
+🚀 **Mẹo thi:** Dùng các thẻ ngữ nghĩa \`<header>\`, \`<nav>\`, \`<main>\`, \`<footer>\` thay vì toàn bộ thẻ \`<div>\` sẽ giúp trang web đạt điểm tối đa tiêu chí chuẩn SEO W3C!`,
+  },
+
+  // 0.2 So sánh HTML và CSS
+  {
+    keywords: [
+      'so sanh html va css', 'khac nhau giua html va css', 'html la gi css la gi', 'moi quan he html css',
+      'so sánh html và css', 'khác nhau giữa html và css', 'vai trò của html và css', 'mối quan hệ giữa html và css'
+    ],
+    title: 'So sánh và Mối quan hệ giữa HTML và CSS trong lập trình web',
+    generateAnswer: () => `### 🎯 Mối quan hệ cốt lõi giữa HTML và CSS:
+Một trang web hoàn chỉnh luôn cần sự phối hợp nhịp nhàng của cả hai công nghệ:
+
+| Tiêu chí | HTML (HyperText Markup Language) | CSS (Cascading Style Sheets) |
+| :--- | :--- | :--- |
+| **Bản chất** | Ngôn ngữ đánh dấu siêu văn bản | Ngôn ngữ quy định kiểu dáng / trang trí |
+| **Ẩn dụ xây nhà** | 🧱 **Bộ khung xương, gạch, cột nhà, tường vách** | 🎨 **Sơn tường, rèm cửa, đèn led, nội thất trang trí** |
+| **Nhiệm vụ chính** | Tạo ra nội dung (chữ, bảng, ảnh, link, form) | Làm đẹp nội dung (màu sắc, font chữ, kích cỡ, bố cục) |
+| **Đơn vị cấu thành** | Các thẻ đánh dấu: \`<h1>\`, \`<p>\`, \`<table>\`, \`<a>\`... | Các luật bộ chọn: \`p { color: red; font-size: 16px; }\` |
+| **Nếu thiếu nó** | Không có trang web (không có dữ liệu hiển thị) | Trang web hiển thị dạng văn bản thô sơ đen trắng |
+
+---
+
+### 💡 3 Cách kết nối CSS vào HTML (Cực kỳ hay thi trắc nghiệm):
+1. **Inline CSS:** Viết trực tiếp trong thuộc tính \`style\` của thẻ (ví dụ \`<p style="color: blue;">\`).
+2. **Internal CSS:** Viết trong cặp thẻ \`<style>\` đặt ở phần \`<head>\` của tệp HTML.
+3. **External CSS (Khuyên dùng nhất):** Viết ra tệp riêng \`style.css\` rồi nhúng bằng thẻ \`<link rel="stylesheet" href="style.css">\` trong \`<head>\`.`,
+  },
+
+  // 0.3 Cẩm nang ôn thi & các lỗi dễ bị trừ điểm trong Tin học 12
+  {
+    keywords: [
+      'on thi', 'de thi', 'thi tot nghiep', 'loi thuong gap', 'meo thi', 'trac nghiem tin hoc 12',
+      'ôn thi', 'đề thi', 'lỗi thường gặp', 'mẹo thi', 'bẫy thi', 'các lỗi hay gặp'
+    ],
+    title: 'Cẩm nang ôn thi và các bẫy thường gặp trong đề thi Tin học 12',
+    generateAnswer: () => `### 🎯 5 Bẫy trắc nghiệm & thực hành học sinh dễ mất điểm nhất:
+
+1. ⚠️ **BẪY 1: Nhầm lẫn Thẻ đơn (Void) và Thẻ cặp**
+   - Thẻ đơn: \`<img>\`, \`<br>\`, \`<hr>\`, \`<input>\`, \`<link>\`, \`<meta>\`. **KHÔNG BAO GIỜ có thẻ đóng** như \`</img>\`, \`</br>\`, \`</hr>\`!
+   - Thẻ cặp: Bắt buộc phải có thẻ đóng \`</tag>\` (như \`<h1>...</h1>\`, \`<p>...</p>\`, \`<a>...</a>\`, \`<table>...</table>\`).
+
+2. ⚠️ **BẪY 2: Bảng Table - Nhầm lẫn \`colspan\` và \`rowspan\`**
+   - \`colspan\` = Gộp **CỘT** (ngang). Gộp bao nhiêu cột thì ở hàng đó bớt bấy nhiêu ô phía sau.
+   - \`rowspan\` = Gộp **DÒNG/HÀNG** (dọc). Hàng bên dưới phải bớt ô tương ứng.
+
+3. ⚠️ **BẪY 3: Đường dẫn liên kết & Hình ảnh**
+   - Tệp cùng thư mục: \`href="thong_tin.html"\` hoặc \`src="thethao.png"\` (tuyệt đối không thêm ổ đĩa C:\\...).
+   - Bắt buộc có thuộc tính \`alt\` trong thẻ \`<img>\` để mô tả ảnh phòng khi ảnh bị lỗi mạng.
+
+4. ⚠️ **BẪY 4: Cú pháp CSS - Quên dấu chấm phẩy \`;\` và dấu hai chấm \`:\`**
+   - Đúng: \`p { color: red; font-size: 16px; }\`
+   - Nhầm: Dùng dấu bằng \`=\` thay vì \`:\` (ví dụ \`color = red\` là sai hoàn toàn trong CSS!).
+
+5. ⚠️ **BẪY 5: Mô hình hộp (Box Model) - Phân biệt \`margin\` và \`padding\`**
+   - \`padding\`: Đệm lót **bên trong** đường viền (từ chữ đến viền).
+   - \`margin\`: Lề khoảng cách **bên ngoài** đường viền (từ hộp này đến hộp khác). Căn giữa dùng \`margin: auto\`.`,
+  },
+
   // 1. Phân biệt Block vs Inline
   {
     keywords: ['block', 'inline', 'div', 'span', 'khối', 'nội dòng', 'khác nhau giữa div và span', 'phan biet block inline'],

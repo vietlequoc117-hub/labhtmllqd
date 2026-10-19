@@ -255,7 +255,7 @@ export function generateStandaloneHtml(): string {
         </div>
         <div id="aiChatHistory" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
           <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700/60 text-slate-300 leading-relaxed">
-            Xin chào em! Thầy là Trợ Lý AI - Chuyên gia cấp cao HTML & Sư phạm Tin học 12. Khi em gặp khó khăn về thẻ HTML, bảng table hay biểu mẫu form, hãy hỏi thầy nhé. Thầy sẽ giải đáp chính xác và gợi ý để em tự sửa code thành công!
+            Xin chào em! Thầy là Trợ Lý AI - Chuyên gia cấp cao HTML & Sư phạm Tin học 12. Thầy sẵn sàng giải đáp <b>TỔNG THỂ TẤT CẢ CÁC BÀI HỌC (từ Bài 7 đến Bài 18)</b> trong chương trình Tin học 12 cũng như mọi kiến thức về HTML & CSS. Hãy hỏi thầy bất cứ câu hỏi nào nhé!
           </div>
         </div>
         <div class="p-3 border-t border-slate-800 bg-slate-950 shrink-0">

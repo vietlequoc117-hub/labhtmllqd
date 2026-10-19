@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenAiAssistant}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition cursor-pointer active:scale-95 group shrink-0"
-            title="Mở Trợ Lý AI"
+            title="Mở Trợ Lý AI - Giải đáp tổng thể toàn bộ 12 bài Tin học 12"
           >
             <Bot className="w-4 h-4 text-blue-100 group-hover:rotate-12 transition-transform shrink-0" />
             <span className="whitespace-nowrap">Trợ Lý AI</span>
