@@ -4,6 +4,7 @@ import { getLessonSamples } from '../data/samples';
 import { getLessonMissions } from '../data/missions';
 import { getLessonQuiz } from '../data/quizzes';
 import { resolveVirtualPaths } from '../data/mockAssets';
+import { lintHtmlCode } from '../utils/htmlLintValidator';
 import { TargetPreviewModal } from './TargetPreviewModal';
 import { QuizTab } from './QuizTab';
 import {
@@ -74,13 +75,24 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
     }
   }, [currentHtml]);
 
+  const htmlErrors = useMemo(
+    () => lintHtmlCode(currentHtml || '').filter((d) => d.severity === 'error'),
+    [currentHtml]
+  );
+
   // Evaluate missions against current student code
   const missionEvaluations = useMemo(() => {
     return missions.map((m) => {
+      if (htmlErrors.length > 0) {
+        return {
+          passed: false,
+          message: `Mã HTML đang có lỗi (${htmlErrors[0].message}) Hãy sửa lỗi trước nhé!`,
+        };
+      }
       if (!parsedDoc) return { passed: false, message: 'Đang kiểm tra...' };
       return m.checkCriteria(parsedDoc, currentHtml || '', currentCss || '');
     });
-  }, [missions, parsedDoc, currentHtml, currentCss]);
+  }, [missions, parsedDoc, currentHtml, currentCss, htmlErrors]);
 
   const passedMissionsCount = missionEvaluations.filter((e) => e.passed).length;
 

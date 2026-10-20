@@ -26,7 +26,7 @@ export const LESSON_7_QUIZ: QuizQuestion[] = [
     level: 'Biết',
     question: 'Khai báo nào sau đây đứng ở dòng đầu tiên của tệp để thông báo cho trình duyệt biết trang web tuân theo chuẩn HTML5?',
     snippet: {
-      html: `<!DOCTYPE html>\n<html>\n  <head><title>Trang chủ</title></head>\n  <body>Xin chào!</body>\n</html>`,
+      html: `<!DOCTYPE html>\n<html>\n  <head><title>Trang chủ</title></head>\n  <body>\n    <p>Xin chào!</p>\n  </body>\n</html>`,
       css: `/* Chưa áp dụng CSS */`
     },
     options: [

@@ -146,8 +146,129 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
     return 1;
   };
 
+  // Create length-preserving & newline-preserving cleaned HTML with comments and DOCTYPE replaced by spaces
+  const cleanedHtml = html
+    .replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/<!--[\s\S]*$/g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/<!DOCTYPE[^>]*>/gi, (m) => m.replace(/[^\n]/g, ' '));
+
+  // Structural/container parents where direct bare text is never allowed
+  const FORBIDDEN_TEXT_PARENTS = new Set([
+    'ROOT', 'html', 'head', 'body',
+    'table', 'thead', 'tbody', 'tfoot', 'tr', 'colgroup',
+    'ul', 'ol', 'menu', 'dl',
+    'select', 'datalist', 'optgroup',
+  ]);
+
+  // Layout containers where bare text sitting next to block-level children is an error
+  const LAYOUT_CONTAINER_PARENTS = new Set([
+    'div', 'section', 'article', 'header', 'footer', 'main', 'aside',
+  ]);
+
+  const BLOCK_ELEMENT_TAGS = new Set([
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p',
+    'ul', 'ol', 'li', 'table', 'tr', 'td', 'th',
+    'div', 'section', 'article', 'header', 'footer', 'nav', 'main', 'aside',
+    'form', 'fieldset', 'blockquote', 'pre', 'hr', 'dl', 'dt', 'dd',
+  ]);
+
+  const checkBareTextSegment = (
+    rawSegment: string,
+    segmentStartIndex: number,
+    parentTag: string,
+    isAdjacentToBlock: boolean
+  ) => {
+    if (!rawSegment.trim()) return;
+    if (parentTag === 'script' || parentTag === 'style') return;
+
+    const isForbiddenParent = FORBIDDEN_TEXT_PARENTS.has(parentTag);
+    const isInvalidLayoutText = LAYOUT_CONTAINER_PARENTS.has(parentTag) && isAdjacentToBlock;
+
+    if (!isForbiddenParent && !isInvalidLayoutText) return;
+
+    const startLine = getLineFromIndex(segmentStartIndex);
+    const subLines = rawSegment.split('\n');
+
+    for (let i = 0; i < subLines.length; i++) {
+      const subLineTrimmed = subLines[i].trim();
+      if (!subLineTrimmed) continue;
+
+      const textLineNum = startLine + i;
+
+      // Skip if this line already has a diagnostic reported
+      if (diagnostics.some((d) => d.line === textLineNum)) continue;
+
+      // Skip if this line has an unclosed tag like `<h1 ...` which Step 4 will report as unclosed-bracket
+      const openBracketIdx = subLineTrimmed.lastIndexOf('<');
+      if (openBracketIdx !== -1) {
+        const rem = subLineTrimmed.slice(openBracketIdx);
+        if (/^<\/?([a-zA-Z0-9!-]+)/.test(rem) && !rem.includes('>')) {
+          continue;
+        }
+      }
+
+      const previewText =
+        subLineTrimmed.length > 35 ? subLineTrimmed.slice(0, 35) + '...' : subLineTrimmed;
+
+      // Check if student accidentally forgot opening '<' e.g. `h1>Tiêu đề` or `p>Nội dung`
+      const missingOpenBracketMatch = subLineTrimmed.match(/^([a-zA-Z][a-zA-Z0-9-]*)\s*>/);
+      if (missingOpenBracketMatch) {
+        const guessedTag = missingOpenBracketMatch[1].toLowerCase();
+        diagnostics.push({
+          id: `missing-open-bracket-${textLineNum}`,
+          line: textLineNum,
+          severity: 'error',
+          source: 'html',
+          message: `Dòng ${textLineNum}: Thiếu dấu mở ngoặc nhọn '<' ở đầu thẻ '${guessedTag}>'.`,
+          suggestion: `Hãy thêm dấu '<' vào trước tên thẻ để tạo thành '<${guessedTag}>'.`,
+        });
+        continue;
+      }
+
+      let message = `Dòng ${textLineNum}: Nội dung "${previewText}" không nằm trong thẻ HTML nào.`;
+      let suggestion = `Trong HTML, mọi nội dung hiển thị phải được đặt trong cặp thẻ hợp lệ (ví dụ: <p>${previewText}</p>, <h2>${previewText}</h2>, <div>${previewText}</div>,...) hoặc xóa đi nếu em gõ thừa.`;
+
+      if (parentTag === 'head' || parentTag === 'html' || parentTag === 'ROOT') {
+        message = `Dòng ${textLineNum}: Nội dung "${previewText}" không nằm trong thẻ HTML nào hoặc đặt sai vị trí ngoài vùng <body>.`;
+        suggestion = `Hãy đặt nội dung vào bên trong phần <body>...</body> và bọc bằng thẻ cụ thể như <p>${previewText}</p> hoặc <h1>${previewText}</h1>.`;
+      } else if (
+        parentTag === 'table' ||
+        parentTag === 'thead' ||
+        parentTag === 'tbody' ||
+        parentTag === 'tfoot' ||
+        parentTag === 'tr' ||
+        parentTag === 'colgroup'
+      ) {
+        message = `Dòng ${textLineNum}: Nội dung "${previewText}" trong bảng không được viết tự do mà phải đặt trong ô '<td>' hoặc '<th>'.`;
+        suggestion = `Hãy bọc nội dung trong cặp thẻ <td>${previewText}</td> hoặc <th>${previewText}</th> bên trong hàng <tr>.`;
+      } else if (parentTag === 'ul' || parentTag === 'ol' || parentTag === 'menu') {
+        message = `Dòng ${textLineNum}: Nội dung "${previewText}" trong danh sách '<${parentTag}>' phải nằm trong thẻ mục danh sách '<li>'.`;
+        suggestion = `Hãy bọc nội dung bằng cặp thẻ <li>${previewText}</li>.`;
+      } else if (parentTag === 'select' || parentTag === 'datalist' || parentTag === 'optgroup') {
+        message = `Dòng ${textLineNum}: Nội dung "${previewText}" trong danh sách chọn '<${parentTag}>' phải nằm trong thẻ '<option>'.`;
+        suggestion = `Hãy bọc nội dung bằng cặp thẻ <option>${previewText}</option>.`;
+      } else if (parentTag === 'dl') {
+        message = `Dòng ${textLineNum}: Nội dung "${previewText}" trong danh sách mô tả '<dl>' phải nằm trong thẻ '<dt>' hoặc '<dd>'.`;
+        suggestion = `Hãy bọc nội dung bằng <dt>${previewText}</dt> hoặc <dd>${previewText}</dd>.`;
+      }
+
+      diagnostics.push({
+        id: `bare-text-${textLineNum}`,
+        line: textLineNum,
+        severity: 'error',
+        source: 'html',
+        message,
+        suggestion,
+      });
+    }
+  };
+
+  let lastTagEndIndex = 0;
+  let prevTagName = '';
+  let prevIsClosing = false;
+
   // Scan all tags
-  while ((match = tagRegex.exec(html)) !== null) {
+  while ((match = tagRegex.exec(cleanedHtml)) !== null) {
     const isClosing = !!match[1];
     const rawTagName = match[2];
     const tagName = rawTagName.toLowerCase();
@@ -157,8 +278,21 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
 
     // Skip DOCTYPE and Comments
     if (tagName.startsWith('!') || tagName.startsWith('--')) {
+      lastTagEndIndex = tagRegex.lastIndex;
       continue;
     }
+
+    // Check bare/unwrapped text segment between previous tag and this tag
+    const rawTextBetween = cleanedHtml.slice(lastTagEndIndex, matchIndex);
+    const currentParent = tagStack.length > 0 ? tagStack[tagStack.length - 1].name : 'ROOT';
+    const isAdjacentToBlock =
+      (prevIsClosing && BLOCK_ELEMENT_TAGS.has(prevTagName)) ||
+      (!isClosing && BLOCK_ELEMENT_TAGS.has(tagName));
+    checkBareTextSegment(rawTextBetween, lastTagEndIndex, currentParent, isAdjacentToBlock);
+
+    lastTagEndIndex = tagRegex.lastIndex;
+    prevTagName = tagName;
+    prevIsClosing = isClosing;
 
     // Check for tag typos & unknown tags (avoid duplicate reporting for closing tag if already reported on open)
     if (!VALID_HTML_TAGS.has(tagName)) {
@@ -280,6 +414,10 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
       tagStack.push({ name: tagName, line: lineNum, raw: rawTagName });
     } else {
       // Closing tag </tag>
+      if (diagnostics.some((d) => d.line === lineNum && d.id.startsWith('missing-open-bracket-'))) {
+        continue;
+      }
+
       if (tagStack.length === 0) {
         // Do not flag closing body/html at end of document if there are other errors
         if ((tagName === 'body' || tagName === 'html') && (diagnostics.length > 0 || lineNum >= lines.length - 2)) {
@@ -414,6 +552,12 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
       }
     }
   }
+
+  // Check any trailing bare text after the last tag in the document
+  const rawTrailingText = cleanedHtml.slice(lastTagEndIndex);
+  const finalParent = tagStack.length > 0 ? tagStack[tagStack.length - 1].name : 'ROOT';
+  const trailingAdjacentToBlock = prevIsClosing && BLOCK_ELEMENT_TAGS.has(prevTagName);
+  checkBareTextSegment(rawTrailingText, lastTagEndIndex, finalParent, trailingAdjacentToBlock);
 
   // 3. Any unclosed tags remaining in the stack
   for (const unclosed of tagStack) {
