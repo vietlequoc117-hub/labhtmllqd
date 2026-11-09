@@ -21,6 +21,7 @@ interface ResultPaneProps {
   htmlCode: string;
   cssCode: string;
   onNavigateToError?: (line: number, source: 'html' | 'css') => void;
+  editingLine?: number | null;
 }
 
 export const ResultPane: React.FC<ResultPaneProps> = ({
@@ -28,15 +29,16 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
   htmlCode,
   cssCode,
   onNavigateToError,
+  editingLine = null,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [currentVirtualPath, setCurrentVirtualPath] = useState('index.html');
   const [externalToast, setExternalToast] = useState<string | null>(null);
 
-  // Linter diagnostics for HTML and CSS
-  const htmlDiagnostics = useMemo(() => lintHtmlCode(htmlCode), [htmlCode]);
-  const cssDiagnostics = useMemo(() => lintCssCode(cssCode), [cssCode]);
+  // Linter diagnostics for HTML and CSS (defers errors on editingLine until student presses Enter)
+  const htmlDiagnostics = useMemo(() => lintHtmlCode(htmlCode, editingLine), [htmlCode, editingLine]);
+  const cssDiagnostics = useMemo(() => lintCssCode(cssCode, editingLine), [cssCode, editingLine]);
 
   // Fatal / blocker errors that prevent correct rendering
   const fatalErrors = useMemo(() => {
@@ -62,7 +64,17 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
       return;
     }
 
-    const processedHtml = resolveVirtualPaths(htmlCode);
+    // If student is actively typing an incomplete tag on editingLine, strip trailing unclosed `<...` on that line for clean live preview
+    let previewSourceHtml = htmlCode;
+    if (editingLine && editingLine > 0) {
+      const htmlLines = htmlCode.split('\n');
+      if (editingLine <= htmlLines.length) {
+        htmlLines[editingLine - 1] = htmlLines[editingLine - 1].replace(/<[^>]*$/, '');
+        previewSourceHtml = htmlLines.join('\n');
+      }
+    }
+
+    const processedHtml = resolveVirtualPaths(previewSourceHtml);
     const cleanCss = cssCode.replace(/<\/?style>/gi, '').trim();
 
     // Style block containing student's CSS + base canvas reset

@@ -64,6 +64,8 @@ interface CodeEditorProps {
   onChangeCss: (value: string) => void;
   fontSize?: number;
   onRunCode?: () => void;
+  editingLine?: number | null;
+  onChangeEditingLine?: (line: number | null) => void;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -75,12 +77,24 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onChangeCss,
   fontSize = 14,
   onRunCode,
+  editingLine: externalEditingLine,
+  onChangeEditingLine,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const popupListRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+
+  // Track which line is currently being actively typed (before pressing Enter)
+  const [localEditingLine, setLocalEditingLine] = useState<number | null>(null);
+  const activeEditingLine =
+    externalEditingLine !== undefined ? externalEditingLine : localEditingLine;
+
+  const updateEditingLine = (line: number | null) => {
+    setLocalEditingLine(line);
+    onChangeEditingLine?.(line);
+  };
 
   // IntelliSense Autocomplete popup state
   const [autocompleteCtx, setAutocompleteCtx] = useState<AutocompleteContext | null>(null);
@@ -102,10 +116,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     } catch {}
   }, [editorTheme]);
 
-  // Close autocomplete when switching between HTML and CSS tabs
+  // Close autocomplete and reset editing line when switching between HTML and CSS tabs
   useEffect(() => {
     setAutocompleteCtx(null);
     setSelectedIndex(0);
+    updateEditingLine(null);
   }, [activeTab]);
 
   // Scroll active autocomplete item into view when navigating with Up/Down keys
@@ -124,14 +139,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const currentCode = activeTab === 'html' ? htmlCode : cssCode;
   const setCode = activeTab === 'html' ? onChangeHtml : onChangeCss;
 
-  // Real-time linting diagnostics
+  // Real-time linting diagnostics (defers errors on activeEditingLine until student presses Enter)
   const diagnostics = useMemo(() => {
     if (activeTab === 'html') {
-      return lintHtmlCode(htmlCode);
+      return lintHtmlCode(htmlCode, activeEditingLine);
     } else {
-      return lintCssCode(cssCode);
+      return lintCssCode(cssCode, activeEditingLine);
     }
-  }, [htmlCode, cssCode, activeTab]);
+  }, [htmlCode, cssCode, activeTab, activeEditingLine]);
 
   const errorCount = diagnostics.filter((d) => d.severity === 'error').length;
   const warningCount = diagnostics.filter((d) => d.severity === 'warning').length;
@@ -200,6 +215,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     textarea.focus();
     textarea.setSelectionRange(newCursorPos, newCursorPos);
     setCode(newValue);
+    const newLineNum = newValue.slice(0, newCursorPos).split('\n').length;
+    updateEditingLine(newLineNum);
     setAutocompleteCtx(null);
     setSelectedIndex(0);
   };
@@ -208,6 +225,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newVal = e.target.value;
     const cursorPos = e.target.selectionStart;
+    const curLineNum = newVal.slice(0, cursorPos).split('\n').length;
+    updateEditingLine(curLineNum);
     setCode(newVal);
 
     const ctx = getAutocompleteSuggestions(newVal, cursorPos, activeTab);
@@ -243,6 +262,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       setAutocompleteCtx(null);
+      updateEditingLine(null);
       onRunCode?.();
       return;
     }
@@ -279,6 +299,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       }
     }
 
+    // If autocomplete is not open and user moves up/down to another line, validate the line they just left
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      updateEditingLine(null);
+    }
+
     // Tab key indent (2 spaces)
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -288,9 +313,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const value = textarea.value;
+      const curLineNum = value.substring(0, start).split('\n').length;
 
       textarea.value = value.substring(0, start) + '  ' + value.substring(end);
       textarea.selectionStart = textarea.selectionEnd = start + 2;
+      updateEditingLine(curLineNum);
       setCode(textarea.value);
       return;
     }
@@ -308,6 +335,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       const value = textarea.value;
       const textBefore = value.substring(0, start);
       const textAfter = value.substring(end);
+      const curLineNum = textBefore.split('\n').length;
 
       // Check if textBefore ends with an opening tag: <tagname or <tagname attr="val"
       const match = textBefore.match(/<([a-zA-Z][a-zA-Z0-9-]*)(?:\s+[^>]*)?$/);
@@ -325,6 +353,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           if (textAfter.trimStart().startsWith(expectedClosing)) {
             textarea.value = textBefore + '>' + textAfter;
             textarea.selectionStart = textarea.selectionEnd = start + 1;
+            updateEditingLine(curLineNum);
             setCode(textarea.value);
             return;
           }
@@ -334,6 +363,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           textarea.value = textBefore + closingTag + textAfter;
           const newCursorPos = start + 1;
           textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+          updateEditingLine(curLineNum);
           setCode(textarea.value);
           return;
         }
@@ -342,6 +372,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
     // Auto-indent & smart line break on Enter
     if (e.key === 'Enter') {
+      setAutocompleteCtx(null);
       const textarea = textareaRef.current;
       if (!textarea) return;
 
@@ -352,6 +383,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       const value = textarea.value;
       const textBefore = value.substring(0, start);
       const textAfter = value.substring(end);
+      const nextLineNum = textBefore.split('\n').length + 1;
 
       // Smart Enter between <tag> and </tag>
       const matchBefore = textBefore.match(/<([a-zA-Z][a-zA-Z0-9-]*)[^>]*>$/);
@@ -375,6 +407,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
         const newCursorPos = start + 1 + innerIndent.length;
         textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+        updateEditingLine(nextLineNum);
         setCode(textarea.value);
         return;
       }
@@ -390,6 +423,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         textarea.value = textBefore + insertText + textAfter;
         textarea.selectionStart = textarea.selectionEnd =
           start + insertText.length;
+        updateEditingLine(nextLineNum);
         setCode(textarea.value);
       }
       return;
@@ -407,11 +441,13 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       const value = textarea.value;
       const textBefore = value.substring(0, start);
       const textAfter = value.substring(end);
+      const curLineNum = textBefore.split('\n').length;
       const quoteChar = e.key;
 
       if (textAfter.startsWith(quoteChar)) {
         e.preventDefault();
         textarea.selectionStart = textarea.selectionEnd = start + 1;
+        updateEditingLine(curLineNum);
         return;
       }
 
@@ -422,6 +458,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         e.preventDefault();
         textarea.value = textBefore + quoteChar + quoteChar + textAfter;
         textarea.selectionStart = textarea.selectionEnd = start + 1;
+        updateEditingLine(curLineNum);
         setCode(textarea.value);
         return;
       }
@@ -439,6 +476,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       const value = textarea.value;
       const textBefore = value.substring(0, start);
       const textAfter = value.substring(end);
+      const curLineNum = textBefore.split('\n').length;
 
       if (
         (textBefore.endsWith('"') && textAfter.startsWith('"')) ||
@@ -447,6 +485,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         e.preventDefault();
         textarea.value = textBefore.slice(0, -1) + textAfter.slice(1);
         textarea.selectionStart = textarea.selectionEnd = start - 1;
+        updateEditingLine(curLineNum);
         setCode(textarea.value);
         return;
       }
@@ -832,8 +871,20 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             onChange={handleTextareaChange}
             onScroll={handleScroll}
             onKeyDown={handleKeyDown}
-            onClick={() => setAutocompleteCtx(null)}
-            onBlur={() => setTimeout(() => setAutocompleteCtx(null), 150)}
+            onClick={(e) => {
+              setAutocompleteCtx(null);
+              const target = e.currentTarget;
+              const clickedLine = target.value.slice(0, target.selectionStart).split('\n').length;
+              if (activeEditingLine !== null && clickedLine !== activeEditingLine) {
+                updateEditingLine(null);
+              }
+            }}
+            onBlur={() =>
+              setTimeout(() => {
+                setAutocompleteCtx(null);
+                updateEditingLine(null);
+              }, 150)
+            }
             spellCheck={false}
             autoCapitalize="none"
             autoComplete="off"

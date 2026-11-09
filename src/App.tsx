@@ -55,6 +55,7 @@ export default function App() {
 
   // Editor states
   const [activeEditorTab, setActiveEditorTab] = useState<'html' | 'css'>('html');
+  const [editingLine, setEditingLine] = useState<number | null>(null);
 
   // Test evaluations
   const [testResults, setTestResults] = useState<DomTestResult[]>([]);
@@ -115,10 +116,12 @@ export default function App() {
 
   // Handlers
   const handleRunCode = () => {
+    setEditingLine(null);
     runEvaluation();
   };
 
   const handleCheckCode = () => {
+    setEditingLine(null);
     runEvaluation();
   };
 
@@ -127,6 +130,7 @@ export default function App() {
   };
 
   const executeResetCode = () => {
+    setEditingLine(null);
     setHtmlCodes((prev) => ({
       ...prev,
       [currentLesson.id]: currentLesson.initialHtml,
@@ -143,6 +147,7 @@ export default function App() {
   };
 
   const handleApplySolution = (html: string, css?: string) => {
+    setEditingLine(null);
     setHtmlCodes((prev) => ({
       ...prev,
       [currentLesson.id]: html,
@@ -160,6 +165,7 @@ export default function App() {
   };
 
   const handleLoadSample = (sample: CodeSample) => {
+    setEditingLine(null);
     setHtmlCodes((prev) => ({
       ...prev,
       [currentLesson.id]: sample.html,
@@ -178,6 +184,7 @@ export default function App() {
 
   // Load snippet from Quiz Question into Lab Editor & Run live
   const handleLoadSnippetCode = (rawHtml: string, rawCss: string, questionId: number) => {
+    setEditingLine(null);
     // Backup current work before loading snippet if not backed up yet
     setBackupCodes((prev) => {
       if (!prev[currentLesson.id]) {
@@ -237,6 +244,7 @@ export default function App() {
   };
 
   const handleRestoreLessonCode = () => {
+    setEditingLine(null);
     const backup = backupCodes[currentLesson.id];
     if (backup) {
       setHtmlCodes((prev) => ({
@@ -267,11 +275,13 @@ export default function App() {
   const handleNextLesson = () => {
     const currentIndex = LESSONS.findIndex((l) => l.id === currentLesson.id);
     if (currentIndex >= 0 && currentIndex < LESSONS.length - 1) {
+      setEditingLine(null);
       setCurrentLesson(LESSONS[currentIndex + 1]);
     }
   };
 
   const handleInsertSnippet = (snippet: string) => {
+    setEditingLine(null);
     if (activeEditorTab === 'html') {
       setHtmlCodes((prev) => {
         const code = prev[currentLesson.id] ?? currentLesson.initialHtml;
@@ -297,6 +307,7 @@ export default function App() {
         lessons={LESSONS}
         currentLesson={currentLesson}
         onSelectLesson={(lesson) => {
+          setEditingLine(null);
           setCurrentLesson(lesson);
         }}
         onRunCode={handleRunCode}
@@ -318,11 +329,13 @@ export default function App() {
             onLoadSample={handleLoadSample}
             currentHtml={currentHtml}
             currentCss={currentCss}
+            editingLine={editingLine}
             onLoadSnippetCode={handleLoadSnippetCode}
             onRestoreLessonCode={handleRestoreLessonCode}
             loadedSnippetQuestionId={loadedQuizSnippet?.lessonId === currentLesson.id ? loadedQuizSnippet.questionId : null}
             onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
             onLoadTargetCode={(html, css) => {
+              setEditingLine(null);
               setHtmlCodes((prev) => ({
                 ...prev,
                 [currentLesson.id]: html,
@@ -363,6 +376,8 @@ export default function App() {
               }}
               fontSize={fontSize}
               onRunCode={handleRunCode}
+              editingLine={editingLine}
+              onChangeEditingLine={setEditingLine}
             />
           </div>
         </div>
@@ -373,6 +388,7 @@ export default function App() {
             lesson={currentLesson}
             htmlCode={currentHtml}
             cssCode={currentCss}
+            editingLine={editingLine}
             onNavigateToError={(_line, source) => {
               setActiveEditorTab(source);
             }}

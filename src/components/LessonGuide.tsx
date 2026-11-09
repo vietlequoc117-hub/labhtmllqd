@@ -40,6 +40,7 @@ interface LessonGuideProps {
   onRestoreLessonCode?: () => void;
   loadedSnippetQuestionId?: number | null;
   onOpenAiAssistant?: () => void;
+  editingLine?: number | null;
 }
 
 export const LessonGuide: React.FC<LessonGuideProps> = ({
@@ -54,6 +55,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   onRestoreLessonCode,
   loadedSnippetQuestionId,
   onOpenAiAssistant,
+  editingLine = null,
 }) => {
   const [activeTab, setActiveTab] = useState<'theory' | 'samples' | 'tasks' | 'quiz'>('theory');
   const [selectedMissionFilter, setSelectedMissionFilter] = useState<number | 'all'>('all');
@@ -76,8 +78,8 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   }, [currentHtml]);
 
   const htmlErrors = useMemo(
-    () => lintHtmlCode(currentHtml || '').filter((d) => d.severity === 'error'),
-    [currentHtml]
+    () => lintHtmlCode(currentHtml || '', editingLine).filter((d) => d.severity === 'error'),
+    [currentHtml, editingLine]
   );
 
   // Evaluate missions against current student code

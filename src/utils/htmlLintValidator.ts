@@ -67,11 +67,22 @@ const COMMON_TAG_TYPOS: Record<string, string> = {
   'metta': 'meta'
 };
 
-export function lintHtmlCode(html: string): CodeDiagnostic[] {
+export function lintHtmlCode(html: string, activeEditingLine?: number | null): CodeDiagnostic[] {
   const diagnostics: CodeDiagnostic[] = [];
   if (!html.trim()) return diagnostics;
 
-  const lines = html.split('\n');
+  const rawLines = html.split('\n');
+  const lines = rawLines.map((lineText, idx) => {
+    const lineNum = idx + 1;
+    if (activeEditingLine && lineNum === activeEditingLine) {
+      // Preserve structural tags (html, head, body) if present on this line, blank out in-progress typing until student presses Enter
+      return lineText.replace(/<\/?(?:html|head|body)\b[^>]*>|./gi, (m) =>
+        /^<\/?(?:html|head|body)\b/i.test(m) ? m : ' '
+      );
+    }
+    return lineText;
+  });
+  const effectiveHtml = lines.join('\n');
 
   // 1. Check for unclosed HTML comments: <!-- without -->
   let insideComment = false;
@@ -123,8 +134,8 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
 
   // Track lines
   const lineStartIndices: number[] = [0];
-  for (let i = 0; i < html.length; i++) {
-    if (html[i] === '\n') {
+  for (let i = 0; i < effectiveHtml.length; i++) {
+    if (effectiveHtml[i] === '\n') {
       lineStartIndices.push(i + 1);
     }
   }
@@ -147,7 +158,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
   };
 
   // Create length-preserving & newline-preserving cleaned HTML with comments and DOCTYPE replaced by spaces
-  const cleanedHtml = html
+  const cleanedHtml = effectiveHtml
     .replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '))
     .replace(/<!--[\s\S]*$/g, (m) => m.replace(/[^\n]/g, ' '))
     .replace(/<!DOCTYPE[^>]*>/gi, (m) => m.replace(/[^\n]/g, ' '));
@@ -198,11 +209,11 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
       // Skip if this line already has a diagnostic reported
       if (diagnostics.some((d) => d.line === textLineNum)) continue;
 
-      // Skip if this line has an unclosed tag like `<h1 ...` which Step 4 will report as unclosed-bracket
+      // Skip if this line has an unclosed tag like `<` or `<h1 ...` which Step 4 will report as unclosed-bracket
       const openBracketIdx = subLineTrimmed.lastIndexOf('<');
       if (openBracketIdx !== -1) {
         const rem = subLineTrimmed.slice(openBracketIdx);
-        if (/^<\/?([a-zA-Z0-9!-]+)/.test(rem) && !rem.includes('>')) {
+        if ((/^<\/?([a-zA-Z0-9!-]*)$/.test(rem.trim()) || /^<\/?([a-zA-Z0-9!-]+)/.test(rem)) && !rem.includes('>')) {
           continue;
         }
       }
@@ -588,8 +599,10 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
     const openBracketIdx = lineText.lastIndexOf('<');
     if (openBracketIdx !== -1) {
       const remaining = lineText.slice(openBracketIdx);
-      // Only flag if it actually looks like an HTML tag e.g. <div or </p or <h1, not a math comparison like 'x < 0'
-      const looksLikeTag = /^<\/?([a-zA-Z0-9!-]+)/.test(remaining);
+      const trimmedRem = remaining.trim();
+      const isBareBracket = trimmedRem === '<' || trimmedRem === '</';
+      // Flag if it looks like an HTML tag e.g. <div or </p or <h1, or a bare '<' left on a completed line
+      const looksLikeTag = isBareBracket || /^<\/?([a-zA-Z0-9!-]+)/.test(remaining);
       if (looksLikeTag && !remaining.includes('>') && !remaining.includes('<!--')) {
         const nextLine = l < lines.length - 1 ? lines[l + 1] : '';
         const isNextLineNewTag = /^\s*</.test(nextLine);
@@ -599,8 +612,12 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
             line: lineNum,
             severity: 'error',
             source: 'html',
-            message: `Dòng ${lineNum}: Thẻ HTML '${remaining.trim()}' bị thiếu dấu đóng ngoặc nhọn '>'.`,
-            suggestion: `Hãy thêm dấu '>' vào cuối thẻ.`
+            message: isBareBracket
+              ? `Dòng ${lineNum}: Dấu mở thẻ '${trimmedRem}' đang bỏ dở, chưa có tên thẻ và dấu đóng '>'.`
+              : `Dòng ${lineNum}: Thẻ HTML '${trimmedRem}' bị thiếu dấu đóng ngoặc nhọn '>'.`,
+            suggestion: isBareBracket
+              ? `Hãy gõ đầy đủ tên thẻ (ví dụ: <h1>Nội dung</h1>, <p>Nội dung</p>) hoặc xóa dấu '${trimmedRem}' thừa đi.`
+              : `Hãy thêm dấu '>' vào cuối thẻ.`
           });
         }
       }
@@ -611,6 +628,9 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
   // If the document has specific errors on content lines (such as line 7),
   // NEVER report false cascaded errors on lines 11/12 (the closing </body> and </html> lines).
   const sanitizedDiagnostics = diagnostics.filter((diag) => {
+    if (activeEditingLine && diag.line === activeEditingLine) {
+      return false;
+    }
     const lineContent = lines[diag.line - 1]?.trim().toLowerCase() || '';
     const isClosingStructuralLine =
       lineContent === '</body>' ||
@@ -629,7 +649,7 @@ export function lintHtmlCode(html: string): CodeDiagnostic[] {
   return sanitizedDiagnostics;
 }
 
-export function lintCssCode(css: string): CodeDiagnostic[] {
+export function lintCssCode(css: string, activeEditingLine?: number | null): CodeDiagnostic[] {
   const diagnostics: CodeDiagnostic[] = [];
   if (!css.trim()) return diagnostics;
 
@@ -720,5 +740,7 @@ export function lintCssCode(css: string): CodeDiagnostic[] {
     });
   }
 
-  return diagnostics;
+  return activeEditingLine
+    ? diagnostics.filter((d) => d.line !== activeEditingLine)
+    : diagnostics;
 }
