@@ -31,6 +31,11 @@ import {
   lintCssCode,
   CodeDiagnostic
 } from '../utils/htmlLintValidator';
+import {
+  getAutocompleteSuggestions,
+  AutocompleteContext,
+  CompletionItem
+} from '../utils/htmlAutocomplete';
 
 const VOID_TAGS = new Set([
   'area',
@@ -74,7 +79,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
+  const popupListRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+
+  // IntelliSense Autocomplete popup state
+  const [autocompleteCtx, setAutocompleteCtx] = useState<AutocompleteContext | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [caretCoords, setCaretCoords] = useState<{ top: number; left: number }>({ top: 40, left: 40 });
+
   // Default to Light theme as requested by user
   const [editorTheme, setEditorTheme] = useState<EditorTheme>(() => {
     try {
@@ -89,6 +101,22 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       localStorage.setItem('html12_editor_theme', editorTheme);
     } catch {}
   }, [editorTheme]);
+
+  // Close autocomplete when switching between HTML and CSS tabs
+  useEffect(() => {
+    setAutocompleteCtx(null);
+    setSelectedIndex(0);
+  }, [activeTab]);
+
+  // Scroll active autocomplete item into view when navigating with Up/Down keys
+  useEffect(() => {
+    if (autocompleteCtx && popupListRef.current) {
+      const activeEl = popupListRef.current.children[selectedIndex] as HTMLElement | undefined;
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, [selectedIndex, autocompleteCtx]);
 
   // Diagnostics drawer state
   const [showDiagnostics, setShowDiagnostics] = useState(true);
@@ -150,13 +178,105 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     handleScroll();
   }, [currentCode, fontSize]);
 
+  // Apply chosen autocomplete suggestion into editor
+  const applyCompletion = (item: CompletionItem) => {
+    const textarea = textareaRef.current;
+    if (!textarea || !autocompleteCtx) return;
+
+    const value = textarea.value;
+    const before = value.slice(0, autocompleteCtx.replaceStart);
+    let after = value.slice(autocompleteCtx.replaceEnd);
+
+    // Prevent duplicate closing tag if `</tagName>` already follows immediately
+    const closingTag = `</${item.tagName}>`;
+    if (item.insertText.endsWith(closingTag) && after.startsWith(closingTag)) {
+      after = after.slice(closingTag.length);
+    }
+
+    const newValue = before + item.insertText + after;
+    const newCursorPos = before.length + item.cursorOffset;
+
+    textarea.value = newValue;
+    textarea.focus();
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+    setCode(newValue);
+    setAutocompleteCtx(null);
+    setSelectedIndex(0);
+  };
+
+  // Update autocomplete suggestions and caret popup coordinates on input change
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newVal = e.target.value;
+    const cursorPos = e.target.selectionStart;
+    setCode(newVal);
+
+    const ctx = getAutocompleteSuggestions(newVal, cursorPos, activeTab);
+    if (ctx && ctx.items.length > 0) {
+      const textBeforeTrigger = newVal.slice(0, ctx.replaceStart);
+      const linesBefore = textBeforeTrigger.split('\n');
+      const lineIdx = linesBefore.length - 1;
+      const colIdx = linesBefore[linesBefore.length - 1].length;
+
+      const lineHeightPx = fontSize * 1.6;
+      const charWidthPx = fontSize * 0.6;
+      const paddingPx = 14; // p-3.5
+
+      const rawTop = paddingPx + (lineIdx + 1) * lineHeightPx - e.target.scrollTop + 2;
+      const rawLeft = paddingPx + colIdx * charWidthPx - e.target.scrollLeft;
+
+      const maxTop = Math.max(24, (e.target.clientHeight || 400) - 230);
+      const maxLeft = Math.max(14, (e.target.clientWidth || 400) - 210);
+
+      setCaretCoords({
+        top: Math.max(20, Math.min(rawTop, maxTop)),
+        left: Math.max(10, Math.min(rawLeft, maxLeft)),
+      });
+      setAutocompleteCtx(ctx);
+      setSelectedIndex(0);
+    } else {
+      setAutocompleteCtx(null);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Run on Ctrl+Enter or Cmd+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
+      setAutocompleteCtx(null);
       onRunCode?.();
       return;
+    }
+
+    // IntelliSense Autocomplete keyboard navigation
+    if (autocompleteCtx && autocompleteCtx.items.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % autocompleteCtx.items.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(
+          (prev) => (prev - 1 + autocompleteCtx.items.length) % autocompleteCtx.items.length
+        );
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        const chosen = autocompleteCtx.items[selectedIndex] || autocompleteCtx.items[0];
+        if (chosen) {
+          applyCompletion(chosen);
+        }
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setAutocompleteCtx(null);
+        return;
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        setAutocompleteCtx(null);
+      }
     }
 
     // Tab key indent (2 spaces)
@@ -177,6 +297,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
     // Auto-closing HTML tag when '>' is pressed
     if (activeTab === 'html' && e.key === '>') {
+      setAutocompleteCtx(null);
       const textarea = textareaRef.current;
       if (!textarea) return;
 
@@ -708,9 +829,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           <textarea
             ref={textareaRef}
             value={currentCode}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={handleTextareaChange}
             onScroll={handleScroll}
             onKeyDown={handleKeyDown}
+            onClick={() => setAutocompleteCtx(null)}
+            onBlur={() => setTimeout(() => setAutocompleteCtx(null), 150)}
             spellCheck={false}
             autoCapitalize="none"
             autoComplete="off"
@@ -730,6 +853,127 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
                 : '/* Nhập quy tắc CSS tại đây... */'
             }
           />
+
+          {/* INTELLISENSE AUTOCOMPLETE DROPDOWN POPUP (VS Code / Sublime Style) */}
+          {autocompleteCtx && autocompleteCtx.items.length > 0 && (
+            <div
+              style={{
+                top: `${caretCoords.top}px`,
+                left: `${caretCoords.left}px`,
+              }}
+              className="absolute z-40 min-w-[165px] max-w-[340px] bg-[#f3f3f3] border border-[#b9b9b9] shadow-xl rounded-[2px] overflow-hidden select-none"
+            >
+              <div
+                ref={popupListRef}
+                className="max-h-[264px] overflow-y-auto divide-y-0"
+              >
+                {autocompleteCtx.items.map((item, idx) => {
+                  const isSelected = idx === selectedIndex;
+                  const q = autocompleteCtx.query.toLowerCase();
+                  const labelLower = item.label.toLowerCase();
+                  const hasPrefixMatch = q.length > 0 && labelLower.startsWith(q);
+                  const matchedPart = hasPrefixMatch ? item.label.slice(0, q.length) : '';
+                  const restPart = hasPrefixMatch ? item.label.slice(q.length) : item.label;
+
+                  const isWrench =
+                    item.kind === 'tag' || item.kind === 'attr' || item.kind === 'css';
+
+                  return (
+                    <div
+                      key={item.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Keep focus inside textarea
+                        applyCompletion(item);
+                      }}
+                      onMouseEnter={() => setSelectedIndex(idx)}
+                      className={`h-[22px] px-2 flex items-center justify-between gap-4 cursor-pointer font-mono text-[13px] leading-none ${
+                        isSelected
+                          ? 'bg-[#0066cc] text-white'
+                          : 'bg-[#f3f3f3] hover:bg-[#e4e6f1] text-[#1e1e1e]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {/* Icon: Wrench (🔧) or Snippet Box (▢ with dotted bottom) matching screenshot */}
+                        {isWrench ? (
+                          <svg
+                            viewBox="0 0 16 16"
+                            className="w-3.5 h-3.5 shrink-0"
+                            fill="none"
+                          >
+                            <path
+                              d="M13.2 2.8a3.2 3.2 0 0 0-4.1 3.9L3.3 12.5a1.2 1.2 0 0 0 1.7 1.7l5.8-5.8a3.2 3.2 0 0 0 3.9-4.1l-1.9 1.9-1.5-.3-.3-1.5 2.2-1.6Z"
+                              fill={isSelected ? '#ffffff' : '#e8e8e8'}
+                              stroke={isSelected ? '#d0e8ff' : '#6b6b6b'}
+                              strokeWidth="1.15"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            viewBox="0 0 16 16"
+                            className="w-3.5 h-3.5 shrink-0"
+                            fill="none"
+                          >
+                            {/* Top, left, right solid border */}
+                            <path
+                              d="M2.5 12V2.5h11V12"
+                              stroke={isSelected ? '#ffffff' : '#6b6b6b'}
+                              strokeWidth="1.2"
+                            />
+                            {/* Bottom dotted border */}
+                            <line
+                              x1="2.5"
+                              y1="13.5"
+                              x2="13.5"
+                              y2="13.5"
+                              stroke={isSelected ? '#ffffff' : '#6b6b6b'}
+                              strokeWidth="1.2"
+                              strokeDasharray="1.5 1.5"
+                            />
+                          </svg>
+                        )}
+
+                        {/* Label with bold blue prefix highlight */}
+                        <span className="truncate tracking-tight">
+                          {hasPrefixMatch ? (
+                            <>
+                              <span
+                                className={
+                                  isSelected
+                                    ? 'font-bold text-white'
+                                    : 'font-bold text-[#0066cc]'
+                                }
+                              >
+                                {matchedPart}
+                              </span>
+                              <span className={isSelected ? 'text-white' : 'text-[#1e1e1e]'}>
+                                {restPart}
+                              </span>
+                            </>
+                          ) : (
+                            <span>{item.label}</span>
+                          )}
+                        </span>
+                      </div>
+
+                      {/* Subtle right-side preview hint */}
+                      <span
+                        className={`text-[10px] truncate max-w-[145px] ${
+                          isSelected ? 'text-blue-100' : 'text-slate-400'
+                        }`}
+                      >
+                        {item.kind === 'id-snippet'
+                          ? `<${item.tagName} id="">`
+                          : item.kind === 'class-snippet'
+                          ? `<${item.tagName} class="">`
+                          : item.detail.split('—')[0].trim()}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
