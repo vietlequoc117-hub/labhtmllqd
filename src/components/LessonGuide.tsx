@@ -4,7 +4,7 @@ import { getLessonSamples } from '../data/samples';
 import { getLessonMissions } from '../data/missions';
 import { getLessonQuiz } from '../data/quizzes';
 import { resolveVirtualPaths } from '../data/mockAssets';
-import { lintHtmlCode } from '../utils/htmlLintValidator';
+import { lintHtmlCode, lintCssCode } from '../utils/htmlLintValidator';
 import { TargetPreviewModal } from './TargetPreviewModal';
 import { QuizTab } from './QuizTab';
 import {
@@ -77,24 +77,74 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
     }
   }, [currentHtml]);
 
-  const htmlErrors = useMemo(
+  // Strict full-document syntax check (including any active line) so unfixed errors always block completion
+  const strictHtmlErrors = useMemo(
+    () => lintHtmlCode(currentHtml || '').filter((d) => d.severity === 'error'),
+    [currentHtml]
+  );
+  const strictCssErrors = useMemo(
+    () => lintCssCode(currentCss || '').filter((d) => d.severity === 'error'),
+    [currentCss]
+  );
+  const deferredHtmlErrors = useMemo(
     () => lintHtmlCode(currentHtml || '', editingLine).filter((d) => d.severity === 'error'),
     [currentHtml, editingLine]
   );
+  const deferredCssErrors = useMemo(
+    () => lintCssCode(currentCss || '', editingLine).filter((d) => d.severity === 'error'),
+    [currentCss, editingLine]
+  );
+
+  const hasAnyUnfixedError = strictHtmlErrors.length > 0 || strictCssErrors.length > 0;
+
+  // Check if student has actually typed/modified code beyond the initial template
+  const hasStudentTypedCode = useMemo(() => {
+    return (
+      (currentHtml || '').trim() !== (lesson.initialHtml || '').trim() ||
+      (currentCss || '').trim() !== (lesson.initialCss || '').trim()
+    );
+  }, [currentHtml, currentCss, lesson.initialHtml, lesson.initialCss]);
 
   // Evaluate missions against current student code
   const missionEvaluations = useMemo(() => {
     return missions.map((m) => {
-      if (htmlErrors.length > 0) {
+      if (deferredHtmlErrors.length > 0) {
         return {
           passed: false,
-          message: `Mã HTML đang có lỗi (${htmlErrors[0].message}) Hãy sửa lỗi trước nhé!`,
+          message: `Mã HTML đang có lỗi (${deferredHtmlErrors[0].message}) Hãy sửa lỗi trước nhé!`,
+        };
+      }
+      if (deferredCssErrors.length > 0) {
+        return {
+          passed: false,
+          message: `Mã CSS đang có lỗi (${deferredCssErrors[0].message}) Hãy sửa lỗi trước nhé!`,
+        };
+      }
+      if (hasAnyUnfixedError) {
+        return {
+          passed: false,
+          message: ' Dòng đang gõ chưa hoàn chỉnh hoặc còn lỗi cú pháp. Hãy gõ hoàn chỉnh thẻ và sửa hết lỗi nhé!',
+        };
+      }
+      if (!hasStudentTypedCode) {
+        return {
+          passed: false,
+          message: 'Hãy tự tay gõ mã lập trình vào khung soạn thảo để hoàn thành bài tập và ra kết quả nhé!',
         };
       }
       if (!parsedDoc) return { passed: false, message: 'Đang kiểm tra...' };
       return m.checkCriteria(parsedDoc, currentHtml || '', currentCss || '');
     });
-  }, [missions, parsedDoc, currentHtml, currentCss, htmlErrors]);
+  }, [
+    missions,
+    parsedDoc,
+    currentHtml,
+    currentCss,
+    deferredHtmlErrors,
+    deferredCssErrors,
+    hasAnyUnfixedError,
+    hasStudentTypedCode,
+  ]);
 
   const passedMissionsCount = missionEvaluations.filter((e) => e.passed).length;
 
@@ -341,7 +391,8 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                               <Maximize2 className="w-3.5 h-3.5" />
                             </button>
 
-                            {onLoadTargetCode && (
+                            {/* Chỉ hiển thị nút "Nạp mã mẫu" khi học sinh đã gõ lập trình xong, đạt kết quả và không còn lỗi */}
+                            {onLoadTargetCode && evalRes.passed && !hasAnyUnfixedError && (
                               <button
                                 onClick={() =>
                                   onLoadTargetCode(
@@ -585,7 +636,13 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
         isOpen={!!modalMission}
         onClose={() => setModalMission(null)}
         mission={modalMission}
-        onApplyCode={onLoadTargetCode}
+        onApplyCode={
+          modalMission &&
+          missionEvaluations[modalMission.id - 1]?.passed &&
+          !hasAnyUnfixedError
+            ? onLoadTargetCode
+            : undefined
+        }
       />
     </aside>
   );

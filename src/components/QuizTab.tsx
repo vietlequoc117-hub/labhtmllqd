@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QuizQuestion, QuizLevel } from '../types';
 import {
   CheckCircle2,
@@ -32,11 +32,18 @@ export const QuizTab: React.FC<QuizTabProps> = ({
 }) => {
   // Store selected answers: questionId -> optionIndex
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  // Toggle to show all answers and explanations immediately
+  // Toggle to show all answers and explanations (only available after all 10 questions are answered)
   const [showAllAnswers, setShowAllAnswers] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | QuizLevel>('all');
   // Feedback state when clicking "Nạp vào Chạy thử"
   const [justLoadedId, setJustLoadedId] = useState<number | null>(null);
+
+  // Reset quiz state when switching lessons
+  useEffect(() => {
+    setSelectedAnswers({});
+    setShowAllAnswers(false);
+    setActiveFilter('all');
+  }, [lessonNumber]);
 
   const filteredQuestions = questions.filter((q) => {
     if (activeFilter === 'all') return true;
@@ -56,6 +63,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
       delete updated[questionId];
       return updated;
     });
+    setShowAllAnswers(false);
   };
 
   const handleResetQuiz = () => {
@@ -72,8 +80,9 @@ export const QuizTab: React.FC<QuizTabProps> = ({
     }, 2500);
   };
 
-  // Calculate score in real time
-  const totalAnswered = Object.keys(selectedAnswers).length;
+  // Calculate completion & score in real time
+  const totalAnswered = questions.filter((q) => selectedAnswers[q.id] !== undefined).length;
+  const isAllAnswered = questions.length > 0 && totalAnswered >= questions.length;
   const correctCount = questions.filter(
     (q) => selectedAnswers[q.id] !== undefined && selectedAnswers[q.id] === q.correctIndex
   ).length;
@@ -112,12 +121,18 @@ export const QuizTab: React.FC<QuizTabProps> = ({
             </div>
           </div>
 
-          {/* Real-time score counter */}
+          {/* Progress / Final score counter */}
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <div className="text-xs font-mono font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-300 px-2.5 py-1 rounded-lg">
-                {correctCount}/{questions.length} đúng ({score10}/10đ)
-              </div>
+              {isAllAnswered ? (
+                <div className="text-xs font-mono font-bold text-emerald-700 bg-emerald-100/80 border border-emerald-300 px-2.5 py-1 rounded-lg shadow-2xs">
+                  {correctCount}/{questions.length} đúng ({score10}/10đ)
+                </div>
+              ) : (
+                <div className="text-xs font-mono font-bold text-blue-700 bg-blue-100/70 border border-blue-300 px-2.5 py-1 rounded-lg">
+                  Đã làm: {totalAnswered}/{questions.length} câu
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -168,27 +183,30 @@ export const QuizTab: React.FC<QuizTabProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowAllAnswers(!showAllAnswers)}
-              className={`flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition cursor-pointer ${
-                showAllAnswers
-                  ? 'bg-amber-100 text-amber-800 border-amber-300'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-              }`}
-              title="Xem nhanh tất cả đáp án đúng và lời giải"
-            >
-              {showAllAnswers ? (
-                <>
-                  <EyeOff className="w-3.5 h-3.5" />
-                  <span>Ẩn đáp án chung</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Hiện tất cả đáp án</span>
-                </>
-              )}
-            </button>
+            {/* Chỉ hiển thị nút "Hiện tất cả đáp án" khi học sinh đã trả lời xong đủ 10 câu hỏi và có điểm */}
+            {isAllAnswered && (
+              <button
+                onClick={() => setShowAllAnswers(!showAllAnswers)}
+                className={`flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition cursor-pointer ${
+                  showAllAnswers
+                    ? 'bg-amber-100 text-amber-800 border-amber-300'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                }`}
+                title="Xem nhanh tất cả đáp án đúng và lời giải"
+              >
+                {showAllAnswers ? (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Ẩn đáp án chung</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Hiện tất cả đáp án</span>
+                  </>
+                )}
+              </button>
+            )}
 
             {totalAnswered > 0 && (
               <button
@@ -209,19 +227,20 @@ export const QuizTab: React.FC<QuizTabProps> = ({
         {filteredQuestions.map((q) => {
           const userAnswer = selectedAnswers[q.id];
           const isAnswered = userAnswer !== undefined;
-          const isRevealed = isAnswered || showAllAnswers;
+          const isGraded = isAllAnswered && isAnswered;
+          const isRevealed = isAllAnswered && showAllAnswers;
           const isCorrect = isAnswered && userAnswer === q.correctIndex;
 
           return (
             <div
               key={q.id}
               className={`rounded-xl border transition p-3.5 space-y-3 shadow-xs ${
-                isRevealed
-                  ? isAnswered
-                    ? isCorrect
-                      ? 'bg-white border-emerald-300'
-                      : 'bg-white border-rose-300'
-                    : 'bg-white border-blue-300'
+                isGraded
+                  ? isCorrect
+                    ? 'bg-white border-emerald-300'
+                    : 'bg-white border-rose-300'
+                  : isAnswered
+                  ? 'bg-white border-blue-300'
                   : 'bg-white border-slate-200 hover:border-slate-300'
               }`}
             >
@@ -246,7 +265,7 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {isAnswered ? (
+                  {isGraded ? (
                     isCorrect ? (
                       <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-md">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Đúng
@@ -256,9 +275,9 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                         <XCircle className="w-3.5 h-3.5 text-rose-600" /> Sai
                       </span>
                     )
-                  ) : showAllAnswers ? (
-                    <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-md">
-                      Đáp án: {String.fromCharCode(65 + q.correctIndex)}
+                  ) : isAnswered ? (
+                    <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
+                      Đã chọn {String.fromCharCode(65 + userAnswer)}
                     </span>
                   ) : null}
 
@@ -357,17 +376,17 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                   let optionStyle = 'bg-slate-50 hover:bg-blue-50/40 border-slate-200 text-slate-700';
                   let badgeStyle = 'bg-white text-slate-600 border border-slate-300';
 
-                  if (isRevealed) {
-                    if (isThisCorrect) {
-                      // Correct option is always highlighted green once answered or revealed
+                  if (isGraded) {
+                    if (isSelected && isThisCorrect) {
                       optionStyle = 'bg-emerald-50 border-emerald-400 text-emerald-900 font-semibold shadow-xs ring-1 ring-emerald-400/30';
                       badgeStyle = 'bg-emerald-600 text-white border border-emerald-500 font-bold';
                     } else if (isSelected && !isThisCorrect) {
-                      // Selected wrong option highlighted in red
                       optionStyle = 'bg-rose-50 border-rose-400 text-rose-900 font-medium';
                       badgeStyle = 'bg-rose-600 text-white border border-rose-500 font-bold';
+                    } else if (isRevealed && isThisCorrect) {
+                      optionStyle = 'bg-emerald-50 border-emerald-400 text-emerald-900 font-semibold shadow-xs ring-1 ring-emerald-400/30';
+                      badgeStyle = 'bg-emerald-600 text-white border border-emerald-500 font-bold';
                     } else {
-                      // Other unselected options dimmed
                       optionStyle = 'bg-slate-50/60 border-slate-200 text-slate-400 opacity-75';
                       badgeStyle = 'bg-slate-100 text-slate-400 border border-slate-200';
                     }
@@ -388,16 +407,22 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                         {letter}
                       </span>
                       <span className="flex-1 pt-0.5">{option}</span>
-                      {isRevealed && isThisCorrect && (
+                      {isGraded && isSelected && isThisCorrect && (
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 shrink-0 mt-0.5">
+                          <Check className="w-4 h-4 text-emerald-600" />
+                          <span>Bạn chọn đúng</span>
+                        </span>
+                      )}
+                      {isRevealed && !isSelected && isThisCorrect && (
                         <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 shrink-0 mt-0.5">
                           <Check className="w-4 h-4 text-emerald-600" />
                           <span>Đáp án đúng</span>
                         </span>
                       )}
-                      {isRevealed && isSelected && !isThisCorrect && (
+                      {isGraded && isSelected && !isThisCorrect && (
                         <span className="flex items-center gap-1 text-[11px] font-bold text-rose-700 shrink-0 mt-0.5">
                           <XCircle className="w-3.5 h-3.5 text-rose-600" />
-                          <span>Bạn chọn</span>
+                          <span>Bạn chọn sai</span>
                         </span>
                       )}
                     </button>
@@ -405,14 +430,12 @@ export const QuizTab: React.FC<QuizTabProps> = ({
                 })}
               </div>
 
-              {/* Explanation (Shown immediately when answered or when showAllAnswers is active) */}
+              {/* Explanation (Shown when student clicks "Hiện tất cả đáp án" after completing all 10 questions) */}
               {isRevealed && (
                 <div className={`mt-2.5 p-3 rounded-lg border text-[11px] space-y-1.5 animate-fadeIn ${
-                  isAnswered
-                    ? isCorrect
-                      ? 'bg-emerald-50 border-emerald-300'
-                      : 'bg-rose-50 border-rose-300'
-                    : 'bg-blue-50 border-blue-200'
+                  isCorrect
+                    ? 'bg-emerald-50 border-emerald-300'
+                    : 'bg-rose-50 border-rose-300'
                 }`}>
                   <div className="font-bold flex items-center gap-1.5 text-blue-700">
                     <ChevronRight className="w-3.5 h-3.5 text-blue-600" />
