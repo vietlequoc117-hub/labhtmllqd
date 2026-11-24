@@ -48,22 +48,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
   onInsertCodeSnippet,
 }) => {
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome-1',
-      sender: 'assistant',
-      text: `👋 **Chào em! Thầy là Trợ Lý AI - Chuyên gia cấp cao về HTML, CSS & Sư phạm Tin học 12.**
-
-🌟 **CHẾ ĐỘ GIẢI ĐÁP TOÀN DIỆN TỔNG THỂ TẤT CẢ CÁC BÀI HỌC:**
-Thầy được thiết lập để đồng hành cùng em trong **toàn bộ chương trình Tin học 12 (từ Bài 7 đến Bài 18)**:
-- 📘 **Nhóm bài HTML cơ bản & nâng cao (Bài 7 → 12):** Cấu trúc tài liệu, định dạng chữ, bảng (Table), danh sách, liên kết, đa phương tiện (ảnh, video, audio, iframe), biểu mẫu Form.
-- 🎨 **Nhóm bài CSS & Giao diện (Bài 13 → 18):** Bộ chọn (Class, ID), định dạng chữ, màu sắc, đường viền, mô hình hộp (Box Model: margin, padding), mức ưu tiên bộ chọn và xây dựng trang web hoàn chỉnh.
-- 🏆 **Tổng hợp liên bài & Ôn thi:** So sánh giữa các bài, cấu trúc website chuẩn W3C, giải đề thi trắc nghiệm và thực hành.
-
-💡 *Em có thể đặt bất kỳ câu hỏi nào về toàn bộ chương trình hoặc bấm vào các câu hỏi gợi ý bên dưới để thử ngay nhé!*`,
-      timestamp: 'Vừa xong',
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -220,14 +205,7 @@ Thầy được thiết lập để đồng hành cùng em trong **toàn bộ ch
   };
 
   const handleClearChat = () => {
-    setMessages([
-      {
-        id: 'welcome-reset-' + Date.now(),
-        sender: 'assistant',
-        text: `🔄 **Cuộc trò chuyện đã được làm mới.**\n\n🌐 **Chế độ:** Giải đáp tổng thể toàn bộ chương trình Tin học 12 (Tất cả các bài từ Bài 7 đến Bài 18).\n\nHãy đặt bất kỳ câu hỏi nào em thắc mắc nhé! Thầy luôn sẵn sàng giải đáp.`,
-        timestamp: 'Vừa xong',
-      },
-    ]);
+    setMessages([]);
   };
 
   // Safe and rich markdown renderer for assistant responses

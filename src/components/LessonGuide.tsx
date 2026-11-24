@@ -5,6 +5,7 @@ import { getLessonMissions } from '../data/missions';
 import { getLessonQuiz } from '../data/quizzes';
 import { resolveVirtualPaths } from '../data/mockAssets';
 import { lintHtmlCode, lintCssCode } from '../utils/htmlLintValidator';
+import { gradeExercise, formatScore, ExerciseGradeResult } from '../utils/exerciseGrader';
 import { TargetPreviewModal } from './TargetPreviewModal';
 import { QuizTab } from './QuizTab';
 import {
@@ -25,7 +26,10 @@ import {
   Maximize2,
   CheckCheck,
   HelpCircle,
-  Bot
+  Bot,
+  Award,
+  AlertTriangle,
+  XCircle
 } from 'lucide-react';
 
 interface LessonGuideProps {
@@ -86,14 +90,6 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
     () => lintCssCode(currentCss || '').filter((d) => d.severity === 'error'),
     [currentCss]
   );
-  const deferredHtmlErrors = useMemo(
-    () => lintHtmlCode(currentHtml || '', editingLine).filter((d) => d.severity === 'error'),
-    [currentHtml, editingLine]
-  );
-  const deferredCssErrors = useMemo(
-    () => lintCssCode(currentCss || '', editingLine).filter((d) => d.severity === 'error'),
-    [currentCss, editingLine]
-  );
 
   const hasAnyUnfixedError = strictHtmlErrors.length > 0 || strictCssErrors.length > 0;
 
@@ -105,45 +101,25 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
     );
   }, [currentHtml, currentCss, lesson.initialHtml, lesson.initialCss]);
 
-  // Evaluate missions against current student code
-  const missionEvaluations = useMemo(() => {
-    return missions.map((m) => {
-      if (deferredHtmlErrors.length > 0) {
-        return {
-          passed: false,
-          message: `Mã HTML đang có lỗi (${deferredHtmlErrors[0].message}) Hãy sửa lỗi trước nhé!`,
-        };
-      }
-      if (deferredCssErrors.length > 0) {
-        return {
-          passed: false,
-          message: `Mã CSS đang có lỗi (${deferredCssErrors[0].message}) Hãy sửa lỗi trước nhé!`,
-        };
-      }
-      if (hasAnyUnfixedError) {
-        return {
-          passed: false,
-          message: ' Dòng đang gõ chưa hoàn chỉnh hoặc còn lỗi cú pháp. Hãy gõ hoàn chỉnh thẻ và sửa hết lỗi nhé!',
-        };
-      }
-      if (!hasStudentTypedCode) {
-        return {
-          passed: false,
-          message: 'Hãy tự tay gõ mã lập trình vào khung soạn thảo để hoàn thành bài tập và ra kết quả nhé!',
-        };
-      }
-      if (!parsedDoc) return { passed: false, message: 'Đang kiểm tra...' };
-      return m.checkCriteria(parsedDoc, currentHtml || '', currentCss || '');
-    });
+  // Evaluate & grade each exercise on a 10-point scale with transparent reasoning and error details
+  const missionEvaluations: ExerciseGradeResult[] = useMemo(() => {
+    return missions.map((m) =>
+      gradeExercise({
+        mission: m,
+        parsedDoc,
+        htmlCode: currentHtml || '',
+        cssCode: currentCss || '',
+        hasStudentTypedCode,
+        editingLine,
+      })
+    );
   }, [
     missions,
     parsedDoc,
     currentHtml,
     currentCss,
-    deferredHtmlErrors,
-    deferredCssErrors,
-    hasAnyUnfixedError,
     hasStudentTypedCode,
+    editingLine,
   ]);
 
   const passedMissionsCount = missionEvaluations.filter((e) => e.passed).length;
@@ -247,7 +223,10 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                   Tất cả ({missions.length})
                 </button>
                 {missions.map((m, idx) => {
-                  const isPassed = missionEvaluations[idx]?.passed;
+                  const evalItem = missionEvaluations[idx];
+                  const isPassed = evalItem?.passed;
+                  const score = evalItem?.score ?? 0;
+                  const hasStarted = evalItem?.hasStarted ?? false;
                   return (
                     <button
                       key={m.id}
@@ -257,14 +236,15 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                           ? 'bg-blue-600 text-white shadow-xs'
                           : isPassed
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                          : hasStarted && score > 0
+                          ? 'bg-amber-50 text-amber-800 border border-amber-300'
                           : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
-                      {isPassed ? (
-                        <Check className="w-3 h-3 text-emerald-600" />
-                      ) : (
-                        <span>BT {m.id}</span>
-                      )}
+                      <span>
+                        BT {m.id}
+                        {hasStarted ? ` · ${formatScore(score)}đ` : ''}
+                      </span>
                     </button>
                   );
                 })}
@@ -280,9 +260,15 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                     selectedMissionFilter === m.id
                 )
                 .map((m) => {
-                  const evalRes = missionEvaluations[m.id - 1] || {
+                  const evalRes: ExerciseGradeResult = missionEvaluations[m.id - 1] || {
+                    score: 0,
+                    scoreText: '0/10đ',
                     passed: false,
-                    message: 'Đang kiểm tra...',
+                    hasStarted: false,
+                    gradeTier: 'not-started',
+                    summary: 'Đang kiểm tra...',
+                    breakdown: [],
+                    issues: [],
                   };
                   const isPreviewOpen = expandedPreviewMissionId === m.id;
 
@@ -292,12 +278,24 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                     m.targetResult.html
                   )}</body></html>`;
 
+                  const scoreBadgeClasses = evalRes.passed
+                    ? evalRes.score >= 8.5
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                      : 'bg-blue-50 text-blue-700 border-blue-300'
+                    : !evalRes.hasStarted
+                    ? 'bg-slate-100 text-slate-600 border-slate-200'
+                    : evalRes.score >= 5
+                    ? 'bg-amber-50 text-amber-800 border-amber-300'
+                    : 'bg-rose-50 text-rose-700 border-rose-300';
+
                   return (
                     <div
                       key={m.id}
                       className={`rounded-xl border transition-all duration-200 overflow-hidden shadow-xs ${
                         evalRes.passed
                           ? 'bg-white border-emerald-300'
+                          : evalRes.hasStarted && evalRes.issues.some((i) => i.type === 'error')
+                          ? 'bg-white border-rose-200'
                           : 'bg-white border-slate-200 hover:border-slate-300'
                       }`}
                     >
@@ -317,19 +315,21 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                           </p>
                         </div>
 
-                        {/* Status badge */}
+                        {/* Numerical Score Badge (replaces Đã đạt / Chưa đạt) */}
                         <div className="shrink-0">
-                          {evalRes.passed ? (
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                              <span>Đã đạt ✓</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-full border border-slate-200">
-                              <Circle className="w-2.5 h-2.5 text-slate-400" />
-                              <span>Chưa đạt</span>
-                            </span>
-                          )}
+                          <span
+                            className={`inline-flex items-center gap-1 text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border shadow-2xs ${scoreBadgeClasses}`}
+                            title={evalRes.summary}
+                          >
+                            {evalRes.passed ? (
+                              <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            ) : !evalRes.hasStarted ? (
+                              <Circle className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                            ) : (
+                              <AlertTriangle className="w-3 h-3 shrink-0" />
+                            )}
+                            <span>{evalRes.scoreText}</span>
+                          </span>
                         </div>
                       </div>
 
@@ -430,23 +430,115 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                           </div>
                         )}
 
-                        {/* Live Criteria Feedback */}
+                        {/* Live Grading & Explanation Box */}
                         <div
-                          className={`p-2 rounded-lg text-[11px] flex items-start gap-1.5 ${
+                          className={`p-2.5 rounded-lg text-[11px] space-y-2 border ${
                             evalRes.passed
-                              ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
-                              : 'bg-slate-50 border border-slate-200 text-slate-700'
+                              ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+                              : !evalRes.hasStarted
+                              ? 'bg-slate-50 border-slate-200 text-slate-700'
+                              : evalRes.issues.some((i) => i.type === 'error')
+                              ? 'bg-rose-50/70 border-rose-200 text-rose-900'
+                              : 'bg-amber-50/60 border-amber-200 text-slate-800'
                           }`}
                         >
-                          {evalRes.passed ? (
-                            <CheckCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                          ) : (
-                            <Info className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                          )}
-                          <div>
-                            <span className="font-semibold">Đánh giá mã của em: </span>
-                            <span>{evalRes.message}</span>
+                          <div className="flex items-start gap-1.5">
+                            {evalRes.passed ? (
+                              <CheckCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                            ) : evalRes.issues.some((i) => i.type === 'error') ? (
+                              <XCircle className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
+                            ) : (
+                              <Info className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                            )}
+                            <div className="flex-1 leading-relaxed">
+                              <span className="font-bold">
+                                Chấm điểm ({evalRes.scoreText}):{' '}
+                              </span>
+                              <span>{evalRes.summary}</span>
+                            </div>
                           </div>
+
+                          {/* Point-by-point explanation of why this score was awarded */}
+                          {evalRes.hasStarted && evalRes.breakdown.length > 0 && (
+                            <div className="pt-1.5 border-t border-black/10 space-y-1.5">
+                              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                                Giải thích chi tiết điểm số:
+                              </div>
+                              {evalRes.breakdown.map((item, bIdx) => (
+                                <div
+                                  key={bIdx}
+                                  className="bg-white/80 rounded-md px-2 py-1.5 border border-black/5 space-y-0.5"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="font-semibold text-slate-800 flex items-center gap-1">
+                                      {item.status === 'pass' ? (
+                                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                                      ) : item.status === 'partial' ? (
+                                        <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
+                                      ) : (
+                                        <XCircle className="w-3 h-3 text-rose-500 shrink-0" />
+                                      )}
+                                      <span>{item.title}</span>
+                                    </span>
+                                    <span
+                                      className={`font-mono font-bold text-[10px] px-1.5 py-0.5 rounded shrink-0 ${
+                                        item.status === 'pass'
+                                          ? 'bg-emerald-100 text-emerald-800'
+                                          : item.status === 'partial'
+                                          ? 'bg-amber-100 text-amber-800'
+                                          : 'bg-rose-100 text-rose-700'
+                                      }`}
+                                    >
+                                      {formatScore(item.earned)}/{item.max}đ
+                                    </span>
+                                  </div>
+                                  <p className="text-[10px] text-slate-600 pl-4 leading-relaxed">
+                                    {item.detail}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Specific Errors & Issues List */}
+                          {evalRes.hasStarted && evalRes.issues.length > 0 && (
+                            <div className="pt-1.5 border-t border-black/10 space-y-1">
+                              <div className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3 text-rose-600" />
+                                <span>Lỗi &amp; Phần cần sửa để đạt 10/10đ:</span>
+                              </div>
+                              <div className="space-y-1">
+                                {evalRes.issues.map((issue, iIdx) => (
+                                  <div
+                                    key={iIdx}
+                                    className={`rounded-md px-2 py-1.5 text-[10px] border space-y-0.5 ${
+                                      issue.type === 'error'
+                                        ? 'bg-rose-50 border-rose-200 text-rose-900'
+                                        : 'bg-amber-50 border-amber-200 text-amber-950'
+                                    }`}
+                                  >
+                                    <div className="font-semibold flex items-start gap-1">
+                                      <span className="shrink-0">•</span>
+                                      <span>
+                                        {issue.line ? (
+                                          <strong className="font-mono mr-1">
+                                            [{issue.source === 'css' ? 'style.css' : 'index.html'}
+                                            {!/^Dòng\s+\d+/i.test(issue.message) ? ` - Dòng ${issue.line}` : ''}]
+                                          </strong>
+                                        ) : null}
+                                        {issue.message}
+                                      </span>
+                                    </div>
+                                    {issue.suggestion && (
+                                      <div className="text-slate-700 pl-2.5 leading-snug">
+                                        → <b>Cách sửa:</b> {issue.suggestion}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Hint box */}
