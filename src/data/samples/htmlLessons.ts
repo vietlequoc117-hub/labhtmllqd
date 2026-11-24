@@ -901,7 +901,7 @@ export const HTML_LESSON_SAMPLES: Record<number, CodeSample[]> = {
 <body>
   <h1>BẢN TIN PHÁT THANH HỌC ĐƯỜNG</h1>
   <p>Nhấp vào nút phát bên dưới để nghe bài hát truyền thống:</p>
-  <audio src="audio/Quoc_ca.mp3" controls></audio>
+  <audio src="audio/nhac.mp3" controls></audio>
 </body>
 </html>`,
       css: `body { font-family: Arial; padding: 20px; }`
@@ -973,7 +973,7 @@ export const HTML_LESSON_SAMPLES: Record<number, CodeSample[]> = {
   <h2>1. Hình ảnh</h2>
   <img src="images/thethao.png" alt="Thể thao" width="300">
   <h2>2. Bản tin âm thanh</h2>
-  <audio src="audio/Quoc_ca.mp3" controls></audio>
+  <audio src="audio/nhac.mp3" controls></audio>
   <h2>3. Phim tư liệu</h2>
   <video src="videos/war_is_over.mp4" controls width="400"></video>
 </body>

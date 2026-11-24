@@ -272,9 +272,23 @@ export const MOCK_CLB_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-// A valid, royalty-free lightweight open video link for testing HTML5 video tag
-export const SAMPLE_VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-export const SAMPLE_AUDIO_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
+// Self-hosted local HTML5-compliant media assets (H.264 Baseline + AAC MP4 & 128kbps MP3)
+// Immune to external CDN failures, school network blocks, CORS/CORP issues, and sandboxed iframe restrictions
+export const SAMPLE_VIDEO_URL = '/media/war_is_over.mp4';
+export const SAMPLE_AUDIO_URL = '/media/nhac.mp3';
+
+export function getOriginMediaUrl(mediaPath: string): string {
+  const normalized = mediaPath.startsWith('/') ? mediaPath : `/${mediaPath}`;
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.origin &&
+    window.location.origin !== 'null'
+  ) {
+    return `${window.location.origin}${normalized}`;
+  }
+  return normalized;
+}
 
 export const GLOBAL_MOCK_ASSETS: MockAsset[] = [
   {
@@ -309,18 +323,18 @@ export const GLOBAL_MOCK_ASSETS: MockAsset[] = [
     name: 'war_is_over.mp4',
     path: 'videos/war_is_over.mp4',
     type: 'video',
-    description: 'Video tư liệu ngắn chuẩn MP4 có tiếng và hình ảnh động',
+    description: 'Video tư liệu ngắn chuẩn MP4 (H.264 + AAC) có tiếng và hình ảnh động',
     previewUrl: SAMPLE_VIDEO_URL,
-    size: '720p H.264',
+    size: '640x360 MP4',
   },
   {
     id: 'asset_audio',
-    name: 'Quoc_ca.mp3',
-    path: 'audio/Quoc_ca.mp3',
+    name: 'nhac.mp3',
+    path: 'audio/nhac.mp3',
     type: 'audio',
-    description: 'Tệp âm thanh mẫu chuẩn MP3/OGG để thực hành thẻ audio',
+    description: 'Tệp âm thanh minh hoạ chuẩn MP3 để thực hành thẻ audio',
     previewUrl: SAMPLE_AUDIO_URL,
-    size: 'Stereo Audio',
+    size: 'MP3 Audio',
   },
   {
     id: 'asset_thong_tin',
@@ -344,23 +358,43 @@ export const GLOBAL_MOCK_ASSETS: MockAsset[] = [
 
 /**
  * Transforms raw student HTML before inserting into iframe
- * Replaces simulated file paths with virtual data URIs or virtual blob endpoints
+ * Replaces simulated file paths with virtual data URIs or origin-resolved local media endpoints
  */
 export function resolveVirtualPaths(html: string): string {
   let processed = html;
 
-  // Replace images
-  processed = processed.replace(/src=["'](?:images\/)?thethao\.png["']/gi, `src="${SPORTS_IMAGE_DATA_URI}"`);
-  processed = processed.replace(/src=["'](?:images\/)?sun\.png["']/gi, `src="${SUN_IMAGE_DATA_URI}"`);
-  processed = processed.replace(/src=["'](?:images\/)?lop12a1\.png["']/gi, `src="${GROUP_IMAGE_DATA_URI}"`);
+  const resolvedVideoUrl = getOriginMediaUrl(SAMPLE_VIDEO_URL);
+  const resolvedAudioUrl = getOriginMediaUrl(SAMPLE_AUDIO_URL);
 
-  // Replace video
-  processed = processed.replace(/src=["'](?:videos\/)?war_is_over\.mp4["']/gi, `src="${SAMPLE_VIDEO_URL}"`);
-  processed = processed.replace(/<source([^>]+)src=["'](?:videos\/)?war_is_over\.mp4["']/gi, `<source$1src="${SAMPLE_VIDEO_URL}"`);
+  // Replace virtual images (supports images/, ./images/, /images/, or bare filename)
+  processed = processed.replace(/src=["'](?:\.\/|\/)?(?:images\/)?thethao\.png["']/gi, `src="${SPORTS_IMAGE_DATA_URI}"`);
+  processed = processed.replace(/src=["'](?:\.\/|\/)?(?:images\/)?sun\.png["']/gi, `src="${SUN_IMAGE_DATA_URI}"`);
+  processed = processed.replace(/src=["'](?:\.\/|\/)?(?:images\/)?lop12a1\.png["']/gi, `src="${GROUP_IMAGE_DATA_URI}"`);
 
-  // Replace audio
-  processed = processed.replace(/src=["'](?:audio\/)?Quoc_ca\.mp3["']/gi, `src="${SAMPLE_AUDIO_URL}"`);
-  processed = processed.replace(/<source([^>]+)src=["'](?:audio\/)?Quoc_ca\.mp3["']/gi, `<source$1src="${SAMPLE_AUDIO_URL}"`);
+  // Replace virtual video paths (war_is_over.mp4 or any local non-http .mp4/.webm/.mov/.ogv path)
+  processed = processed.replace(
+    /src=["'](?!https?:\/\/|data:|blob:)(?:[^"']*\/)?[^"']+\.(?:mp4|webm|mov|ogv)["']/gi,
+    `src="${resolvedVideoUrl}"`
+  );
+  // Normalize <source> MIME type for resolved local videos so browser never rejects codec
+  processed = processed.replace(
+    new RegExp(`(<source\\b[^>]*src="${resolvedVideoUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*?)type=["']video\\/[^"']+["']`, 'gi'),
+    '$1type="video/mp4"'
+  );
+
+  // Replace virtual audio paths (nhac.mp3 or any local non-http .mp3/.wav/.ogg/.m4a path)
+  processed = processed.replace(
+    /src=["'](?!https?:\/\/|data:|blob:)(?:[^"']*\/)?[^"']+\.(?:mp3|wav|ogg|m4a)["']/gi,
+    `src="${resolvedAudioUrl}"`
+  );
+  // Normalize <source> MIME type for resolved local audio so browser never rejects codec
+  processed = processed.replace(
+    new RegExp(`(<source\\b[^>]*src="${resolvedAudioUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*?)type=["']audio\\/[^"']+["']`, 'gi'),
+    '$1type="audio/mpeg"'
+  );
+
+  // Ensure <video> and <audio> preload metadata so duration & first video frame appear immediately
+  processed = processed.replace(/<(video|audio)\b(?![^>]*\bpreload=)/gi, '<$1 preload="metadata"');
 
   // Inject script to intercept link clicks:
   // 1. External links (https://, http://, etc.) -> opened safely in new tab via window.open & parent postMessage

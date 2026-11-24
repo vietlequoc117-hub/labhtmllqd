@@ -103,7 +103,7 @@ export const TargetPreviewModal: React.FC<TargetPreviewModalProps> = ({
               <iframe
                 title="Target Preview"
                 srcDoc={previewDoc}
-                sandbox="allow-scripts"
+                sandbox="allow-scripts allow-same-origin"
                 className="w-full h-full border-none bg-white"
               />
             </div>

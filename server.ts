@@ -287,6 +287,64 @@ TÔN CHỈ VÀ NGUYÊN TẮC HÀNG ĐẦU:
   return res.json({ answer: localAnswer });
 });
 
+// Serve Virtual Lab Media Assets (MP3 audio & MP4 video) with full HTTP Range (206) & CORS/CORP support
+const mediaDirCandidates = [
+  path.resolve(__dirname, 'public', 'media'),
+  path.resolve(__dirname, 'dist', 'media'),
+];
+
+const resolveMediaFile = (filename: string): string | null => {
+  for (const dir of mediaDirCandidates) {
+    const candidate = path.join(dir, filename);
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+};
+
+app.use('/media', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Accept-Ranges', 'bytes');
+  next();
+});
+
+for (const dir of mediaDirCandidates) {
+  if (fs.existsSync(dir)) {
+    app.use('/media', express.static(dir, {
+      setHeaders: (res, filePath) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('Accept-Ranges', 'bytes');
+        if (filePath.endsWith('.mp3')) {
+          res.setHeader('Content-Type', 'audio/mpeg');
+        } else if (filePath.endsWith('.mp4')) {
+          res.setHeader('Content-Type', 'video/mp4');
+        }
+      },
+    }));
+  }
+}
+
+app.get(['/audio/nhac.mp3', '/nhac.mp3', '/audio/Quoc_ca.mp3', '/Quoc_ca.mp3'], (req, res) => {
+  const file = resolveMediaFile('nhac.mp3');
+  if (!file) return res.status(404).end();
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Content-Type', 'audio/mpeg');
+  return res.sendFile(file);
+});
+
+app.get(['/videos/war_is_over.mp4', '/war_is_over.mp4'], (req, res) => {
+  const file = resolveMediaFile('war_is_over.mp4');
+  if (!file) return res.status(404).end();
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Content-Type', 'video/mp4');
+  return res.sendFile(file);
+});
+
 // Explicit Virtual Lab HTML Page Handlers (100% immune to 404 on iframe or browser navigation)
 app.get(['/thong_tin.html', '/thong-tin.html', '/thongtin.html'], (req, res) => {
   const filePath = path.resolve(__dirname, 'public', 'thong_tin.html');

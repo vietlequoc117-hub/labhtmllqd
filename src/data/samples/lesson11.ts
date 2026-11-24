@@ -39,20 +39,20 @@ export const LESSON_11_SAMPLES: CodeSample[] = [
   },
   {
     id: 3,
-    title: '3. Phát bài Tiến quân ca với thẻ audio',
-    description: 'Chèn tệp âm thanh audio/Quoc_ca.mp3 có thanh điều khiển controls.',
+    title: '3. Phát âm thanh minh hoạ với thẻ audio',
+    description: 'Chèn tệp âm thanh audio/nhac.mp3 có thanh điều khiển controls.',
     html: `<!DOCTYPE html>
 <html>
 <head>
-  <title>Nghe Quốc ca Việt Nam</title>
+  <title>Nghe âm thanh minh hoạ</title>
 </head>
 <body>
-  <h2>BÀI HÁT: TIẾN QUÂN CA (QUỐC CA)</h2>
-  <p>Nhạc và lời: <b>Nhạc sĩ Văn Cao</b></p>
-  <audio src="audio/Quoc_ca.mp3" controls style="width: 380px;">
+  <h2>BẢN GHI ÂM MINH HOẠ</h2>
+  <p>Tệp âm thanh mẫu thực hành thẻ <b>&lt;audio&gt;</b> trong HTML5:</p>
+  <audio src="audio/nhac.mp3" controls style="width: 380px;">
     Trình duyệt của bạn không hỗ trợ thẻ audio.
   </audio>
-  <p style="margin-top: 10px;"><i>"Đoàn quân Việt Nam đi, chung lòng cứu quốc, bước chân dồn vang trên đường gập ghềnh xa..."</i></p>
+  <p style="margin-top: 10px;"><i>Nhấn nút Play trên thanh điều khiển để nghe đoạn âm thanh minh hoạ.</i></p>
 </body>
 </html>`
   },
@@ -90,10 +90,10 @@ export const LESSON_11_SAMPLES: CodeSample[] = [
   <h3>1. Hình ảnh năng lượng mặt trời</h3>
   <img src="images/sun.png" alt="Bình minh năng lượng" width="220" style="border-radius: 8px;">
   
-  <h3>2. Bản ghi âm Quốc ca</h3>
-  <audio src="audio/Quoc_ca.mp3" controls style="width: 320px;"></audio>
+  <h3>2. Bản ghi âm minh hoạ</h3>
+  <audio src="audio/nhac.mp3" controls style="width: 320px;"></audio>
   
-  <h3>3. Thước phim tài liệu</h3>
+  <h3>3. Thước phim minh hoạ</h3>
   <video src="videos/war_is_over.mp4" controls width="380" style="border-radius: 8px;"></video>
 </body>
 </html>`
@@ -170,7 +170,7 @@ export const LESSON_11_SAMPLES: CodeSample[] = [
 </head>
 <body>
   <h2>BÀI CA THANH NIÊN VIỆT NAM</h2>
-  <audio src="audio/Quoc_ca.mp3" controls style="width: 100%; max-width: 400px; margin-bottom: 12px;"></audio>
+  <audio src="audio/nhac.mp3" controls style="width: 100%; max-width: 400px; margin-bottom: 12px;"></audio>
   <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px;">
     <h4>Lời bài hát:</h4>
     <p><i>Đoàn quân Việt Nam đi chung lòng cứu quốc...<br>Cờ in máu chiến thắng mang hồn nước...<br>Súng ngoài xa chen khúc quân hành ca...</i></p>

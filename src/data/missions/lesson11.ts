@@ -75,27 +75,27 @@ export const LESSON_11_MISSIONS: LessonMission[] = [
   },
   {
     id: 3,
-    title: 'Nhiệm vụ 3: Phát âm thanh Tiến quân ca với thẻ audio',
-    description: 'Chèn tệp âm thanh audio/Quoc_ca.mp3 vào trang web với thanh điều khiển controls phát nhạc mẫu.',
+    title: 'Nhiệm vụ 3: Phát âm thanh minh hoạ với thẻ audio',
+    description: 'Chèn tệp âm thanh audio/nhac.mp3 vào trang web với thanh điều khiển controls phát âm thanh minh hoạ.',
     requirements: [
-      'Sử dụng thẻ <audio> với src="audio/Quoc_ca.mp3"',
+      'Sử dụng thẻ <audio> với src="audio/nhac.mp3"',
       'Có thuộc tính controls để người dùng bật/tắt âm thanh',
-      'Có dòng chữ giới thiệu tên bài hát và tác giả'
+      'Có dòng chữ giới thiệu tiêu đề âm thanh minh hoạ'
     ],
     targetResult: {
-      title: 'Máy phát âm thanh Quốc ca',
-      description: 'Thanh phát nhạc audio trực quan sẵn sàng bấm phát giai điệu.',
+      title: 'Máy phát âm thanh minh hoạ',
+      description: 'Thanh phát âm thanh audio trực quan sẵn sàng bấm phát giai điệu.',
       html: `<!DOCTYPE html>
 <html>
-<head><title>Nghe Quốc ca</title></head>
+<head><title>Nghe âm thanh minh hoạ</title></head>
 <body>
-  <h2>TIẾN QUÂN CA - QUỐC CA VIỆT NAM</h2>
-  <p>Nhạc và lời: <b>Nhạc sĩ Văn Cao</b></p>
-  <audio src="audio/Quoc_ca.mp3" controls></audio>
+  <h2>BẢN GHI ÂM MINH HOẠ</h2>
+  <p>Âm thanh mẫu thực hành thẻ <b>&lt;audio&gt;</b> trong HTML5.</p>
+  <audio src="audio/nhac.mp3" controls></audio>
 </body>
 </html>`
     },
-    hint: 'Cú pháp: <audio src="audio/Quoc_ca.mp3" controls></audio>.',
+    hint: 'Cú pháp: <audio src="audio/nhac.mp3" controls></audio>.',
     checkCriteria: (doc) => {
       const audio = doc.querySelector('audio');
       const hasControls = !!(audio && audio.hasAttribute('controls'));
@@ -165,7 +165,7 @@ export const LESSON_11_MISSIONS: LessonMission[] = [
   <h3>1. Hình ảnh năng lượng mặt trời</h3>
   <img src="images/sun.png" alt="Mặt trời" width="200">
   <h3>2. Nhạc lễ chào cờ</h3>
-  <audio src="audio/Quoc_ca.mp3" controls></audio>
+  <audio src="audio/nhac.mp3" controls></audio>
   <h3>3. Phim tư liệu lịch sử</h3>
   <video src="videos/war_is_over.mp4" controls width="360"></video>
   <h3>4. Trang thông tin nội tuyến</h3>

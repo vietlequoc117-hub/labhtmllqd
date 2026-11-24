@@ -423,7 +423,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
                               <iframe
                                 title={`Mission ${m.id} Target Preview`}
                                 srcDoc={targetDoc}
-                                sandbox="allow-scripts"
+                                sandbox="allow-scripts allow-same-origin"
                                 className="w-full h-full border-none bg-white"
                               />
                             </div>

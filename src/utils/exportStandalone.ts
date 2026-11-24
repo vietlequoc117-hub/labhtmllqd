@@ -424,7 +424,7 @@ export function generateStandaloneHtml(): string {
       res = res.replace(/src=["'](?:images\\/)?sun\\.png["']/gi, 'src="' + MOCK_ASSETS_MAP.sun + '"');
       res = res.replace(/src=["'](?:images\\/)?lop12a1\\.png["']/gi, 'src="' + MOCK_ASSETS_MAP.lop12a1 + '"');
       res = res.replace(/src=["'](?:videos\\/)?war_is_over\\.mp4["']/gi, 'src="' + MOCK_ASSETS_MAP.video + '"');
-      res = res.replace(/src=["'](?:audio\\/)?Quoc_ca\\.mp3["']/gi, 'src="' + MOCK_ASSETS_MAP.audio + '"');
+      res = res.replace(/src=["'](?:audio\\/)?(?:nhac|Quoc_ca)\\.mp3["']/gi, 'src="' + MOCK_ASSETS_MAP.audio + '"');
       return res;
     }
 

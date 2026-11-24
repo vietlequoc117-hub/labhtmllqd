@@ -829,8 +829,8 @@ a {
       {
         tag: '<audio controls>',
         name: 'Thẻ Âm thanh',
-        syntax: '<audio src="audio/Quoc_ca.mp3" controls></audio>',
-        example: '<audio src="audio/Quoc_ca.mp3" controls></audio>',
+        syntax: '<audio src="audio/nhac.mp3" controls></audio>',
+        example: '<audio src="audio/nhac.mp3" controls></audio>',
         description: 'Phát tệp âm thanh nghe thử trực tiếp trên trình duyệt.',
       },
       {
@@ -857,8 +857,8 @@ a {
       {
         id: 'b11_c3',
         title: 'Nhúng tệp âm thanh (<audio controls>)',
-        description: 'Sử dụng thẻ <audio> trỏ tới "audio/Quoc_ca.mp3" và có thuộc tính controls.',
-        hint: 'Viết <audio src="audio/Quoc_ca.mp3" controls></audio>.',
+        description: 'Sử dụng thẻ <audio> trỏ tới "audio/nhac.mp3" và có thuộc tính controls.',
+        hint: 'Viết <audio src="audio/nhac.mp3" controls></audio>.',
       },
       {
         id: 'b11_c4',
@@ -913,14 +913,14 @@ a {
   </section>
 
   <section>
-    <h2>2. Video tài liệu</h2>
+    <h2>2. Video minh hoạ</h2>
     <video src="videos/war_is_over.mp4" controls width="480"></video>
   </section>
 
   <section>
     <h2>3. Bản tin âm thanh</h2>
     <p>Nghe bản tin sinh hoạt đầu tuần:</p>
-    <audio src="audio/Quoc_ca.mp3" controls></audio>
+    <audio src="audio/nhac.mp3" controls></audio>
   </section>
 
   <section>
