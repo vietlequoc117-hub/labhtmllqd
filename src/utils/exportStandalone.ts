@@ -183,9 +183,6 @@ export function generateStandaloneHtml(): string {
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span id="editorStatus">Sẵn sàng thực hành</span>
         </div>
-        <div>
-          <span>Phím tắt: <b>Ctrl + Enter</b> để chạy</span>
-        </div>
       </div>
     </section>
 

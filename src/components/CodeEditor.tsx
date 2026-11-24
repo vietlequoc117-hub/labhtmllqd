@@ -1143,7 +1143,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         <div className="hidden sm:flex items-center gap-2 text-slate-400">
           <span>Tab: 2 spaces</span>
           <span>UTF-8</span>
-          <span className="font-medium text-blue-500">Ctrl + Enter: Chạy</span>
         </div>
       </div>
     </section>
