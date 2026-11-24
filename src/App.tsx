@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { BookOpen, Code2, Eye, Columns2 } from 'lucide-react';
 import { LESSONS } from './data/lessons';
-import { Lesson, DomTestResult } from './types';
+import { Lesson, DomTestResult, CodeSample } from './types';
 import { evaluateStudentCode } from './utils/domEvaluator';
+import { lintHtmlCode, lintCssCode } from './utils/htmlLintValidator';
+import { useViewportLayout } from './hooks/useViewportLayout';
 import { Header } from './components/Header';
 import { LessonGuide } from './components/LessonGuide';
 import { CodeEditor } from './components/CodeEditor';
@@ -10,10 +13,24 @@ import { SettingsModal } from './components/SettingsModal';
 import { SolutionModal } from './components/SolutionModal';
 import { SampleModal } from './components/SampleModal';
 import { AiAssistantModal } from './components/AiAssistantModal';
-import { CodeSample } from './types';
+
+type MobilePane = 'guide' | 'editor' | 'preview' | 'split';
+type TabletSplit = 'guide-code' | 'code-preview' | 'guide-preview';
 
 export default function App() {
+  const viewport = useViewportLayout();
   const [currentLesson, setCurrentLesson] = useState<Lesson>(LESSONS[0]);
+
+  // Responsive active view state
+  const [mobilePane, setMobilePane] = useState<MobilePane>('guide');
+  const [tabletSplit, setTabletSplit] = useState<TabletSplit>('guide-code');
+
+  // If user rotates from landscape split to portrait, fall back cleanly from 'split' to 'editor'
+  useEffect(() => {
+    if (viewport.isMobilePortrait && mobilePane === 'split') {
+      setMobilePane('editor');
+    }
+  }, [viewport.isMobilePortrait, mobilePane]);
 
   // Code state per lesson with local storage persistence
   const [htmlCodes, setHtmlCodes] = useState<Record<number, string>>(() => {
@@ -88,6 +105,27 @@ export default function App() {
   const currentHtml = htmlCodes[currentLesson.id] ?? currentLesson.initialHtml;
   const currentCss = cssCodes[currentLesson.id] ?? currentLesson.initialCss;
 
+  // Live syntax error count for mobile/tablet navigation indicator
+  const syntaxErrorCount = useMemo(() => {
+    const htmlErrs = lintHtmlCode(currentHtml, editingLine).filter((d) => d.severity === 'error').length;
+    const cssErrs = lintCssCode(currentCss, editingLine).filter((d) => d.severity === 'error').length;
+    return htmlErrs + cssErrs;
+  }, [currentHtml, currentCss, editingLine]);
+
+  // Helper to reveal editor or preview automatically on mobile/tablet after loading code from LessonGuide
+  const revealCodeAfterAction = useCallback(
+    (preferPreview = false) => {
+      if (viewport.isMobilePortrait) {
+        setMobilePane(preferPreview ? 'preview' : 'editor');
+      } else if (viewport.isMobileLandscape) {
+        setMobilePane('split');
+      } else if (viewport.isTablet) {
+        setTabletSplit(preferPreview ? 'code-preview' : 'guide-code');
+      }
+    },
+    [viewport.isMobilePortrait, viewport.isMobileLandscape, viewport.isTablet]
+  );
+
   // Run DOM evaluation
   const runEvaluation = useCallback(() => {
     setIsEvaluating(true);
@@ -118,6 +156,13 @@ export default function App() {
   const handleRunCode = () => {
     setEditingLine(null);
     runEvaluation();
+    if (viewport.isMobilePortrait) {
+      setMobilePane('preview');
+    } else if (viewport.isMobileLandscape) {
+      setMobilePane('split');
+    } else if (viewport.isTablet && tabletSplit === 'guide-code') {
+      setTabletSplit('code-preview');
+    }
   };
 
   const handleCheckCode = () => {
@@ -162,6 +207,7 @@ export default function App() {
       const results = evaluateStudentCode(currentLesson, html, css || currentCss);
       setTestResults(results);
     }, 50);
+    revealCodeAfterAction(false);
   };
 
   const handleLoadSample = (sample: CodeSample) => {
@@ -180,6 +226,7 @@ export default function App() {
       const results = evaluateStudentCode(currentLesson, sample.html, sample.css || currentCss);
       setTestResults(results);
     }, 60);
+    revealCodeAfterAction(true);
   };
 
   // Load snippet from Quiz Question into Lab Editor & Run live
@@ -241,6 +288,7 @@ export default function App() {
       const results = evaluateStudentCode(currentLesson, fullHtml, cleanCss);
       setTestResults(results);
     }, 60);
+    revealCodeAfterAction(true);
   };
 
   const handleRestoreLessonCode = () => {
@@ -272,20 +320,11 @@ export default function App() {
     setLoadedQuizSnippet(null);
   };
 
-  const handleNextLesson = () => {
-    const currentIndex = LESSONS.findIndex((l) => l.id === currentLesson.id);
-    if (currentIndex >= 0 && currentIndex < LESSONS.length - 1) {
-      setEditingLine(null);
-      setCurrentLesson(LESSONS[currentIndex + 1]);
-    }
-  };
-
   const handleInsertSnippet = (snippet: string) => {
     setEditingLine(null);
     if (activeEditorTab === 'html') {
       setHtmlCodes((prev) => {
         const code = prev[currentLesson.id] ?? currentLesson.initialHtml;
-        // Insert snippet before </body> if present, or at the end
         if (code.includes('</body>')) {
           return {
             ...prev,
@@ -298,10 +337,56 @@ export default function App() {
         };
       });
     }
+    revealCodeAfterAction(false);
   };
 
+  // Visibility calculation per pane across Desktop, Laptop, Tablet, Mobile Landscape, Mobile Portrait
+  const showGuide =
+    viewport.isDesktopOrLaptop ||
+    (viewport.isTablet && (tabletSplit === 'guide-code' || tabletSplit === 'guide-preview')) ||
+    (viewport.isMobile && mobilePane === 'guide');
+
+  const showEditor =
+    viewport.isDesktopOrLaptop ||
+    (viewport.isTablet && (tabletSplit === 'guide-code' || tabletSplit === 'code-preview')) ||
+    (viewport.isMobilePortrait && mobilePane === 'editor') ||
+    (viewport.isMobileLandscape && (mobilePane === 'editor' || mobilePane === 'split'));
+
+  const showPreview =
+    viewport.isDesktopOrLaptop ||
+    (viewport.isTablet && (tabletSplit === 'code-preview' || tabletSplit === 'guide-preview')) ||
+    (viewport.isMobilePortrait && mobilePane === 'preview') ||
+    (viewport.isMobileLandscape && (mobilePane === 'preview' || mobilePane === 'split'));
+
+  // Width classes per pane matching the active viewport mode
+  const guideWidthClass = viewport.isDesktopOrLaptop
+    ? 'w-[28%] min-w-[260px] max-w-[380px] border-r border-slate-200'
+    : viewport.isTablet
+    ? 'w-[44%] min-w-0 border-r border-slate-200'
+    : 'w-full min-w-0';
+
+  const editorWidthClass = viewport.isDesktopOrLaptop
+    ? 'flex-1 min-w-0 border-r border-slate-200'
+    : viewport.isTablet
+    ? tabletSplit === 'guide-code'
+      ? 'w-[56%] min-w-0'
+      : 'w-[52%] min-w-0 border-r border-slate-200'
+    : viewport.isMobileLandscape && mobilePane === 'split'
+    ? 'w-1/2 min-w-0 border-r border-slate-200'
+    : 'w-full min-w-0';
+
+  const previewWidthClass = viewport.isDesktopOrLaptop
+    ? 'w-[33%] min-w-[280px] max-w-[520px]'
+    : viewport.isTablet
+    ? tabletSplit === 'code-preview'
+      ? 'w-[48%] min-w-0'
+      : 'w-[56%] min-w-0'
+    : viewport.isMobileLandscape && mobilePane === 'split'
+    ? 'w-1/2 min-w-0'
+    : 'w-full min-w-0';
+
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 font-sans text-slate-800">
+    <div className="flex flex-col h-dvh w-full overflow-hidden bg-slate-100 font-sans text-slate-800">
       {/* HEADER COMPONENT */}
       <Header
         lessons={LESSONS}
@@ -316,85 +401,272 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
         isEvaluating={isEvaluating}
+        isCompactHeight={viewport.isCompactHeight}
       />
 
-      {/* 3-COLUMN MAIN WORKSPACE */}
-      <main className="flex-1 flex overflow-hidden">
-        {/* COLUMN 1: Lesson Guide & Tasks (28%) */}
-        <div className="w-[28%] min-w-[280px] max-w-[380px] h-full overflow-hidden border-r border-slate-200 bg-white">
-          <LessonGuide
-            lesson={currentLesson}
-            testResults={testResults}
-            onInsertSnippet={handleInsertSnippet}
-            onLoadSample={handleLoadSample}
-            currentHtml={currentHtml}
-            currentCss={currentCss}
-            editingLine={editingLine}
-            onLoadSnippetCode={handleLoadSnippetCode}
-            onRestoreLessonCode={handleRestoreLessonCode}
-            loadedSnippetQuestionId={loadedQuizSnippet?.lessonId === currentLesson.id ? loadedQuizSnippet.questionId : null}
-            onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
-            onLoadTargetCode={(html, css) => {
-              setEditingLine(null);
-              setHtmlCodes((prev) => ({
-                ...prev,
-                [currentLesson.id]: html,
-              }));
-              if (css !== undefined) {
-                setCssCodes((prev) => ({
-                  ...prev,
-                  [currentLesson.id]: css,
-                }));
-              }
-              setTimeout(() => {
-                const results = evaluateStudentCode(currentLesson, html, css || currentCss);
-                setTestResults(results);
-              }, 60);
-            }}
-          />
-        </div>
+      {/* TABLET 2-COLUMN SPLIT MODE BAR (768px–1023px) */}
+      {viewport.isTablet && (
+        <div className="h-9 bg-slate-100 border-b border-slate-200 px-3 flex items-center justify-between gap-2 shrink-0 select-none">
+          <div className="flex items-center gap-1 bg-slate-200/70 p-0.5 rounded-lg">
+            <button
+              onClick={() => setTabletSplit('guide-code')}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                tabletSplit === 'guide-code'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 shrink-0" />
+              <span>Bài học + Soạn thảo</span>
+            </button>
+            <button
+              onClick={() => setTabletSplit('code-preview')}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                tabletSplit === 'code-preview'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Columns2 className="w-3.5 h-3.5 shrink-0" />
+              <span>Soạn thảo + Xem trước</span>
+            </button>
+            <button
+              onClick={() => setTabletSplit('guide-preview')}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                tabletSplit === 'guide-preview'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5 shrink-0" />
+              <span>Bài học + Xem trước</span>
+            </button>
+          </div>
 
-        {/* COLUMN 2: Code Editor (38%) */}
-        <div className="w-[38%] min-w-[340px] flex-1 h-full overflow-hidden flex flex-col border-r border-slate-200 bg-white">
-          <div className="flex-1 overflow-hidden">
-            <CodeEditor
-              htmlCode={currentHtml}
-              cssCode={currentCss}
-              activeTab={activeEditorTab}
-              onChangeTab={setActiveEditorTab}
-              onChangeHtml={(val) => {
-                setHtmlCodes((prev) => ({
-                  ...prev,
-                  [currentLesson.id]: val,
-                }));
-              }}
-              onChangeCss={(val) => {
-                setCssCodes((prev) => ({
-                  ...prev,
-                  [currentLesson.id]: val,
-                }));
-              }}
-              fontSize={fontSize}
-              onRunCode={handleRunCode}
-              editingLine={editingLine}
-              onChangeEditingLine={setEditingLine}
-            />
+          <div className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
+            {syntaxErrorCount > 0 ? (
+              <span className="text-rose-600 font-semibold">{syntaxErrorCount} lỗi cú pháp</span>
+            ) : (
+              <span>Chế độ 2 cột · Máy tính bảng</span>
+            )}
           </div>
         </div>
+      )}
 
-        {/* COLUMN 3: Result Pane - Live Preview (34%) */}
-        <div className="w-[34%] min-w-[320px] max-w-[500px] h-full overflow-hidden bg-slate-50">
-          <ResultPane
-            lesson={currentLesson}
-            htmlCode={currentHtml}
-            cssCode={currentCss}
-            editingLine={editingLine}
-            onNavigateToError={(_line, source) => {
-              setActiveEditorTab(source);
-            }}
-          />
+      {/* MOBILE LANDSCAPE COMPACT WORKSPACE SWITCHER (phone rotated horizontally, e.g. 844x390) */}
+      {viewport.isMobileLandscape && (
+        <div className="h-8 bg-slate-100 border-b border-slate-200 px-2 flex items-center justify-between gap-2 shrink-0 select-none overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 bg-slate-200/75 p-0.5 rounded-md shrink-0">
+            <button
+              onClick={() => setMobilePane('guide')}
+              className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+                mobilePane === 'guide'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <BookOpen className="w-3 h-3 shrink-0" />
+              <span>Bài học</span>
+            </button>
+            <button
+              onClick={() => setMobilePane('editor')}
+              className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+                mobilePane === 'editor'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Code2 className="w-3 h-3 shrink-0" />
+              <span>Soạn thảo</span>
+              {syntaxErrorCount > 0 && (
+                <span className="text-[10px] font-bold text-rose-600 tabular-nums">({syntaxErrorCount})</span>
+              )}
+            </button>
+            <button
+              onClick={() => setMobilePane('preview')}
+              className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+                mobilePane === 'preview'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Eye className="w-3 h-3 shrink-0" />
+              <span>Xem trước</span>
+            </button>
+            <button
+              onClick={() => setMobilePane('split')}
+              className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+                mobilePane === 'split'
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Columns2 className="w-3 h-3 shrink-0" />
+              <span>Mã + KQ</span>
+            </button>
+          </div>
+          <span className="text-[10px] text-slate-500 font-medium whitespace-nowrap shrink-0">
+            Chế độ ngang
+          </span>
         </div>
+      )}
+
+      {/* ADAPTIVE WORKSPACE: 3-column (Desktop/Laptop), 2-column (Tablet / Mobile Landscape Split), 1-column (Mobile) */}
+      <main className="flex-1 flex min-h-0 overflow-hidden w-full">
+        {/* COLUMN 1: Lesson Guide & Tasks */}
+        {showGuide && (
+          <div className={`${guideWidthClass} h-full overflow-hidden bg-white`}>
+            <LessonGuide
+              lesson={currentLesson}
+              testResults={testResults}
+              onInsertSnippet={handleInsertSnippet}
+              onLoadSample={handleLoadSample}
+              currentHtml={currentHtml}
+              currentCss={currentCss}
+              editingLine={editingLine}
+              onLoadSnippetCode={handleLoadSnippetCode}
+              onRestoreLessonCode={handleRestoreLessonCode}
+              loadedSnippetQuestionId={loadedQuizSnippet?.lessonId === currentLesson.id ? loadedQuizSnippet.questionId : null}
+              onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
+              isCompactHeight={viewport.isCompactHeight}
+              onLoadTargetCode={(html, css) => {
+                setEditingLine(null);
+                setHtmlCodes((prev) => ({
+                  ...prev,
+                  [currentLesson.id]: html,
+                }));
+                if (css !== undefined) {
+                  setCssCodes((prev) => ({
+                    ...prev,
+                    [currentLesson.id]: css,
+                  }));
+                }
+                setTimeout(() => {
+                  const results = evaluateStudentCode(currentLesson, html, css || currentCss);
+                  setTestResults(results);
+                }, 60);
+                revealCodeAfterAction(true);
+              }}
+            />
+          </div>
+        )}
+
+        {/* COLUMN 2: Code Editor */}
+        {showEditor && (
+          <div className={`${editorWidthClass} h-full overflow-hidden flex flex-col bg-white`}>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <CodeEditor
+                htmlCode={currentHtml}
+                cssCode={currentCss}
+                activeTab={activeEditorTab}
+                onChangeTab={setActiveEditorTab}
+                onChangeHtml={(val) => {
+                  setHtmlCodes((prev) => ({
+                    ...prev,
+                    [currentLesson.id]: val,
+                  }));
+                }}
+                onChangeCss={(val) => {
+                  setCssCodes((prev) => ({
+                    ...prev,
+                    [currentLesson.id]: val,
+                  }));
+                }}
+                fontSize={fontSize}
+                onRunCode={handleRunCode}
+                editingLine={editingLine}
+                onChangeEditingLine={setEditingLine}
+                isMobile={viewport.isMobile}
+                isCompactHeight={viewport.isCompactHeight}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* COLUMN 3: Result Pane - Live Preview */}
+        {showPreview && (
+          <div className={`${previewWidthClass} h-full overflow-hidden bg-slate-50`}>
+            <ResultPane
+              lesson={currentLesson}
+              htmlCode={currentHtml}
+              cssCode={currentCss}
+              editingLine={editingLine}
+              isMobile={viewport.isMobile}
+              isCompactHeight={viewport.isCompactHeight}
+              onNavigateToError={(_line, source) => {
+                setActiveEditorTab(source);
+                if (viewport.isMobilePortrait) {
+                  setMobilePane('editor');
+                } else if (viewport.isMobileLandscape && mobilePane === 'preview') {
+                  setMobilePane('split');
+                } else if (viewport.isTablet && tabletSplit === 'guide-preview') {
+                  setTabletSplit('code-preview');
+                }
+              }}
+            />
+          </div>
+        )}
       </main>
+
+      {/* MOBILE PORTRAIT THUMB-ZONE BOTTOM NAVIGATION BAR (< 768px portrait) */}
+      {viewport.isMobilePortrait && (
+        <nav
+          aria-label="Điều hướng khu vực làm việc"
+          className="bg-white/95 backdrop-blur-md border-t border-slate-200 grid grid-cols-3 shrink-0 pb-safe select-none shadow-[0_-2px_10px_rgba(15,23,42,0.04)]"
+        >
+          <button
+            onClick={() => setMobilePane('guide')}
+            className={`min-h-[52px] py-1.5 flex flex-col items-center justify-center gap-0.5 transition cursor-pointer relative ${
+              mobilePane === 'guide'
+                ? 'text-blue-600 font-bold'
+                : 'text-slate-500 hover:text-slate-800 font-medium'
+            }`}
+          >
+            {mobilePane === 'guide' && (
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-blue-600 rounded-full" />
+            )}
+            <BookOpen className="w-5 h-5" />
+            <span className="text-[11px] leading-tight whitespace-nowrap">Bài học</span>
+          </button>
+
+          <button
+            onClick={() => setMobilePane('editor')}
+            className={`min-h-[52px] py-1.5 flex flex-col items-center justify-center gap-0.5 transition cursor-pointer relative ${
+              mobilePane === 'editor'
+                ? 'text-blue-600 font-bold'
+                : 'text-slate-500 hover:text-slate-800 font-medium'
+            }`}
+          >
+            {mobilePane === 'editor' && (
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-blue-600 rounded-full" />
+            )}
+            <div className="relative">
+              <Code2 className="w-5 h-5" />
+              {syntaxErrorCount > 0 && (
+                <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
+                  {syntaxErrorCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[11px] leading-tight whitespace-nowrap">Soạn thảo</span>
+          </button>
+
+          <button
+            onClick={() => setMobilePane('preview')}
+            className={`min-h-[52px] py-1.5 flex flex-col items-center justify-center gap-0.5 transition cursor-pointer relative ${
+              mobilePane === 'preview'
+                ? 'text-blue-600 font-bold'
+                : 'text-slate-500 hover:text-slate-800 font-medium'
+            }`}
+          >
+            {mobilePane === 'preview' && (
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-blue-600 rounded-full" />
+            )}
+            <Eye className="w-5 h-5" />
+            <span className="text-[11px] leading-tight whitespace-nowrap">Xem trước</span>
+          </button>
+        </nav>
+      )}
 
       {/* MODALS */}
       <SettingsModal
@@ -433,24 +705,23 @@ export default function App() {
       {/* Reset Confirmation Dialog (Replaces window.confirm) */}
       {isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 text-slate-800">
-            <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block animate-pulse"></span>
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 text-slate-800">
+            <h3 className="text-base font-bold text-slate-900 mb-2">
               Xác nhận khôi phục mã nguồn?
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed mb-6">
+            <p className="text-xs text-slate-600 leading-relaxed mb-5">
               Bạn có chắc chắn muốn đặt lại mã nguồn ban đầu của <b className="text-blue-600">{currentLesson.lessonNumber}: {currentLesson.title}</b>? Các chỉnh sửa hiện tại của bạn trong bài này sẽ được thay thế bằng mã khởi tạo chuẩn SGK.
             </p>
             <div className="flex items-center justify-end gap-2.5">
               <button
                 onClick={() => setIsResetConfirmOpen(false)}
-                className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
+                className="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
               >
                 Hủy bỏ
               </button>
               <button
                 onClick={executeResetCode}
-                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-sm transition cursor-pointer active:scale-95"
+                className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-sm transition cursor-pointer active:scale-95"
               >
                 Đồng ý làm mới
               </button>

@@ -45,6 +45,7 @@ interface LessonGuideProps {
   loadedSnippetQuestionId?: number | null;
   onOpenAiAssistant?: () => void;
   editingLine?: number | null;
+  isCompactHeight?: boolean;
 }
 
 export const LessonGuide: React.FC<LessonGuideProps> = ({
@@ -60,6 +61,7 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   loadedSnippetQuestionId,
   onOpenAiAssistant,
   editingLine = null,
+  isCompactHeight = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'theory' | 'samples' | 'tasks' | 'quiz'>('theory');
   const [selectedMissionFilter, setSelectedMissionFilter] = useState<number | 'all'>('all');
@@ -131,54 +133,58 @@ export const LessonGuide: React.FC<LessonGuideProps> = ({
   };
 
   return (
-    <aside className="h-full flex flex-col bg-white border-r border-slate-200 select-none overflow-hidden text-slate-800">
-      {/* Navigation Sub-Tabs: Kiến thức đứng trước tiên, sau đó 10 Mẫu, sau đó Nhiệm vụ, rồi 10 Quiz */}
-      <div className="flex border-b border-slate-200 bg-slate-50 text-xs shrink-0">
+    <aside className="h-full flex flex-col bg-white select-none overflow-hidden text-slate-800">
+      {/* Navigation Sub-Tabs: strictly single-line across all screen sizes */}
+      <div
+        className={`flex ${
+          isCompactHeight ? 'h-9' : 'h-10'
+        } border-b border-slate-200 bg-slate-50 text-[11px] xl:text-xs shrink-0 overflow-x-auto no-scrollbar`}
+      >
         <button
           onClick={() => setActiveTab('theory')}
-          className={`flex-1 py-2 px-2.5 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`flex-1 min-w-max px-2 sm:px-2.5 font-semibold transition flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'theory'
               ? 'text-blue-600 border-b-2 border-blue-600 bg-white shadow-xs'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <BookOpen className="w-3.5 h-3.5" />
+          <BookOpen className="w-3.5 h-3.5 shrink-0" />
           <span>Kiến thức</span>
         </button>
 
         <button
           onClick={() => setActiveTab('samples')}
-          className={`flex-1 py-2 px-1 font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
+          className={`flex-1 min-w-max px-2 sm:px-2.5 font-semibold transition flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'samples'
               ? 'text-amber-600 border-b-2 border-amber-600 bg-white shadow-xs'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
           <span className="font-bold">10 Mẫu</span>
         </button>
 
         <button
           onClick={() => setActiveTab('tasks')}
-          className={`flex-1 py-2 px-1 font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
+          className={`flex-1 min-w-max px-2 sm:px-2.5 font-semibold transition flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'tasks'
               ? 'text-blue-600 border-b-2 border-blue-600 bg-white shadow-xs'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <ListChecks className="w-3.5 h-3.5 text-blue-600" />
+          <ListChecks className="w-3.5 h-3.5 text-blue-600 shrink-0" />
           <span className="font-bold">10 Bài tập</span>
         </button>
 
         <button
           onClick={() => setActiveTab('quiz')}
-          className={`flex-1 py-2 px-1 font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
+          className={`flex-1 min-w-max px-2 sm:px-2.5 font-semibold transition flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'quiz'
               ? 'text-indigo-600 border-b-2 border-indigo-600 bg-white shadow-xs'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <HelpCircle className="w-3.5 h-3.5 text-indigo-500" />
+          <HelpCircle className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
           <span className="font-bold">10 Quiz</span>
         </button>
       </div>

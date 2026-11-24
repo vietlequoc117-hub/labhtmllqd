@@ -355,39 +355,38 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
 
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-1.5 sm:p-4 animate-in fade-in duration-200">
       <div
-        className={`bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200 text-slate-800 ${
+        className={`bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200 text-slate-800 ${
           isMaximized
-            ? 'w-full h-full max-w-[98vw] max-h-[96vh]'
-            : 'w-full max-w-3xl h-[88vh] max-h-[760px]'
+            ? 'w-full h-full max-w-[98vw] max-h-[96dvh]'
+            : 'w-full max-w-3xl h-[92dvh] sm:h-[88dvh] max-h-[760px]'
         }`}
       >
         {/* HEADER */}
-        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-xs">
-                <Bot className="w-5 h-5 text-white" />
+        <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="relative shrink-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-xs">
+                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5 whitespace-nowrap">
                   Trợ Lý AI
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                    Chuyên gia cấp cao HTML & CSS
+                  <span className="hidden sm:inline text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                    Chuyên gia HTML & CSS
                   </span>
                 </h3>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs">
+                <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs whitespace-nowrap">
                   <Globe className="w-3.5 h-3.5 text-emerald-600" />
-                  Toàn bộ chương trình (Bài 7 - 18)
+                  Bài 7 – 18
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+              <p className="hidden sm:flex text-[11px] text-slate-500 items-center gap-1 mt-0.5 truncate">
                 <span>Giải thích chuẩn W3C & SGK Tin học 12</span>
-                <span className="text-slate-400">•</span>
+                <span className="text-slate-400">·</span>
                 <span className="text-blue-600 font-medium">
                   Giải đáp tổng thể mọi bài học & câu hỏi toàn khóa
                 </span>

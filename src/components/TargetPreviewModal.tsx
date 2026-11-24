@@ -36,10 +36,10 @@ export const TargetPreviewModal: React.FC<TargetPreviewModalProps> = ({
 </html>`;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 md:p-6 animate-in fade-in duration-150">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-slate-800">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-150">
+      <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl w-full max-w-3xl max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden text-slate-800">
         {/* Header */}
-        <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+        <div className="px-3.5 sm:px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shadow-xs">
               <Target className="w-4 h-4" />

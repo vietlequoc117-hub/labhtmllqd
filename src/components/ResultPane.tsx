@@ -22,6 +22,8 @@ interface ResultPaneProps {
   cssCode: string;
   onNavigateToError?: (line: number, source: 'html' | 'css') => void;
   editingLine?: number | null;
+  isMobile?: boolean;
+  isCompactHeight?: boolean;
 }
 
 export const ResultPane: React.FC<ResultPaneProps> = ({
@@ -30,11 +32,14 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
   cssCode,
   onNavigateToError,
   editingLine = null,
+  isMobile = false,
+  isCompactHeight = false,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [currentVirtualPath, setCurrentVirtualPath] = useState('index.html');
   const [externalToast, setExternalToast] = useState<string | null>(null);
+  const effectiveDeviceMode = isMobile ? 'desktop' : deviceMode;
 
   // Linter diagnostics for HTML and CSS (defers errors on editingLine until student presses Enter)
   const htmlDiagnostics = useMemo(() => lintHtmlCode(htmlCode, editingLine), [htmlCode, editingLine]);
@@ -182,93 +187,124 @@ export const ResultPane: React.FC<ResultPaneProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white border-l border-slate-200 select-none overflow-hidden">
+    <div className="h-full flex flex-col bg-white select-none overflow-hidden">
       {/* Top Bar: Preview Label & Viewport Controls */}
-      <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-3 shrink-0">
-        <div className="flex items-center gap-2">
-          <Eye className="w-3.5 h-3.5 text-blue-600" />
-          <span className="text-xs font-bold text-slate-800">Xem trước trực tiếp</span>
-          <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded font-medium hidden sm:inline">
+      <div
+        className={`${
+          isCompactHeight ? 'h-9' : 'h-10'
+        } bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2 px-2.5 sm:px-3 shrink-0 overflow-hidden`}
+      >
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <Eye className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          <span className="text-xs font-bold text-slate-800 whitespace-nowrap truncate">
+            Xem trước trực tiếp
+          </span>
+          <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded font-medium hidden xl:inline whitespace-nowrap shrink-0">
             HTML &amp; CSS đồng bộ
           </span>
         </div>
 
-        {/* Viewport size toggles */}
-        <div className="flex items-center gap-1 text-slate-500">
-          <button
-            onClick={() => setDeviceMode('desktop')}
-            className={`p-1.5 rounded transition cursor-pointer ${
-              deviceMode === 'desktop' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-            title="Máy tính để bàn (100%)"
-          >
-            <Monitor className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setDeviceMode('tablet')}
-            className={`p-1.5 rounded transition cursor-pointer ${
-              deviceMode === 'tablet' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-            title="Máy tính bảng (768px)"
-          >
-            <Tablet className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setDeviceMode('mobile')}
-            className={`p-1.5 rounded transition cursor-pointer ${
-              deviceMode === 'mobile' ? 'bg-white text-blue-600 shadow-xs border border-slate-200' : 'hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-            title="Điện thoại di động (375px)"
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-          </button>
+        {/* Right Controls: Back to index when on sub-page in compact mode + Viewport size toggles on desktop/tablet */}
+        <div className="flex items-center gap-1 text-slate-500 shrink-0">
+          {isCompactHeight && currentVirtualPath !== 'index.html' && (
+            <button
+              onClick={() => {
+                setCurrentVirtualPath('index.html');
+                updateIframe('index.html');
+              }}
+              className="text-[10px] text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded transition cursor-pointer shrink-0 whitespace-nowrap"
+              title="Quay lại trang chính index.html"
+            >
+              ← index.html
+            </button>
+          )}
+          {!isMobile && (
+            <>
+              <button
+                onClick={() => setDeviceMode('desktop')}
+                className={`p-1.5 rounded transition cursor-pointer ${
+                  deviceMode === 'desktop'
+                    ? 'bg-white text-blue-600 shadow-xs border border-slate-200'
+                    : 'hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+                title="Máy tính để bàn (100%)"
+              >
+                <Monitor className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setDeviceMode('tablet')}
+                className={`p-1.5 rounded transition cursor-pointer ${
+                  deviceMode === 'tablet'
+                    ? 'bg-white text-blue-600 shadow-xs border border-slate-200'
+                    : 'hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+                title="Máy tính bảng (768px)"
+              >
+                <Tablet className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setDeviceMode('mobile')}
+                className={`p-1.5 rounded transition cursor-pointer ${
+                  deviceMode === 'mobile'
+                    ? 'bg-white text-blue-600 shadow-xs border border-slate-200'
+                    : 'hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+                title="Điện thoại di động (375px)"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* VIEWPORT BODY */}
       <div className="flex-1 overflow-hidden relative flex flex-col bg-slate-100">
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Simulated Browser URL bar */}
-          <div className="h-8 bg-slate-100 border-b border-slate-200 px-3 flex items-center justify-between text-xs text-slate-500 shrink-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="flex gap-1.5 shrink-0">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+          {/* Simulated Browser URL bar (hidden in short phone landscape to maximize preview height) */}
+          {(!isCompactHeight || currentVirtualPath !== 'index.html') && (
+            <div className="h-8 bg-slate-100 border-b border-slate-200 px-2.5 sm:px-3 flex items-center justify-between gap-2 text-xs text-slate-500 shrink-0 overflow-hidden">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="hidden sm:flex gap-1.5 shrink-0">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                </div>
+                <div className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[11px] text-slate-600 font-mono flex items-center gap-1.5 shadow-xs min-w-0 flex-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
+                  <span className="truncate">
+                    virtual://lqd-html-lab/{lesson.lessonNumber.toLowerCase().replace(' ', '')}/{currentVirtualPath}
+                  </span>
+                </div>
+                {currentVirtualPath !== 'index.html' && (
+                  <button
+                    onClick={() => {
+                      setCurrentVirtualPath('index.html');
+                      updateIframe('index.html');
+                    }}
+                    className="text-[10px] text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded transition cursor-pointer shrink-0 whitespace-nowrap"
+                    title="Quay lại trang chính index.html"
+                  >
+                    ← Về index.html
+                  </button>
+                )}
               </div>
-              <div className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[11px] text-slate-600 font-mono flex items-center gap-1.5 shadow-xs truncate">
-                <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
-                <span className="truncate">virtual://lqd-html-lab/{lesson.lessonNumber.toLowerCase().replace(' ', '')}/{currentVirtualPath}</span>
-              </div>
-              {currentVirtualPath !== 'index.html' && (
-                <button
-                  onClick={() => {
-                    setCurrentVirtualPath('index.html');
-                    updateIframe('index.html');
-                  }}
-                  className="text-[10px] text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded transition cursor-pointer shrink-0"
-                  title="Quay lại trang chính index.html"
-                >
-                  ← Về index.html
-                </button>
-              )}
-            </div>
 
-            <div className="flex items-center gap-1.5 shrink-0 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Đồng bộ HTML + CSS</span>
+              <div className="hidden xl:flex items-center gap-1.5 shrink-0 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shadow-2xs whitespace-nowrap">
+                <span>Đồng bộ HTML + CSS</span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Iframe container with responsive device sizing or Error Screen */}
-          <div className="flex-1 bg-slate-100 flex items-center justify-center p-2.5 overflow-auto">
+          <div className={`flex-1 bg-slate-100 flex items-center justify-center ${isCompactHeight ? 'p-1' : 'p-1.5 sm:p-2.5'} overflow-auto`}>
             <div
               className={`h-full bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-300 border border-slate-200/90 relative ${
-                deviceMode === 'desktop'
+                effectiveDeviceMode === 'desktop'
                   ? 'w-full'
-                  : deviceMode === 'tablet'
-                  ? 'w-[768px]'
-                  : 'w-[375px]'
+                  : effectiveDeviceMode === 'tablet'
+                  ? 'w-[768px] max-w-full'
+                  : 'w-[375px] max-w-full'
               }`}
             >
               {hasFatalErrors ? (

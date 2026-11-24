@@ -66,6 +66,8 @@ interface CodeEditorProps {
   onRunCode?: () => void;
   editingLine?: number | null;
   onChangeEditingLine?: (line: number | null) => void;
+  isMobile?: boolean;
+  isCompactHeight?: boolean;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -79,12 +81,16 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onRunCode,
   editingLine: externalEditingLine,
   onChangeEditingLine,
+  isMobile = false,
+  isCompactHeight = false,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const popupListRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [legendManualToggle, setLegendManualToggle] = useState<boolean | null>(null);
+  const showLegendBar = legendManualToggle !== null ? legendManualToggle : !isCompactHeight && !isMobile;
 
   // Track which line is currently being actively typed (before pressing Enter)
   const [localEditingLine, setLocalEditingLine] = useState<number | null>(null);
@@ -550,48 +556,52 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   return (
-    <section className="h-full flex flex-col bg-white border-r border-slate-200 select-none overflow-hidden">
-      {/* Editor Header & Tabs */}
-      <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-3 shrink-0">
-        <div className="flex items-center gap-1">
+    <section className="h-full flex flex-col bg-white select-none overflow-hidden">
+      {/* Editor Header & Tabs (Single-line, zero wrapping, never clips buttons) */}
+      <div
+        className={`${
+          isCompactHeight ? 'h-9' : 'h-10'
+        } bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-1.5 px-2 sm:px-3 shrink-0 overflow-x-auto no-scrollbar`}
+      >
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => onChangeTab('html')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t-md transition cursor-pointer ${
+            className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 text-xs font-semibold rounded-t-md transition cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'html'
                 ? 'text-slate-900 bg-white border-t-2 border-orange-500 shadow-xs'
                 : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
             }`}
           >
-            <FileCode2 className="w-3.5 h-3.5 text-orange-500" />
+            <FileCode2 className="w-3.5 h-3.5 text-orange-500 shrink-0" />
             <span>index.html</span>
           </button>
 
           <button
             onClick={() => onChangeTab('css')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t-md transition cursor-pointer ${
+            className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 text-xs font-semibold rounded-t-md transition cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'css'
                 ? 'text-slate-900 bg-white border-t-2 border-blue-600 shadow-xs'
                 : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
             }`}
           >
-            <Paintbrush className="w-3.5 h-3.5 text-blue-500" />
+            <Paintbrush className="w-3.5 h-3.5 text-blue-500 shrink-0" />
             <span>style.css</span>
           </button>
 
-          <span className="hidden md:flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-medium ml-1">
-            <Zap className="w-3 h-3 text-emerald-600" />
+          <span className="hidden 2xl:flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-medium ml-1 whitespace-nowrap shrink-0">
+            <Zap className="w-3 h-3 text-emerald-600 shrink-0" />
             <span>Đồng bộ</span>
           </span>
         </div>
 
         {/* Real-time Diagnostics Indicator Badge & Actions */}
-        <div className="flex items-center gap-1.5 text-slate-500">
-          {/* Linter Status Pill */}
+        <div className="flex items-center gap-1 sm:gap-1.5 text-slate-500 shrink-0">
+          {/* Linter Status Button */}
           <button
             onClick={() => setShowDiagnostics((prev) => !prev)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-md border transition cursor-pointer shadow-xs ${
+            className={`flex items-center gap-1 px-2 py-1 text-[11px] font-semibold rounded-md border transition cursor-pointer shadow-xs whitespace-nowrap shrink-0 ${
               errorCount > 0
-                ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 animate-pulse'
+                ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
                 : warningCount > 0
                 ? 'bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100'
                 : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
@@ -601,7 +611,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             {errorCount > 0 ? (
               <>
                 <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                <span>{errorCount} lỗi cú pháp</span>
+                <span className="hidden xl:inline">{errorCount} lỗi cú pháp</span>
+                <span className="inline xl:hidden">{errorCount} lỗi</span>
               </>
             ) : warningCount > 0 ? (
               <>
@@ -611,7 +622,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             ) : (
               <>
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Cú pháp chuẩn ✓</span>
+                <span className="hidden xl:inline">Cú pháp chuẩn ✓</span>
+                <span className="inline xl:hidden">Chuẩn ✓</span>
               </>
             )}
             {diagnostics.length > 0 && (
@@ -621,25 +633,39 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             )}
           </button>
 
+          {/* Toggle Syntax Color Legend */}
+          <button
+            onClick={() => setLegendManualToggle(!showLegendBar)}
+            className={`p-1.5 rounded border transition cursor-pointer shrink-0 ${
+              showLegendBar
+                ? 'bg-blue-50 text-blue-600 border-blue-200'
+                : 'bg-white text-slate-500 border-slate-200 hover:text-slate-800 hover:bg-slate-50'
+            }`}
+            title={showLegendBar ? 'Ẩn chú thích màu cú pháp' : 'Hiện chú thích màu cú pháp'}
+            aria-label="Bật tắt chú thích màu cú pháp"
+          >
+            <Palette className="w-3.5 h-3.5" />
+          </button>
+
           {/* Switch Editor Theme button */}
           <button
             onClick={() => setEditorTheme((prev) => (prev === 'monokai' ? 'light' : 'monokai'))}
-            className={`flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded border transition cursor-pointer shadow-xs ${
+            className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 text-[11px] font-medium rounded border transition cursor-pointer shadow-xs whitespace-nowrap shrink-0 ${
               editorTheme === 'monokai'
                 ? 'bg-slate-900 text-amber-300 border-slate-700 hover:bg-slate-800'
                 : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
             }`}
-            title="Đổi màu nền trình soạn thảo (Monokai chuẩn màu như hình hoặc Nền sáng)"
+            title="Đổi màu nền trình soạn thảo (Monokai hoặc Nền sáng)"
           >
             {editorTheme === 'monokai' ? (
               <>
-                <Moon className="w-3 h-3 text-amber-400" />
-                <span className="hidden sm:inline">Monokai</span>
+                <Moon className="w-3 h-3 text-amber-400 shrink-0" />
+                <span className="hidden xl:inline">Monokai</span>
               </>
             ) : (
               <>
-                <Sun className="w-3 h-3 text-amber-500" />
-                <span className="hidden sm:inline">Sáng</span>
+                <Sun className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="hidden xl:inline">Sáng</span>
               </>
             )}
           </button>
@@ -647,7 +673,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           {activeTab === 'html' && (
             <button
               onClick={handleFormat}
-              className="p-1.5 hover:text-slate-800 hover:bg-slate-200/60 rounded transition cursor-pointer"
+              className="p-1.5 hover:text-slate-800 hover:bg-slate-200/60 rounded transition cursor-pointer shrink-0"
               title="Định dạng thụt lề mã (Format Code)"
             >
               <WrapText className="w-3.5 h-3.5" />
@@ -656,7 +682,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
           <button
             onClick={handleCopy}
-            className="p-1.5 hover:text-slate-800 hover:bg-slate-200/60 rounded transition cursor-pointer"
+            className="p-1.5 hover:text-slate-800 hover:bg-slate-200/60 rounded transition cursor-pointer shrink-0"
             title="Sao chép toàn bộ mã"
           >
             {copied ? (
@@ -668,14 +694,15 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         </div>
       </div>
 
-      {/* SYNTAX HIGHLIGHTING LEGEND BAR (Dành cho học sinh nhận biết màu từ khóa như hình) */}
-      <div
-        className={`px-3 py-1.5 text-[11px] font-mono flex items-center justify-between border-b shrink-0 overflow-x-auto ${
-          editorTheme === 'monokai'
-            ? 'bg-[#181820] border-slate-800 text-slate-300'
-            : 'bg-slate-50 border-slate-200 text-slate-600'
-        }`}
-      >
+      {/* SYNTAX HIGHLIGHTING LEGEND BAR (Auto-collapsed on mobile/short screens, toggleable via Palette button) */}
+      {showLegendBar && (
+        <div
+          className={`px-3 py-1.5 text-[11px] font-mono flex items-center justify-between border-b shrink-0 overflow-x-auto no-scrollbar ${
+            editorTheme === 'monokai'
+              ? 'bg-[#181820] border-slate-800 text-slate-300'
+              : 'bg-slate-50 border-slate-200 text-slate-600'
+          }`}
+        >
         <div className="flex items-center gap-3 shrink-0">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
             <Palette className="w-3 h-3" />
@@ -787,6 +814,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           )}
         </div>
       </div>
+      )}
 
       {/* Editor Body with Line Numbers, Error Badges & Dual-Layer Syntax Highlighting */}
       <div
@@ -797,7 +825,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         {/* Line Numbers Column with Real-time Error Markers */}
         <div
           ref={lineNumbersRef}
-          className={`w-14 py-3.5 font-mono select-none overflow-hidden shrink-0 border-r leading-relaxed ${
+          className={`w-10 sm:w-12 py-3.5 font-mono select-none overflow-hidden shrink-0 border-r leading-relaxed ${
             editorTheme === 'monokai'
               ? 'bg-[#1e1f1c] text-[#75715e] border-[#3e3d32]'
               : 'bg-slate-50 text-slate-400 border-slate-200'
@@ -910,9 +938,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             <div
               style={{
                 top: `${caretCoords.top}px`,
-                left: `${caretCoords.left}px`,
+                left: `min(${caretCoords.left}px, calc(100% - 190px))`,
               }}
-              className="absolute z-40 min-w-[165px] max-w-[340px] bg-[#f3f3f3] border border-[#b9b9b9] shadow-xl rounded-[2px] overflow-hidden select-none"
+              className="absolute z-40 min-w-[165px] max-w-[min(340px,calc(100%-16px))] bg-[#f3f3f3] border border-[#b9b9b9] shadow-xl rounded-[2px] overflow-hidden select-none"
             >
               <div
                 ref={popupListRef}
@@ -1105,18 +1133,20 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         </div>
       )}
 
-      {/* Editor Footer Status */}
+      {/* Editor Footer Status (Strictly single-line, zero wrapping on all devices) */}
       <div
-        className={`h-7 px-3 flex items-center justify-between text-[11px] shrink-0 border-t ${
+        className={`${
+          isCompactHeight ? 'h-6' : 'h-7'
+        } px-2.5 sm:px-3 flex items-center justify-between gap-2 text-[11px] shrink-0 border-t overflow-x-auto no-scrollbar whitespace-nowrap ${
           editorTheme === 'monokai'
             ? 'bg-[#1e1f1c] text-slate-400 border-[#3e3d32]'
             : 'bg-slate-50 text-slate-500 border-slate-200'
         }`}
       >
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <span className="flex items-center gap-1.5 shrink-0">
             <span
-              className={`w-2 h-2 rounded-full ${
+              className={`w-2 h-2 rounded-full shrink-0 ${
                 errorCount > 0
                   ? 'bg-rose-500'
                   : warningCount > 0
@@ -1124,23 +1154,24 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
                   : 'bg-emerald-500'
               }`}
             ></span>
-            <span>{activeTab === 'html' ? 'HTML5 Document' : 'CSS Stylesheet'}</span>
+            <span className="hidden xl:inline">{activeTab === 'html' ? 'HTML5 Document' : 'CSS Stylesheet'}</span>
+            <span className="inline xl:hidden">{activeTab === 'html' ? 'HTML5' : 'CSS'}</span>
           </span>
-          <span>{lineCount} dòng</span>
-          <span>{currentCode.length} ký tự</span>
+          <span className="tabular-nums shrink-0">{lineCount} dòng</span>
+          <span className="tabular-nums hidden sm:inline shrink-0">{currentCode.length} ký tự</span>
 
           {diagnostics.length > 0 && (
             <button
               onClick={() => setShowDiagnostics((prev) => !prev)}
-              className="text-rose-600 font-bold hover:underline cursor-pointer"
+              className="text-rose-600 font-bold hover:underline cursor-pointer shrink-0"
             >
               {errorCount > 0
-                ? `🔴 Có ${errorCount} lỗi cần sửa (bấm để xem)`
-                : `🟡 Có ${warningCount} lưu ý`}
+                ? `Có ${errorCount} lỗi (xem)`
+                : `Có ${warningCount} lưu ý`}
             </button>
           )}
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-slate-400">
+        <div className="hidden xl:flex items-center gap-2 text-slate-400 shrink-0">
           <span>Tab: 2 spaces</span>
           <span>UTF-8</span>
         </div>
